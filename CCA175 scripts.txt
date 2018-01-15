@@ -417,3 +417,22 @@ Found 13 items
 	--compress \
 	--compression-codec org.apache.hadoop.io.compress.SnappyCodec
 	
+	
+Spark
+String Manipulation using Scala
+//String Manipulation
+val str = orders.first
+val a = str.split(",")
+val orderId = a(0).toInt
+a(1).contains("2013")
+
+val orderDate = a(1)
+orderDate.substring(0, 10)
+orderDate.substring(5, 7)
+orderDate.substring(11)
+orderDate.replace('-', '/')
+orderDate.replace("07", "July")
+orderDate.indexOf("2")
+orderDate.indexOf("2", 2)
+orderDate.length
+	
