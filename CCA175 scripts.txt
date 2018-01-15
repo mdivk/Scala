@@ -435,4 +435,18 @@ orderDate.replace("07", "July")
 orderDate.indexOf("2")
 orderDate.indexOf("2", 2)
 orderDate.length
+
+File location:
+hdfs dfs -ls /user/paslechoix/retail_db/order_items
+
+
+val orders = sc.textFile("/user/paslechoix/retail_db/order_items")
+// 21,2013-07-25 00:00:00.0,11599,CLOSED -> 20130725 as Int
+val str = orders.first
+str.split(",")(1).substring(0, 10).replace("-", "").toInt
+
+val orderDates = orders.map((str: String) => {
+  str.split(",")(1).substring(0, 10).replace("-", "").toInt
+})
+
 	
