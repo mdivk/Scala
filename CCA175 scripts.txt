@@ -417,30 +417,79 @@ Found 13 items
 	--compress \
 	--compression-codec org.apache.hadoop.io.compress.SnappyCodec
 	
+Orders
+
+sqoop import \
+	--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+	--username retail_user \
+	--password itversity \
+	--table order_items \
+	--target-dir /user/paslechoix/retail_db/order_def \
+	--compress \
+	--compression-codec org.apache.hadoop.io.compress.DefaultCodec \
+	--append
+
+[paslechoix@gw01 conf]$ hdfs dfs -ls /user/paslechoix/retail_db/order_def
+Found 4 items
+-rw-r--r--   3 paslechoix hdfs     257731 2018-01-15 17:48 /user/paslechoix/retail_db/order_def/part-m-00000.deflate
+-rw-r--r--   3 paslechoix hdfs     258565 2018-01-15 17:48 /user/paslechoix/retail_db/order_def/part-m-00001.deflate
+-rw-r--r--   3 paslechoix hdfs     259774 2018-01-15 17:48 /user/paslechoix/retail_db/order_def/part-m-00002.deflate
+-rw-r--r--   3 paslechoix hdfs     254602 2018-01-15 17:48 /user/paslechoix/retail_db/order_def/part-m-00003.deflate
+
+	
+
 	
 Spark
-String Manipulation using Scala
-//String Manipulation
-val str = orders.first
-val a = str.split(",")
-val orderId = a(0).toInt
-a(1).contains("2013")
+Create RDD from hdfs
 
-val orderDate = a(1)
-orderDate.substring(0, 10)
-orderDate.substring(5, 7)
-orderDate.substring(11)
-orderDate.replace('-', '/')
-orderDate.replace("07", "July")
-orderDate.indexOf("2")
-orderDate.indexOf("2", 2)
-orderDate.length
+File location: /user/paslechoix/retail_db/order_def
+in total there are 172198 records (from table order in retail_db in mysql)
+
+To create RDD based on the files:
+val orders = sc.textFile("/user/paslechoix/retail_db/order_def")
+orders.count
+172198
+
+Inspect the data:
+val orders = sc.textFile("/user/paslechoix/retail_db/order_def")
+orders.first
+orders.take(10).foreach(println)
+
+1,1,957,1,299.98,299.98
+2,2,1073,1,199.99,199.99
+3,2,502,5,250.0,50.0
+4,2,403,1,129.99,129.99
+5,4,897,2,49.98,24.99
+6,4,365,5,299.95,59.99
+7,4,502,3,150.0,50.0
+8,4,1014,4,199.92,49.98
+9,5,957,1,299.98,299.98
+10,5,365,5,299.95,59.99
+
+Create RDD from local file system
+File location: 
+[paslechoix@gw01 conf]$ cat /data/retail_db/orders/part-00000 | wc -l
+68883
+
+val orders_local =  scala.io.Source.fromFile("/data/retail_db/orders/part-00000").getLines.foreach(println)
+
 
 File location:
 hdfs dfs -ls /user/paslechoix/retail_db/order_items
 
 
+Let's find out how many records in order_items
+From mysql:
+mysql -u retail_user -h ms.itversity.com -p
+172198
+
 val orders = sc.textFile("/user/paslechoix/retail_db/order_items")
+orders.count
+res0: Long = 516594
+
+Note: despite this is to load text file only, it actually loads all formats: 172198 x 3 = 516594
+
+
 // 21,2013-07-25 00:00:00.0,11599,CLOSED -> 20130725 as Int
 val str = orders.first
 str.split(",")(1).substring(0, 10).replace("-", "").toInt
