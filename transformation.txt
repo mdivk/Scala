@@ -243,7 +243,7 @@ scala> orderItems.take(10).foreach(println)
 9,5,957,1,299.98,299.98
 10,5,365,5,299.95,59.99
 
-RDD(0): orders: orderId							  RDD(1): orderItems: orderItem_orderId								
+RDD(0): orders: orderId					RDD(1): orderItems: orderItem_orderId								
 1,2013-07-25 00:00:00.0,11599,CLOSED              1,1,957,1,299.98,299.98
 2,2013-07-25 00:00:00.0,256,PENDING_PAYMENT       2,2,1073,1,199.99,199.99
 3,2013-07-25 00:00:00.0,12111,COMPLETE            3,2,502,5,250.0,50.0
