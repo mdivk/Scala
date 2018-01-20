@@ -1,0 +1,91 @@
+Transformation
+
+String manipulation
+
+val orders = sc.textFile("/public/retail_db/orders")
+val order = orders.first
+order.split(',')
+scala> order.split(',')
+res8: Array[String] = Array(1, 2013-07-25 00:00:00.0, 11599, CLOSED)
+
+to access element in an array:
+in scala, index starts with 0
+
+scala> order.split(',')(0)
+1
+scala> order.split(',')(1)
+res9: String = 2013-07-25 00:00:00.0
+
+scala> val str = order.split(',')
+str: Array[String] = Array(1, 2013-07-25 00:00:00.0, 11599, CLOSED)
+
+scala> str.contains("2018")
+res11: Boolean = false
+
+scala> val orderDate = str(1)
+orderDate: String = 2013-07-25 00:00:00.0
+
+scala> val year = orderDate.substring(0,4)
+year: String = 2013
+
+scala> orderDate.replace('-', '/')
+res13: String = 2013/07/25 00:00:00.0
+
+scala> orderDate.indexOf("25")
+res14: Int = 8
+
+scala> val orderDateTransformed=orderDate.replace("-", "").substring(0,8).toInt
+orderDateTransformed: Int = 20130725
+
+
+String functions:
+scala> orderDate.
++                     asInstanceOf          charAt                chars                 codePointAt
+codePointBefore       codePointCount        codePoints            compareTo             compareToIgnoreCase
+concat                contains              contentEquals         endsWith              equalsIgnoreCase
+getBytes              getChars              indexOf               intern                isEmpty
+isInstanceOf          lastIndexOf           length                matches               offsetByCodePoints
+regionMatches         replace               replaceAll            replaceFirst          split
+startsWith            subSequence           substring             toCharArray           toLowerCase
+toString              toUpperCase           trim
+
+
+Filtering
+
+Row level transformation
+map
+
+Using map function for rdd, convert the whole string to only the second column (after some transformation)
+
+scala> val orderDateMapped = orders.map((order:String)=>{order.split(",")(1).substring(0,10).replace("-", "").toInt})
+
+scala> orderDateMapped.first
+res4: Int = 20130725
+
+
+flatmap
+// Row level transformations using flatMap
+
+val l = List("Hello", "How are you doing", "Let us perform word count", "As part of the word count program", "we will see how many times each word repeat")
+val l_rdd = sc.parallelize(l)
+val l_map = l_rdd.map(ele => ele.split(" "))
+val l_flatMap = l_rdd.flatMap(ele => ele.split(" "))
+val wordcount = l_flatMap.map(word => (word, "")).countByKey
+
+scala> l
+res18: List[String] = List(Hello, How are you doing, Let us perform word count, As part of the word count program, we will see how many times each word repeat)
+
+scala> l_rdd.take(10)
+res17: Array[String] = Array(Hello, How are you doing, Let us perform word count, As part of the word count program, we will see how many times each word repeat)
+
+scala> l_map.take(10)
+res16: Array[Array[String]] = Array(Array(Hello), Array(How, are, you, doing), Array(Let, us, perform, word, count), Array(As, part, of, the, word, count, program), Array(we, will, see, how, many, times, each, word, repeat))
+
+scala> l_flatMap.take(10)
+res19: Array[String] = Array(Hello, How, are, you, doing, Let, us, perform, word, count)
+
+
+Joins
+
+Aggregation
+

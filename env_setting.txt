@@ -1,4 +1,4 @@
-Cygwin
+cygwin
 
 After the first time installation, need to install two extra 
 ssh
