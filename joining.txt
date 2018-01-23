@@ -41,7 +41,7 @@ scala> ordersJoin.take(10).foreach(println)
 (68522,(2014-06-05,329.99))
 (23776,(2013-12-20,199.99))
 
-
+// Joining orders and order_items ---- Outer Join
 // Get all the orders which do not have corresponding entries in order items
 val orders = sc.textFile("/public/retail_db/orders")
 val orderItems = sc.textFile("/public/retail_db/order_items")
