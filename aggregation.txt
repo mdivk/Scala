@@ -1,0 +1,185 @@
+val orders = sc.textFile("/public/retail_db/orders")
+
+scala> orders.first
+res0: String = 1,2013-07-25 00:00:00.0,11599,CLOSED
+
+orders.map(order => (order.split(",")(3), "")).countByKey.foreach(println)
+(PAYMENT_REVIEW,729)
+(CLOSED,7556)
+(SUSPECTED_FRAUD,1558)
+(PROCESSING,8275)
+(COMPLETE,22899)
+(PENDING,7610)
+(PENDING_PAYMENT,15030)
+(ON_HOLD,3798)
+(CANCELED,1428)
+
+
+val orderItems = sc.textFile("/public/retail_db/order_items")
+scala> orderItems.first
+res2: String = 1,1,957,1,299.98,299.98
+
+val orderItemsRevenue = orderItems.map(oi => oi.split(",")(4).toFloat)
+orderItemsRevenue.first
+res3: Float = 299.98
+
+orderItemsRevenue.reduce((total, revenue) => total + revenue)
+res4: Float = 3.4326256E7
+
+
+val orderItemsMaxRevenue = orderItemsRevenue.reduce((max, revenue) => {
+  if(max < revenue) revenue else max
+})
+orderItemsMaxRevenue: Float = 1999.99
+
+Aggregations - groupByKey example
+
+// Aggregations - groupByKey
+//1, (1 to 1000) - sum(1 to 1000) => 1 + 2+ 3+ .....1000
+//1, (1 to 1000) - sum(sum(1, 250), sum(251, 500), sum(501, 750), sum(751, 1000))
+val orderItems = sc.textFile("/public/retail_db/order_items")
+
+val orderItemsMap = orderItems.
+  map(oi => (oi.split(",")(1).toInt, oi.split(",")(4).toFloat))
+scala> orderItemsMap.first
+res5: (Int, Float) = (1,299.98)
+
+val orderItemsGBK = orderItemsMap.groupByKey
+orderItemsGBK.first 
+res6: (Int, Iterable[Float]) = (41234,CompactBuffer(109.94))
+
+//Get revenue per order_id
+orderItemsGBK.map(rec => (rec._1, rec._2.toList.sum)).take(10).foreach(println)
+(41234,109.94)
+(65722,1319.8899)
+(28730,349.95)
+(68522,329.99)
+(23776,329.98)
+(32676,719.91003)
+(53926,219.97)
+(4926,939.85)
+(38926,1049.9)
+(29270,1379.8501)
+
+//Get data in descending order by order_item_subtotal for each order_id
+val ordersSortedByRevenue = orderItemsGBK.
+  flatMap(rec => {
+    rec._2.toList.sortBy(o => -o).map(k => (rec._1, k))
+  })
+ordersSortedByRevenue.take(10).foreach(println)
+(41234,109.94)
+(65722,400.0)
+(65722,399.98)
+(65722,199.98)
+(65722,199.95)
+(65722,119.98)
+(28730,299.95)
+(28730,50.0)
+(68522,329.99)
+(23776,199.99)
+
+// Aggregations - reduceByKey
+val orderItems = sc.textFile("/public/retail_db/order_items")
+val orderItemsMap = orderItems.
+  map(oi => (oi.split(",")(1).toInt, oi.split(",")(4).toFloat))
+orderItemsMap.take(10).foreach(println)
+(1,299.98)
+(2,199.99)
+(2,250.0)
+(2,129.99)
+(4,49.98)
+(4,299.95)
+(4,150.0)
+(4,199.92)
+(5,299.98)
+(5,299.95)
+  
+
+val revenuePerOrderId = orderItemsMap.
+  reduceByKey((total, revenue) => total + revenue)
+scala> revenuePerOrderId.take(10).foreach(println)
+(41234,109.94)
+(65722,1319.8899)
+(28730,349.95)
+(68522,329.99)
+(23776,329.98)
+(32676,719.91003)
+(53926,219.97)
+(4926,939.85)
+(38926,1049.9)
+(29270,1379.8501)
+
+order by first item (i.e. orderId _._1) in ascending order sortBy()
+scala> revenuePerOrderId.sortBy(_._1).take(10).foreach(println)
+(1,299.98)
+(2,579.98)
+(4,699.85004)
+(5,1129.8601)
+(7,579.92004)
+(8,729.84)
+(9,599.96)
+(10,651.92)
+(11,919.79004)
+(12,1299.8701)
+
+order by second item (i.e. revenue _._2) in ascending order sortBy()
+scala> revenuePerOrderId.sortBy(_._2).take(10).foreach(println)
+(41098,9.99)
+(12380,9.99)
+(21816,9.99)
+(11102,9.99)
+(23322,9.99)
+(1944,9.99)
+(5557,9.99)
+(18772,14.99)
+(7530,14.99)
+(36546,14.99)
+
+
+order by first item orderId
+revenuePerOrderId.sortBy(_._0).take(10).foreach(println)
+
+order by second item (i.e. revenue _._2) in descending order sortBy(, false)
+scala> revenuePerOrderId.sortBy(_._2, false).take(10).foreach(println)
+(68703,3449.91)
+(68724,2859.89)
+(68858,2839.91)
+(68809,2779.8599)
+(68766,2699.9)
+(68806,2629.92)
+(68821,2629.92)
+(68778,2629.9)
+(68848,2399.96)
+(68875,2399.95)
+
+Because for each OrderId there are multiple orderItems, to find out the min orderItems for each order:  
+
+val minRevenuePerOrderId = orderItemsMap.reduceByKey((min, revenue) => if(min > revenue) revenue else min)
+minRevenuePerOrderId.take(10).foreach(println)  
+(41234,109.94)
+(65722,119.98)
+(28730,50.0)
+(68522,329.99)
+(23776,129.99)
+(32676,59.99)
+(53926,99.99)
+(4926,199.92)
+(38926,250.0)
+(29270,119.98)
+
+to find out the max orderItems for each order: 
+val maxRevenuePerOrderId = orderItemsMap.reduceByKey((max, revenue) => if(max>revenue) max else revenue)
+
+sort it by revenue in descending
+scala> maxRevenuePerOrderId.sortBy(_._2, false).take(10).foreach(println)
+(68703,3449.91)
+(68724,2859.89)
+(68858,2839.91)
+(68809,2779.8599)
+(68766,2699.9)
+(68806,2629.92)
+(68821,2629.92)
+(68778,2629.9)
+(68848,2399.96)
+(68875,2399.95)
+
