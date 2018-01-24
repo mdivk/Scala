@@ -183,3 +183,46 @@ scala> maxRevenuePerOrderId.sortBy(_._2, false).take(10).foreach(println)
 (68848,2399.96)
 (68875,2399.95)
 
+
+CountByKey
+
+// Aggregations - using actions
+val orders = sc.textFile("/public/retail_db/orders")
+orders.map(order => (order.split(",")(3), "")).countByKey.foreach(println)
+(PAYMENT_REVIEW,729)
+(CLOSED,7556)
+(SUSPECTED_FRAUD,1558)
+(PROCESSING,8275)
+(COMPLETE,22899)
+(PENDING,7610)
+(PENDING_PAYMENT,15030)
+(ON_HOLD,3798)
+(CANCELED,1428)
+
+val orderItems = sc.textFile("/public/retail_db/order_items")
+val orderItemsRevenue = orderItems.map(oi => oi.split(",")(4).toFloat)
+orderItemsRevenues.take(10).foreach(println)
+299.98
+199.99
+250.0
+129.99
+49.98
+299.95
+150.0
+199.92
+299.98
+299.95
+
+
+orderItemsRevenues.reduce((total, revenue) => total + revenue)
+val orderItemsMaxRevenue = orderItemsRevenue.reduce((max, revenue) => {
+  if(max < revenue) revenue else max
+})
+res14: Float = 3.4326256E7
+
+val orderItemsMaxRevenue = orderItemsRevenue.reduce((max, revenue) => {
+  if(max < revenue) revenue else max
+})
+orderItemsMaxRevenue: Float = 1999.99
+
+
