@@ -292,3 +292,26 @@ scala> productsMap2.sortBy(_._4, false).take(10).foreach(println)
 <console>:32: error: value _4 is not a member of (String, Float)
               productsMap2.sortBy(_._4, false).take(10).foreach(println)
 
+Top N			  
+// Ranking - Get top N priced products with in each product category
+val products = sc.textFile("/public/retail_db/products")
+val productsMap = products.
+  filter(product => product.split(",")(4) != "").
+  map(product => (product.split(",")(1).toInt, product))
+
+scala> productsMap.take(10).foreach(println)
+(2,1,2,Quest Q64 10 FT. x 10 FT. Slant Leg Instant U,,59.98,http://images.acmesports.sports/Quest+Q64+10+FT.+x+10+FT.+Slant+Leg+Instant+Up+Canopy)
+(2,2,2,Under Armour Men's Highlight MC Football Clea,,129.99,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat)
+(2,3,2,Under Armour Men's Renegade D Mid Football Cl,,89.99,http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat)
+(2,4,2,Under Armour Men's Renegade D Mid Football Cl,,89.99,http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat)
+(2,5,2,Riddell Youth Revolution Speed Custom Footbal,,199.99,http://images.acmesports.sports/Riddell+Youth+Revolution+Speed+Custom+Football+Helmet)
+(2,6,2,Jordan Men's VI Retro TD Football Cleat,,134.99,http://images.acmesports.sports/Jordan+Men%27s+VI+Retro+TD+Football+Cleat)
+(2,7,2,Schutt Youth Recruit Hybrid Custom Football H,,99.99,http://images.acmesports.sports/Schutt+Youth+Recruit+Hybrid+Custom+Football+Helmet+2014)
+(2,8,2,Nike Men's Vapor Carbon Elite TD Football Cle,,129.99,http://images.acmesports.sports/Nike+Men%27s+Vapor+Carbon+Elite+TD+Football+Cleat)
+(2,9,2,Nike Adult Vapor Jet 3.0 Receiver Gloves,,50.0,http://images.acmesports.sports/Nike+Adult+Vapor+Jet+3.0+Receiver+Gloves)
+(2,10,2,Under Armour Men's Highlight MC Football Clea,,129.99,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat)
+  
+val productsGroupByCategory = productsMap.groupByKey			  
+productsGroupByCategory.first
+res22: (Int, Iterable[String]) = (34,CompactBuffer(741,34,FootJoy GreenJoys Golf Shoes,,59.99,http://images.acmesports.sports/FootJoy+GreenJoys+Golf+Shoes, 742,34,FootJoy GreenJoys Golf Shoes,,59.99,http://images.acmesports.sports/FootJoy+GreenJoys+Golf+Shoes, 743,34,Ogio Race Golf Shoes,,169.99,http://images.acmesports.sports/Ogio+Race+Golf+Shoes, 744,34,Ogio Race Golf Shoes,,169.99,http://images.acmesports.sports/Ogio+Race+Golf+Shoes, 745,34,Ogio City Spiked Golf Shoes,,149.99,http://images.acmesports.sports/Ogio+City+Spiked+Golf+Shoes, 746,34,Ogio City Spiked Golf Shoes,,149.99,http://images.acmesports.sports/Ogio+City+Spiked+Golf+Shoes, 747,34,Ogio City Spiked Golf Shoes,,149.99,http://images.acmesports.sports/Ogio+City+Spiked+Golf+Shoes, 748,34,Ogio City Turf Golf Shoes,,129.99,htt...
+
