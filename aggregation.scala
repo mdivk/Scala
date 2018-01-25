@@ -311,7 +311,56 @@ scala> productsMap.take(10).foreach(println)
 (2,9,2,Nike Adult Vapor Jet 3.0 Receiver Gloves,,50.0,http://images.acmesports.sports/Nike+Adult+Vapor+Jet+3.0+Receiver+Gloves)
 (2,10,2,Under Armour Men's Highlight MC Football Clea,,129.99,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat)
   
+Converting (K, V) pairs into (K, Iterable)  
 val productsGroupByCategory = productsMap.groupByKey			  
 productsGroupByCategory.first
 res22: (Int, Iterable[String]) = (34,CompactBuffer(741,34,FootJoy GreenJoys Golf Shoes,,59.99,http://images.acmesports.sports/FootJoy+GreenJoys+Golf+Shoes, 742,34,FootJoy GreenJoys Golf Shoes,,59.99,http://images.acmesports.sports/FootJoy+GreenJoys+Golf+Shoes, 743,34,Ogio Race Golf Shoes,,169.99,http://images.acmesports.sports/Ogio+Race+Golf+Shoes, 744,34,Ogio Race Golf Shoes,,169.99,http://images.acmesports.sports/Ogio+Race+Golf+Shoes, 745,34,Ogio City Spiked Golf Shoes,,149.99,http://images.acmesports.sports/Ogio+City+Spiked+Golf+Shoes, 746,34,Ogio City Spiked Golf Shoes,,149.99,http://images.acmesports.sports/Ogio+City+Spiked+Golf+Shoes, 747,34,Ogio City Spiked Golf Shoes,,149.99,http://images.acmesports.sports/Ogio+City+Spiked+Golf+Shoes, 748,34,Ogio City Turf Golf Shoes,,129.99,htt...
+
+The result shows tuple of category (which is an Int) and all the products in that category
+
+Top N 
+
+val products = sc.textFile("/public/retail_db/products")
+val productsMap = products.
+  filter(product => product.split(",")(4) != "").
+  map(product => (product.split(",")(1).toInt, product))
+val productsGroupByCategory = productsMap.groupByKey
+val productsIterable = productsGroupByCategory.first._2
+get <K, V> of <productId, price>
+val productPrices = productsIterable.map(p=> (p.split(",")(0), p.split(",")(4).toFloat))
+productPrices.take(10).foreach(println)
+(741,59.99)
+(742,59.99)
+(743,169.99)
+(744,169.99)
+(745,149.99)
+(746,149.99)
+(747,149.99)
+(748,129.99)
+(749,129.99)
+(750,129.99)
+
+get the top 5 by price
+
+//initially there are 24 items
+scala> productsIterable.map(p => p.split(",")(4).toFloat).size
+res15: Int = 24
+
+//convert it to Set will automatically group the same items 
+scala> val productPrices = productsIterable.map(p => p.split(",")(4).toFloat).toSet
+productPrices: scala.collection.immutable.Set[Float] = Set(99.99, 169.99, 149.99, 59.99, 129.99, 34.99, 139.99)
+scala> productPrices.size
+res16: Int = 7
+
+//Get the top n prices 
+scala> val topNPrices = productPrices.toList.sortBy(p => -p).take(5)
+topNPrices: List[Float] = List(169.99, 149.99, 139.99, 129.99, 99.99)
+
+//Get the bottom n prices
+scala> productPrices.toList.sorted
+res18: List[Float] = List(34.99, 59.99, 99.99, 129.99, 139.99, 149.99, 169.99)
+
+scala> productPrices.toList.sorted.take(5)
+res19: List[Float] = List(34.99, 59.99, 99.99, 129.99, 139.99)
+
 
