@@ -57,9 +57,9 @@ scala> customers_201308_and_201309.count
 res20: Long = 11521
 
 
-// Get all customers who placed orders in 2013 August but not in 2013 September
-val customer_201308_minus_201309 = customers_201308.map(c => (c, 1)).
-  leftOuterJoin(customers_201309.map(c => (c, 1))).
+// Get all customers who placed orders in 201308 but not in 201309, 201308 substract 201309, leftOuterJoin
+val customer_201308_minus_201309 = customers201308.map(c => (c, 1)).
+  leftOuterJoin(customers201309.map(c => (c, 1))).
   filter(rec => rec._2._2 == None).
   map(rec => rec._1).
   distinct
