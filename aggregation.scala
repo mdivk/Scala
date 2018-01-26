@@ -340,8 +340,7 @@ productPrices.take(10).foreach(println)
 (749,129.99)
 (750,129.99)
 
-get the top 5 by price
-
+//Get the top/bottom N items 
 //initially there are 24 items
 scala> productsIterable.map(p => p.split(",")(4).toFloat).size
 res15: Int = 24
