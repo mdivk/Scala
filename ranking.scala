@@ -40,6 +40,19 @@ val top3PricedProductsPerCategory = productsGroupByCategory.flatMap(rec => getTo
 234,11,Fitness Gear Pro Core Bench,,129.99,http://images.acmesports.sports/Fitness+Gear+Pro+Core+Bench
 292,38,Garmin Women's Forerunner 10 GPS Watch,,129.99,http://images.acmesports.sports/Garmin+Women%27s+Forerunner+10+GPS+Watch
 
+val top2ricedProductsPerCategory = productsGroupByCategory.flatMap(rec => getTopNPricedProducts(rec._2, 2))
+
+674,31,PING G30 Hybrid,,219.0,http://images.acmesports.sports/PING+G30+Hybrid
+2,2,Under Armour Men's Highlight MC Football Clea,,129.99,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat
+8,2,Nike Men's Vapor Carbon Elite TD Football Cle,,129.99,http://images.acmesports.sports/Nike+Men%27s+Vapor+Carbon+Elite+TD+Football+Cleat
+10,2,Under Armour Men's Highlight MC Football Clea,,129.99,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat
+17,2,Under Armour Men's Highlight MC Football Clea,,129.99,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat
+20,2,Under Armour Men's Highlight MC Football Clea,,129.99,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat
+84,5,Nike Men's KD VI Basketball Shoe,,129.99,http://images.acmesports.sports/Nike+Men%27s+KD+VI+Basketball+Shoe
+173,9,Under Armour Men's Highlight MC Football Clea,,129.99,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat
+234,11,Fitness Gear Pro Core Bench,,129.99,http://images.acmesports.sports/Fitness+Gear+Pro+Core+Bench
+292,38,Garmin Women's Forerunner 10 GPS Watch,,129.99,http://images.acmesports.sports/Garmin+Women%27s+Forerunner+10+GPS+Watch
+
 
 val productsMap = products.
       filter(p=>p.split(",")(4)!="").
