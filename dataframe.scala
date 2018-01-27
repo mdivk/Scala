@@ -1,4 +1,11 @@
-Data Frame
+/* Data Frame
+DataFrame has two main advantages over RDD:
+Optimized execution plans via Catalyst Optimizer.
+Custom Memory management via Project Tungsten.
+
+Read more at https://indatalabs.com/blog/data-engineering/convert-spark-rdd-to-dataframe-dataset#2SaMI07DPTd6X6jm.99
+
+ */
 //writing data into difference file format
 
 //read data into a dataframe
