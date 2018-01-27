@@ -89,7 +89,27 @@ orderItemsMap.take(10).foreach(println)
 (5,(957,299.98))
 (5,(365,299.95))
 
-// Join the two data sets
+// As they have the same Key in <K, V>, join the two data sets by order_id 
 val ordersJoin = ordersMap.join(orderItemsMap)
 ordersJoin.take(10).foreach(println)
+(65722,(2014-05-23 00:00:00.0,(365,119.98)))
+(65722,(2014-05-23 00:00:00.0,(730,400.0)))
+(65722,(2014-05-23 00:00:00.0,(1004,399.98)))
+(65722,(2014-05-23 00:00:00.0,(627,199.95)))
+(65722,(2014-05-23 00:00:00.0,(191,199.98)))
+(23776,(2013-12-20 00:00:00.0,(1073,199.99)))
+(23776,(2013-12-20 00:00:00.0,(403,129.99)))
+(53926,(2014-06-30 00:00:00.0,(365,119.98)))
+(53926,(2014-06-30 00:00:00.0,(191,99.99)))
+(51620,(2014-06-13 00:00:00.0,(1004,399.98)))
+
+Before the join:
+ordersMap.count
+res11: Long = 30455
+
+orderItemsMap.count
+res12: Long = 172198
+
+After the join
 ordersJoin.count
+res8: Long = 75408
