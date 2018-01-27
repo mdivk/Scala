@@ -141,7 +141,48 @@ val dailyRevenuePerProductJoinSorted2 = dailyRevenuePerProductJoinSorted1.sortBy
 (775,((2013-10-13,9.99),Clicgear 8.0 Shoe Brush))
 (775,((2013-10-30,9.99),Clicgear 8.0 Shoe Brush))
 
+//get the data to desired format - order_date, dailyrevenue_per_product, product_name
+val finalrdd = dailyRevenuePerProductJoinSorted2.map(rec => (rec._2._1._1, rec._2._1._2, rec._2._2))
+finalrdd.take(10).foreach(println)
+(2014-03-04,16399.182,Field & Stream Sportsman 16 Gun Fire Safe)
+(2014-04-08,15999.201,Field & Stream Sportsman 16 Gun Fire Safe)
+(2013-12-06,15999.201,Field & Stream Sportsman 16 Gun Fire Safe)
+(2013-11-30,15599.223,Field & Stream Sportsman 16 Gun Fire Safe)
+(2013-11-03,15599.221,Field & Stream Sportsman 16 Gun Fire Safe)
+(2013-08-17,15199.242,Field & Stream Sportsman 16 Gun Fire Safe)
+(2014-01-30,14799.262,Field & Stream Sportsman 16 Gun Fire Safe)
+(2014-07-20,14799.262,Field & Stream Sportsman 16 Gun Fire Safe)
+(2013-12-11,14799.26,Field & Stream Sportsman 16 Gun Fire Safe)
+(2013-09-05,14399.282,Field & Stream Sportsman 16 Gun Fire Safe)
 
+//save the rdd to text file format
+scala> finalrdd.saveAsTextFile("/user/paslechoix/daily_revenue_per_product")
+
+//verification
+sc.textFile("/user/paslechoix/daily_revenue_per_product").take(10).foreach(println)
+(2014-03-04,16399.182,Field & Stream Sportsman 16 Gun Fire Safe)
+(2013-12-06,15999.201,Field & Stream Sportsman 16 Gun Fire Safe)
+(2014-04-08,15999.201,Field & Stream Sportsman 16 Gun Fire Safe)
+(2013-11-30,15599.223,Field & Stream Sportsman 16 Gun Fire Safe)
+(2013-11-03,15599.221,Field & Stream Sportsman 16 Gun Fire Safe)
+(2013-08-17,15199.242,Field & Stream Sportsman 16 Gun Fire Safe)
+(2014-01-30,14799.262,Field & Stream Sportsman 16 Gun Fire Safe)
+(2014-07-20,14799.262,Field & Stream Sportsman 16 Gun Fire Safe)
+(2013-12-11,14799.26,Field & Stream Sportsman 16 Gun Fire Safe)
+(2013-09-05,14399.282,Field & Stream Sportsman 16 Gun Fire Safe)
+
+// Copy both from HDFS to local file system
+cd /home/paslechoix
+mkdir daily_revenue_per_product
+hadoop fs -get /user/paslechoix/daily_revenue_per_product \
+// /home/paslechoix/daily_revenue_per_product/daily_revenue_txt_scala
+// cd daily_revenue_per_product/daily_revenue_txt_scala/
+// ls -ltr
+[paslechoix@gw01 daily_revenue_per_product]$ ll
+total 516
+-rw-r--r-- 1 paslechoix students 246810 Jan 27 11:54 part-00000
+-rw-r--r-- 1 paslechoix students 277476 Jan 27 11:54 part-00001
+-rw-r--r-- 1 paslechoix students      0 Jan 27 11:54 _SUCCESS
 
 
 
