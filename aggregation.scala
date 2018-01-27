@@ -287,10 +287,25 @@ val productsMap2 = products.
   map(product => (product, product.split(",")(4).toFloat))
 productsMap2.take(10).foreach(println)
 
-productsMap2.sortBy(_._4, false).take(10).foreach(println)  
-scala> productsMap2.sortBy(_._4, false).take(10).foreach(println)
-<console>:32: error: value _4 is not a member of (String, Float)
-              productsMap2.sortBy(_._4, false).take(10).foreach(println)
+productsMap2.sortBy(_._2, false).take(10).foreach(println)  
+scala> productsMap2.sortBy(_._2, false).take(10).foreach(println)
+(208,10,SOLE E35 Elliptical,,1999.99,http://images.acmesports.sports/SOLE+E35+Elliptical,1999.99)
+(66,4,SOLE F85 Treadmill,,1799.99,http://images.acmesports.sports/SOLE+F85+Treadmill,1799.99)
+(199,10,SOLE F85 Treadmill,,1799.99,http://images.acmesports.sports/SOLE+F85+Treadmill,1799.99)
+(496,22,SOLE F85 Treadmill,,1799.99,http://images.acmesports.sports/SOLE+F85+Treadmill,1799.99)
+(1048,47,"Spalding Beast 60"" Glass Portable Basketball ",,1099.99,http://images.acmesports.sports/Spalding+Beast+60%22+Glass+Portable+Basketball+Hoop,1099.99)
+(60,4,SOLE E25 Elliptical,,999.99,http://images.acmesports.sports/SOLE+E25+Elliptical,999.99)
+(197,10,SOLE E25 Elliptical,,999.99,http://images.acmesports.sports/SOLE+E25+Elliptical,999.99)
+(488,22,SOLE E25 Elliptical,,999.99,http://images.acmesports.sports/SOLE+E25+Elliptical,999.99)
+(694,32,Callaway Women's Solaire Gems 20-Piece Comple,,999.99,http://images.acmesports.sports/Callaway+Women%27s+Solaire+Gems+20-Piece+Complete+Set+-...,999.99)
+(695,32,Callaway Women's Solaire Gems 20-Piece Comple,,999.99,http://images.acmesports.sports/Callaway+Women%27s+Solaire+Gems+20-Piece+Complete+Set+-...,999.99)
+
+Note: as productsMap2 has been mapped to:
+map(product => (product, product.split(",")(4).toFloat))
+meaning the first element is product, the second element is price 
+to sort by price, it should take _._2, there is no _._4
+
+
 
 Top N			  
 // Ranking - Get top N priced products with in each product category
@@ -361,5 +376,63 @@ res18: List[Float] = List(34.99, 59.99, 99.99, 129.99, 139.99, 149.99, 169.99)
 
 scala> productPrices.toList.sorted.take(5)
 res19: List[Float] = List(34.99, 59.99, 99.99, 129.99, 139.99)
+
+// Function to get top n priced products using Scala collections API
+
+val products = sc.textFile("/public/retail_db/products")
+val productsMap = products.
+  filter(product => product.split(",")(4) != "").
+  map(product => (product.split(",")(1).toInt, product))
+
+productsMap.take(10).foreach(println)  
+(2,1,2,Quest Q64 10 FT. x 10 FT. Slant Leg Instant U,,59.98,http://images.acmesports.sports/Quest+Q64+10+FT.+x+10+FT.+Slant+Leg+Instant+Up+Canopy)
+(2,2,2,Under Armour Men's Highlight MC Football Clea,,129.99,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat)
+(2,3,2,Under Armour Men's Renegade D Mid Football Cl,,89.99,http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat)
+(2,4,2,Under Armour Men's Renegade D Mid Football Cl,,89.99,http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat)
+(2,5,2,Riddell Youth Revolution Speed Custom Footbal,,199.99,http://images.acmesports.sports/Riddell+Youth+Revolution+Speed+Custom+Football+Helmet)
+(2,6,2,Jordan Men's VI Retro TD Football Cleat,,134.99,http://images.acmesports.sports/Jordan+Men%27s+VI+Retro+TD+Football+Cleat)
+(2,7,2,Schutt Youth Recruit Hybrid Custom Football H,,99.99,http://images.acmesports.sports/Schutt+Youth+Recruit+Hybrid+Custom+Football+Helmet+2014)
+(2,8,2,Nike Men's Vapor Carbon Elite TD Football Cle,,129.99,http://images.acmesports.sports/Nike+Men%27s+Vapor+Carbon+Elite+TD+Football+Cleat)
+(2,9,2,Nike Adult Vapor Jet 3.0 Receiver Gloves,,50.0,http://images.acmesports.sports/Nike+Adult+Vapor+Jet+3.0+Receiver+Gloves)
+(2,10,2,Under Armour Men's Highlight MC Football Clea,,129.99,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat)
+
+
+  
+val productsGroupByCategory = productsMap.groupByKey
+productsGroupByCategory.take(1).foreach(println)
+(34,CompactBuffer(741,34,FootJoy GreenJoys Golf Shoes,,59.99,http://images.acmesports.sports/FootJoy+GreenJoys+Golf+Shoes, 742,34,FootJoy GreenJoys Golf Shoes,,59.99,http://images.acmesports.sports/FootJoy+GreenJoys+Golf+Shoes, 743,34,Ogio Race Golf Shoes,,169.99,http://images.acmesports.sports/Ogio+Race+Golf+Shoes, 744,34,Ogio Race Golf Shoes,,169.99,http://images.acmesports.sports/Ogio+Race+Golf+Shoes, 745,34,Ogio City Spiked Golf Shoes,,149.99,http://images.acmesports.sports/Ogio+City+Spiked+Golf+Shoes, 746,34,Ogio City Spiked Golf Shoes,,149.99,http://images.acmesports.sports/Ogio+City+Spiked+Golf+Shoes, 747,34,Ogio City Spiked Golf Shoes,,149.99,http://images.acmesports.sports/Ogio+City+Spiked+Golf+Shoes, 748,34,Ogio City Turf Golf Shoes,,129.99,http://images.acmesports.sports/Ogio+City+Turf+Golf+Shoes, 749,34,Ogio City Turf Golf Shoes,,129.99,http://images.acmesports.sports/Ogio+City+Turf+Golf+Shoes, 750,34,Ogio City Turf Golf Shoes,,129.99,http://images.acmesports.sports/Ogio+City+Turf+Golf+Shoes, 751,34,Ogio Sport Golf Shoes,,99.99,http://images.acmesports.sports/Ogio+Sport+Golf+Shoes, 752,34,Ogio Sport Golf Shoes,,99.99,http://images.acmesports.sports/Ogio+Sport+Golf+Shoes, 753,34,Ogio Sport Golf Shoes,,99.99,http://images.acmesports.sports/Ogio+Sport+Golf+Shoes, 754,34,TRUE linkswear Lyt Dry Golf Shoes,,149.99,http://images.acmesports.sports/TRUE+linkswear+Lyt+Dry+Golf+Shoes, 755,34,TRUE linkswear Lyt Dry Golf Shoes,,149.99,http://images.acmesports.sports/TRUE+linkswear+Lyt+Dry+Golf+Shoes, 756,34,TRUE linkswear Lyt Dry Golf Shoes,,149.99,http://images.acmesports.sports/TRUE+linkswear+Lyt+Dry+Golf+Shoes, 757,34,TRUE linkswear Vegas Golf Shoes,,99.99,http://images.acmesports.sports/TRUE+linkswear+Vegas+Golf+Shoes, 758,34,TRUE linkswear Vegas Golf Shoes,,99.99,http://images.acmesports.sports/TRUE+linkswear+Vegas+Golf+Shoes, 759,34,Nike Lunarwaverly Golf Shoes,,139.99,http://images.acmesports.sports/Nike+Lunarwaverly+Golf+Shoes, 760,34,Nike Lunarwaverly Golf Shoes,,139.99,http://images.acmesports.sports/Nike+Lunarwaverly+Golf+Shoes, 761,34,Nike Lunarwaverly Golf Shoes,,139.99,http://images.acmesports.sports/Nike+Lunarwaverly+Golf+Shoes, 762,34,Nike Lunarwaverly Golf Shoes,,139.99,http://images.acmesports.sports/Nike+Lunarwaverly+Golf+Shoes, 763,34,PING Golf Shoe Bag,,34.99,http://images.acmesports.sports/PING+Golf+Shoe+Bag, 764,34,Nike Lunar Mount Royal Golf Shoes,,99.99,http://images.acmesports.sports/Nike+Lunar+Mount+Royal+Golf+Shoes))
+
+
+def getTopNPricedProducts(productsIterable: Iterable[String], topN: Int): Iterable[String] = {
+  val productPrices = productsIterable.map(p => p.split(",")(4).toFloat).toSet
+  val topNPrices = productPrices.toList.sortBy(p => -p).take(topN)
+
+  val productsSorted = productsIterable.toList.sortBy(product => -product.split(",")(4).toFloat)
+  val minOfTopNPrices = topNPrices.min
+
+  val topNPricedProducts = productsSorted.takeWhile(product => product.split(",")(4).toFloat >= minOfTopNPrices)
+
+  topNPricedProducts
+}
+
+val productsIterable = productsGroupByCategory.first._2
+scala> productsIterable
+res24: Iterable[String] = CompactBuffer(741,34,FootJoy GreenJoys Golf Shoes,,59.99,http://images.acmesports.sports/FootJoy+GreenJoys+Golf+Shoes, 742,34,FootJoy GreenJoys Golf Shoes,,59.99,http://images.acmesports.sports/FootJoy+GreenJoys+Golf+Shoes, 743,34,Ogio Race Golf Shoes,,169.99,http://images.acmesports.sports/Ogio+Race+Golf+Shoes, 744,34,Ogio Race Golf Shoes,,169.99,http://images.acmesports.sports/Ogio+Race+Golf+Shoes, 745,34,Ogio City Spiked Golf Shoes,,149.99,http://images.acmesports.sports/Ogio+City+Spiked+Golf+Shoes, 746,34,Ogio City Spiked Golf Shoes,,149.99,http://images.acmesports.sports/Ogio+City+Spiked+Golf+Shoes, 747,34,Ogio City Spiked Golf Shoes,,149.99,http://images.acmesports.sports/Ogio+City+Spiked+Golf+Shoes, 748,34,Ogio City Turf Golf Shoes,,129.99,http://images....
+
+
+getTopNPricedProducts(productsIterable, 3).foreach(println)
+743,34,Ogio Race Golf Shoes,,169.99,http://images.acmesports.sports/Ogio+Race+Golf+Shoes
+744,34,Ogio Race Golf Shoes,,169.99,http://images.acmesports.sports/Ogio+Race+Golf+Shoes
+745,34,Ogio City Spiked Golf Shoes,,149.99,http://images.acmesports.sports/Ogio+City+Spiked+Golf+Shoes
+746,34,Ogio City Spiked Golf Shoes,,149.99,http://images.acmesports.sports/Ogio+City+Spiked+Golf+Shoes
+747,34,Ogio City Spiked Golf Shoes,,149.99,http://images.acmesports.sports/Ogio+City+Spiked+Golf+Shoes
+754,34,TRUE linkswear Lyt Dry Golf Shoes,,149.99,http://images.acmesports.sports/TRUE+linkswear+Lyt+Dry+Golf+Shoes
+755,34,TRUE linkswear Lyt Dry Golf Shoes,,149.99,http://images.acmesports.sports/TRUE+linkswear+Lyt+Dry+Golf+Shoes
+756,34,TRUE linkswear Lyt Dry Golf Shoes,,149.99,http://images.acmesports.sports/TRUE+linkswear+Lyt+Dry+Golf+Shoes
+759,34,Nike Lunarwaverly Golf Shoes,,139.99,http://images.acmesports.sports/Nike+Lunarwaverly+Golf+Shoes
+760,34,Nike Lunarwaverly Golf Shoes,,139.99,http://images.acmesports.sports/Nike+Lunarwaverly+Golf+Shoes
+761,34,Nike Lunarwaverly Golf Shoes,,139.99,http://images.acmesports.sports/Nike+Lunarwaverly+Golf+Shoes
+762,34,Nike Lunarwaverly Golf Shoes,,139.99,http://images.acmesports.sports/Nike+Lunarwaverly+Golf+Shoes
+
 
 
