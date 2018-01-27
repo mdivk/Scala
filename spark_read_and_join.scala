@@ -103,6 +103,19 @@ ordersJoin.take(10).foreach(println)
 (53926,(2014-06-30 00:00:00.0,(191,99.99)))
 (51620,(2014-06-13 00:00:00.0,(1004,399.98)))
 
+//if apply some substring to the ordersMap, the result could be neat as below:
+(65722,(2014-05-23,(365,119.98)))
+(65722,(2014-05-23,(730,400.0)))
+(65722,(2014-05-23,(1004,399.98)))
+(65722,(2014-05-23,(627,199.95)))
+(65722,(2014-05-23,(191,199.98)))
+(23776,(2013-12-20,(1073,199.99)))
+(23776,(2013-12-20,(403,129.99)))
+(53926,(2014-06-30,(365,119.98)))
+(53926,(2014-06-30,(191,99.99)))
+(51620,(2014-06-13,(1004,399.98)))
+
+
 Before the join:
 ordersMap.count
 res11: Long = 30455
@@ -113,3 +126,18 @@ res12: Long = 172198
 After the join
 ordersJoin.count
 res8: Long = 75408
+
+//Compute daily revenue
+//ReduceByKey
+//final output: (order_id, (order_date, (order_item_product_id, order_item_subtotal))
+//daily revenue per product_id: (order_date, (order_item_product_id, order_item_subtotal))
+
+val ordersJoinMap = ordersJoin
+val ordersJoinMap = ordersJoin.map(rec => ((rec._2._1, rec._2._2._1), rec._2._2._2))
+ordersJoinMap.take(10).foreach(println)
+ordersJoinMap.count
+//((order_date, order_item_product_id), order_item_subtotal)
+val dailyRevenuePerProductId = ordersJoinMap.
+  reduceByKey((revenue, order_item_subtotal) => revenue + order_item_subtotal)
+dailyRevenuePerProductId.take(10).foreach(println)
+dailyRevenuePerProductId.count
