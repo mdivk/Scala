@@ -110,3 +110,40 @@ val dailyRevenuePerProductJoin = dailyRevenuePerProductIdMap.join(productMap)
 (778,((2014-01-06,24.99),Bag Boy Beverage Holder))
 (778,((2014-04-09,49.98),Bag Boy Beverage Holder))
 
+//Sort the data by date in ascending order and by daily revenue per product in descending order
+//first sort it by date 
+val dailyRevenuePerProductJoinSorted1 = dailyRevenuePerProductIdMap.join(productMap).sortBy(_._2._1)
+(897,((2013-07-25,49.98),Team Golf New England Patriots Putter Grip))
+(835,((2013-07-25,63.98),Bridgestone e6 Straight Distance NFL Carolina))
+(93,((2013-07-25,74.97),Under Armour Men's Tech II T-Shirt))
+(926,((2013-07-25,79.95),Glove It Imperial Golf Towel))
+(924,((2013-07-25,79.95),Glove It Urban Brick Golf Towel))
+(810,((2013-07-25,79.96),Glove It Women's Mod Oval Golf Glove))
+(828,((2013-07-25,95.97),Bridgestone e6 Straight Distance NFL San Dieg))
+(906,((2013-07-25,99.96),Team Golf Tennessee Volunteers Putter Grip))
+(134,((2013-07-25,100.0),Nike Women's Legend V-Neck T-Shirt))
+(725,((2013-07-25,108.0),LIJA Women's Button Golf Dress))
+
+//second, sort it by daily revenue per product in descending order
+val dailyRevenuePerProductJoinSorted2 = dailyRevenuePerProductJoinSorted1.sortBy(_._2._1._2,false)
+(793,((2014-05-23,14.99),Hirzl Women's Hybrid Golf Glove))
+(793,((2014-06-14,14.99),Hirzl Women's Hybrid Golf Glove))
+(793,((2014-06-24,14.99),Hirzl Women's Hybrid Golf Glove))
+(792,((2014-06-24,14.99),Hirzl Men's Hybrid Golf Glove))
+(792,((2014-06-28,14.99),Hirzl Men's Hybrid Golf Glove))
+(792,((2014-06-30,14.99),Hirzl Men's Hybrid Golf Glove))
+(793,((2014-07-02,14.99),Hirzl Women's Hybrid Golf Glove))
+(793,((2014-07-24,14.99),Hirzl Women's Hybrid Golf Glove))
+(775,((2013-08-27,9.99),Clicgear 8.0 Shoe Brush))
+(775,((2013-08-28,9.99),Clicgear 8.0 Shoe Brush))
+(775,((2013-09-08,9.99),Clicgear 8.0 Shoe Brush))
+(775,((2013-10-08,9.99),Clicgear 8.0 Shoe Brush))
+(775,((2013-10-13,9.99),Clicgear 8.0 Shoe Brush))
+(775,((2013-10-30,9.99),Clicgear 8.0 Shoe Brush))
+
+
+
+
+
+
+
