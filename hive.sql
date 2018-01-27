@@ -68,3 +68,4 @@ scala> sqlContext.sql("select * from orders limit 10").show
 |       9|2013-07-25 00:00:...|             5657|PENDING_PAYMENT|
 |      10|2013-07-25 00:00:...|             5648|PENDING_PAYMENT|
 +--------+--------------------+-----------------+---------------+
+
