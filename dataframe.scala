@@ -176,3 +176,63 @@ parquet:
 json:
 3738783 2018-01-26 22:59 /user/paslechoix/orders_json/part-r-00000-8de19f75-4d65-4f4b-9460-a9bbcedd7f3a
 3738556 2018-01-26 22:59 /user/paslechoix/orders_json/part-r-00001-8de19f75-4d65-4f4b-9460-a9bbcedd7f3a
+
+
+
+//DataFrame and registered as temp table
+val ordersRDD = sc.textFile("/public/retail_db/orders")
+val ordersDF = ordersRDD.map(order => {
+  (order.split(",")(0).toInt, order.split(",")(1).dropRight(11).replace("-",""), order.split(",")(2).toInt, order.split(",")(3))
+  }).toDF("order_id", "order_date", "order_customer_id", "order_status")
+
++--------+----------+-----------------+---------------+
+|order_id|order_date|order_customer_id|   order_status|
++--------+----------+-----------------+---------------+
+|       1|  20130725|            11599|         CLOSED|
+|       2|  20130725|              256|PENDING_PAYMENT|
+|       3|  20130725|            12111|       COMPLETE|
+|       4|  20130725|             8827|         CLOSED|
+|       5|  20130725|            11318|       COMPLETE|
++--------+----------+-----------------+---------------+
+
+ordersDF.registerTempTable("orders")
+sqlContext.sql("select order_status, count(1) count_by_status from orders group by order_status").show()
++---------------+---------------+
+|   order_status|count_by_status|
++---------------+---------------+
+|        PENDING|           7610|
+|        ON_HOLD|           3798|
+| PAYMENT_REVIEW|            729|
+|PENDING_PAYMENT|          15030|
+|     PROCESSING|           8275|
+|         CLOSED|           7556|
+|       COMPLETE|          22899|
+|       CANCELED|           1428|
+|SUSPECTED_FRAUD|           1558|
++---------------+---------------+
+
+
+sqlContext.sql("use dgadiraju_retail_db_orc")
+val productsRaw = scala.io.Source.fromFile("/data/retail_db/products/part-00000").getLines.toList
+val productsRDD = sc.parallelize(productsRaw)
+
+val productsMap = productsRDD.map(prd => (prd.split(",")(0).toInt, prd.split(",")(2)))
+
+val productsDF = productsRDD.map(product => {
+  (product.split(",")(0).toInt, product.split(",")(2))
+}).toDF("product_id", "product_name")
+
+productsDF.registerTempTable("products")
+
+sqlContext.sql("select * from products").show(5, truncate=false)
+
++----------+---------------------------------------------+
+|product_id|product_name                                 |
++----------+---------------------------------------------+
+|1         |Quest Q64 10 FT. x 10 FT. Slant Leg Instant U|
+|2         |Under Armour Men's Highlight MC Football Clea|
+|3         |Under Armour Men's Renegade D Mid Football Cl|
+|4         |Under Armour Men's Renegade D Mid Football Cl|
+|5         |Riddell Youth Revolution Speed Custom Footbal|
++----------+---------------------------------------------+
+
