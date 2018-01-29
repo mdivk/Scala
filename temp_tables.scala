@@ -104,3 +104,58 @@ mysql> SELECT o.order_date, p.product_name, sum(oi.order_item_subtotal) daily_re
 | 2013-07-25 00:00:00 | Team Golf Tennessee Volunteers Putter Grip    |         99.95999908447266 |
 | 2013-07-25 00:00:00 | Bridgestone e6 Straight Distance NFL San Dieg |         95.97000122070312 |
 +---------------------+-----------------------------------------------+---------------------------+
+
+
+sqlContext.sql("CREATE DATABASE paslechoix")
+sqlContext.sql("CREATE TABLE paslechoix.daily_revenue (order_date string, product_name string, daily_revenue_per_product float) STORED AS orc")
+
+val daily_revenue_per_product = sqlContext.sql("SELECT o.order_date, p.product_name, sum(oi.order_item_subtotal) daily_revenue_per_product FROM orders o JOIN order_items oi ON o.order_id = oi.order_item_order_id JOIN products p ON p.product_id = oi.order_item_product_id WHERE o.order_status IN ('COMPLETE', 'CLOSED') GROUP BY o.order_date, p.product_name ORDER BY o.order_date, daily_revenue_per_product desc")
+
+daily_revenue_per_product.show(5)
++----------+--------------------+-------------------------+
+|order_date|        product_name|daily_revenue_per_product|
++----------+--------------------+-------------------------+
+|  20130725|Field & Stream Sp...|        5599.720153808594|
+|  20130725|Nike Men's Free 5...|        5099.490051269531|
+|  20130725|Diamondback Women...|        4499.700164794922|
+|  20130725|Perfect Fitness P...|       3359.4401054382324|
+|  20130725|Pelican Sunstream...|        2999.850082397461|
++----------+--------------------+-------------------------+
+
+
+daily_revenue_per_product.insertInto("paslechoix.daily_revenue")
+sqlContext.sql("Select count(1) from paslechoix.daily_revenue")
+|  _c0|
++-----+
+|18240|
+
+sqlContext.sql("Select * from paslechoix.daily_revenue limit 5").show(truncate=false)
+
++----------+---------------------------------------------+-------------------------+
+|order_date|product_name                                 |daily_revenue_per_product|
++----------+---------------------------------------------+-------------------------+
+|20130725  |Field & Stream Sportsman 16 Gun Fire Safe    |5599.72                  |
+|20130725  |Nike Men's Free 5.0+ Running Shoe            |5099.49                  |
+|20130725  |Diamondback Women's Serene Classic Comfort Bi|4499.7                   |
+|20130725  |Perfect Fitness Perfect Rip Deck             |3359.4402                |
+|20130725  |Pelican Sunstream 100 Kayak                  |2999.85                  |
++----------+---------------------------------------------+-------------------------+
+
+//Verify in hive 
+
+
+hive (paslechoix)> desc daily_revenue;
+OK
+order_date              string
+product_name            string
+daily_revenue_per_product       float
+
+hive (paslechoix)> Select * from paslechoix.daily_revenue limit 5;
+OK
+20130725        Field & Stream Sportsman 16 Gun Fire Safe       5599.72
+20130725        Nike Men's Free 5.0+ Running Shoe       		5099.49
+20130725        Diamondback Women's Serene Classic Comfort Bi   4499.7
+20130725        Perfect Fitness Perfect Rip Deck        		3359.4402
+20130725        Pelican Sunstream 100 Kayak     				2999.85
+
+
