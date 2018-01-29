@@ -218,3 +218,39 @@ scala> daily_revenue_per_productDF.filter(daily_revenue_per_productDF("product_n
 |20130726  |Nike Dri-FIT Crew Sock 6 Pack               |110.0                    |
 +----------+--------------------------------------------+-------------------------+
 
+//transform DF back to RDD
+scala> val daily_revenue_per_productRDD = daily_revenue_per_product.rdd
+
+//save the RDD to local file system
+daily_revenue_per_productRDD.saveAsTextFile("file:///home/paslechoix/daily_revenue_per_productRDD/daily_revenue_per_productRDD")
+[paslechoix@gw01 daily_revenue_per_productRDD]$ pwd
+/home/paslechoix/daily_revenue_per_productRDD/daily_revenue_per_productRDD
+[paslechoix@gw01 daily_revenue_per_productRDD]$ ls
+part-00000  part-00015  part-00030  part-00045  part-00060  part-00075  part-00090  part-00105  part-00120  part-00135  part-00150  part-00165  part-00180  part-00195
+part-00001  part-00016  part-00031  part-00046  part-00061  part-00076  part-00091  part-00106  part-00121  part-00136  part-00151  part-00166  part-00181  part-00196
+part-00002  part-00017  part-00032  part-00047  part-00062  part-00077  part-00092  part-00107  part-00122  part-00137  part-00152  part-00167  part-00182  part-00197
+part-00003  part-00018  part-00033  part-00048  part-00063  part-00078  part-00093  part-00108  part-00123  part-00138  part-00153  part-00168  part-00183  part-00198
+part-00004  part-00019  part-00034  part-00049  part-00064  part-00079  part-00094  part-00109  part-00124  part-00139  part-00154  part-00169  part-00184  part-00199
+part-00005  part-00020  part-00035  part-00050  part-00065  part-00080  part-00095  part-00110  part-00125  part-00140  part-00155  part-00170  part-00185  _SUCCESS
+part-00006  part-00021  part-00036  part-00051  part-00066  part-00081  part-00096  part-00111  part-00126  part-00141  part-00156  part-00171  part-00186
+part-00007  part-00022  part-00037  part-00052  part-00067  part-00082  part-00097  part-00112  part-00127  part-00142  part-00157  part-00172  part-00187
+part-00008  part-00023  part-00038  part-00053  part-00068  part-00083  part-00098  part-00113  part-00128  part-00143  part-00158  part-00173  part-00188
+part-00009  part-00024  part-00039  part-00054  part-00069  part-00084  part-00099  part-00114  part-00129  part-00144  part-00159  part-00174  part-00189
+part-00010  part-00025  part-00040  part-00055  part-00070  part-00085  part-00100  part-00115  part-00130  part-00145  part-00160  part-00175  part-00190
+part-00011  part-00026  part-00041  part-00056  part-00071  part-00086  part-00101  part-00116  part-00131  part-00146  part-00161  part-00176  part-00191
+part-00012  part-00027  part-00042  part-00057  part-00072  part-00087  part-00102  part-00117  part-00132  part-00147  part-00162  part-00177  part-00192
+part-00013  part-00028  part-00043  part-00058  part-00073  part-00088  part-00103  part-00118  part-00133  part-00148  part-00163  part-00178  part-00193
+part-00014  part-00029  part-00044  part-00059  part-00074  part-00089  part-00104  part-00119  part-00134  part-00149  part-00164  part-00179  part-00194
+
+[paslechoix@gw01 daily_revenue_per_productRDD]$ tail part-00000
+[20130726,Titleist Pro V1x Golf Balls,287.9400100708008]
+[20130726,adidas Youth Germany Black/Red Away Match Soc,280.0]
+[20130726,Under Armour Men's Compression EV SL Slide,269.939998626709]
+[20130726,Titleist Pro V1x High Numbers Golf Balls,239.9499969482422]
+[20130726,Under Armour Women's Ignite PIP VI Slide,159.9499969482422]
+[20130726,Glove It Women's Imperial Golf Glove,159.9199981689453]
+[20130726,Glove It Women's Mod Oval 3-Zip Carry All Gol,153.93000030517578]
+[20130726,insta-bed Neverflat Air Mattress,149.99000549316406]
+[20130726,Nike Men's Comfort 2 Slide,134.9700050354004]
+[20130726,Bridgestone e6 Straight Distance NFL San Dieg,127.96000099182129]
+
