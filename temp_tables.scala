@@ -109,9 +109,9 @@ mysql> SELECT o.order_date, p.product_name, sum(oi.order_item_subtotal) daily_re
 sqlContext.sql("CREATE DATABASE paslechoix")
 sqlContext.sql("CREATE TABLE paslechoix.daily_revenue (order_date string, product_name string, daily_revenue_per_product float) STORED AS orc")
 
-val daily_revenue_per_product = sqlContext.sql("SELECT o.order_date, p.product_name, sum(oi.order_item_subtotal) daily_revenue_per_product FROM orders o JOIN order_items oi ON o.order_id = oi.order_item_order_id JOIN products p ON p.product_id = oi.order_item_product_id WHERE o.order_status IN ('COMPLETE', 'CLOSED') GROUP BY o.order_date, p.product_name ORDER BY o.order_date, daily_revenue_per_product desc")
+val daily_revenue_per_productDF = sqlContext.sql("SELECT o.order_date, p.product_name, sum(oi.order_item_subtotal) daily_revenue_per_product FROM orders o JOIN order_items oi ON o.order_id = oi.order_item_order_id JOIN products p ON p.product_id = oi.order_item_product_id WHERE o.order_status IN ('COMPLETE', 'CLOSED') GROUP BY o.order_date, p.product_name ORDER BY o.order_date, daily_revenue_per_productDF desc")
 
-daily_revenue_per_product.show(5)
+daily_revenue_per_productDF.show(5)
 +----------+--------------------+-------------------------+
 |order_date|        product_name|daily_revenue_per_product|
 +----------+--------------------+-------------------------+
@@ -123,7 +123,7 @@ daily_revenue_per_product.show(5)
 +----------+--------------------+-------------------------+
 
 
-daily_revenue_per_product.insertInto("paslechoix.daily_revenue")
+daily_revenue_per_productDF.insertInto("paslechoix.daily_revenue")
 sqlContext.sql("Select count(1) from paslechoix.daily_revenue")
 |  _c0|
 +-----+
@@ -158,4 +158,63 @@ OK
 20130725        Perfect Fitness Perfect Rip Deck        		3359.4402
 20130725        Pelican Sunstream 100 Kayak     				2999.85
 
+//save the result to json format onto hdfs 
+scala> daily_revenue_per_productDF.save("/user/paslechoix/daily_revenue_save", "json")
+[paslechoix@gw01 ~]$ hdfs dfs -cat /user/paslechoix/daily_revenue_save/part-r-00191-38f3e6f3-c487-4536-aee3-0329f0572a52
+{"order_date":"20140708","product_name":"Team Golf Texas Longhorns Putter Grip","daily_revenue_per_product":24.989999771118164}
+{"order_date":"20140708","product_name":"Top Flite Women's 2014 XL Hybrid","daily_revenue_per_product":19.989999771118164}
+{"order_date":"20140709","product_name":"Field & Stream Sportsman 16 Gun Fire Safe","daily_revenue_per_product":5599.720153808594}
+{"order_date":"20140709","product_name":"Perfect Fitness Perfect Rip Deck","daily_revenue_per_product":5099.150131225586}
+{"order_date":"20140709","product_name":"Diamondback Women's Serene Classic Comfort Bi","daily_revenue_per_product":4499.700164794922}
+{"order_date":"20140709","product_name":"Nike Men's Free 5.0+ Running Shoe","daily_revenue_per_product":4499.550033569336}
+{"order_date":"20140709","product_name":"Pelican Sunstream 100 Kayak","daily_revenue_per_product":3799.810104370117}
+{"order_date":"20140709","product_name":"Nike Men's CJ Elite 2 TD Football Cleat","daily_revenue_per_product":3509.7301483154297}
+{"order_date":"20140709","product_name":"Nike Men's Dri-FIT Victory Golf Polo","daily_revenue_per_product":3050.0}
+{"order_date":"20140709","product_name":"O'Brien Men's Neoprene Life Vest","daily_revenue_per_product":2498.9999809265137}
+
+//another way to write to hdfs in json format 
+scala> daily_revenue_per_productDF.write.json("/user/paslechoix/daily_revenue_write")
+[paslechoix@gw01 ~]$ hdfs dfs -cat /user/paslechoix/daily_revenue_write/part-r-00199-8eb99f57-8357-4413-b8a5-9716e0712588
+{"order_date":"20140723","product_name":"SOLE E35 Elliptical","daily_revenue_per_product":1999.989990234375}
+{"order_date":"20140723","product_name":"O'Brien Men's Neoprene Life Vest","daily_revenue_per_product":1999.1999816894531}
+{"order_date":"20140723","product_name":"Under Armour Girls' Toddler Spine Surge Runni","daily_revenue_per_product":1959.510009765625}
+{"order_date":"20140723","product_name":"LIJA Women's Eyelet Sleeveless Golf Polo","daily_revenue_per_product":325.0}
+{"order_date":"20140723","product_name":"Titleist Small Wheeled Travel Cover","daily_revenue_per_product":249.99000549316406}
+{"order_date":"20140723","product_name":"adidas Youth Germany Black/Red Away Match Soc","daily_revenue_per_product":210.0}
+{"order_date":"20140723","product_name":"Nike Men's Deutschland Weltmeister Winners Bl","daily_revenue_per_product":120.0}
+
+//select directly from dataframe
+scala> daily_revenue_per_productDF.select("order_date", "product_name", "daily_revenue_per_product").show(10,truncate=false)
++----------+---------------------------------------------+-------------------------+
+|order_date|product_name                                 |daily_revenue_per_product|
++----------+---------------------------------------------+-------------------------+
+|20130725  |Field & Stream Sportsman 16 Gun Fire Safe    |5599.720153808594        |
+|20130725  |Nike Men's Free 5.0+ Running Shoe            |5099.490051269531        |
+|20130725  |Diamondback Women's Serene Classic Comfort Bi|4499.700164794922        |
+|20130725  |Perfect Fitness Perfect Rip Deck             |3359.4401054382324       |
+|20130725  |Pelican Sunstream 100 Kayak                  |2999.850082397461        |
+|20130725  |O'Brien Men's Neoprene Life Vest             |2798.8799781799316       |
+|20130725  |Nike Men's CJ Elite 2 TD Football Cleat      |1949.850082397461        |
+|20130725  |Nike Men's Dri-FIT Victory Golf Polo         |1650.0                   |
+|20130725  |Under Armour Girls' Toddler Spine Surge Runni|1079.7300071716309       |
+|20130725  |Bowflex SelectTech 1090 Dumbbells            |599.989990234375         |
++----------+---------------------------------------------+-------------------------+
+
+
+//apply filter to dataframe 
+scala> daily_revenue_per_productDF.filter(daily_revenue_per_productDF("product_name") like "Nike%").show(10,truncate=false)
++----------+--------------------------------------------+-------------------------+
+|order_date|product_name                                |daily_revenue_per_product|
++----------+--------------------------------------------+-------------------------+
+|20130725  |Nike Men's Free 5.0+ Running Shoe           |5099.490051269531        |
+|20130725  |Nike Men's CJ Elite 2 TD Football Cleat     |1949.850082397461        |
+|20130725  |Nike Men's Dri-FIT Victory Golf Polo        |1650.0                   |
+|20130725  |Nike Men's Kobe IX Elite Low Basketball Shoe|199.99000549316406       |
+|20130725  |Nike Women's Legend V-Neck T-Shirt          |100.0                    |
+|20130726  |Nike Men's Free 5.0+ Running Shoe           |6799.3199462890625       |
+|20130726  |Nike Men's Dri-FIT Victory Golf Polo        |4250.0                   |
+|20130726  |Nike Men's CJ Elite 2 TD Football Cleat     |3249.7501373291016       |
+|20130726  |Nike Men's Comfort 2 Slide                  |134.9700050354004        |
+|20130726  |Nike Dri-FIT Crew Sock 6 Pack               |110.0                    |
++----------+--------------------------------------------+-------------------------+
 
