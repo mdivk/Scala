@@ -162,7 +162,7 @@ round(avg(oi.order_item_subtotal) over (partition by o.order_id), 2) avg_revenue
 from orders o join order_items oi
 on o.order_id = oi.order_item_order_id
 where o.order_status in ('COMPLETE', 'CLOSED')) q
-where order_revenue >= 1000
+where order_revenue >= 1000 and order_id = 57779
 order by order_date, order_revenue desc limit 20;
 
 order_id order_date  order_status	 order_item_subtotal order_revenue pct_revenue avg_revenue
@@ -203,7 +203,94 @@ where o.order_id = 57779;
 |    57779 | 2013-07-25   | COMPLETE     |              299.95 |
 |    57779 | 2013-07-25   | COMPLETE     |              149.94 |
 |    57779 | 2013-07-25   | COMPLETE     |              499.95 |
-+----------+------------+--------------+---------------------+
++----------+--------------+--------------+---------------------+
+
+select o.order_id, date_format(o.order_date, '%Y-%m-%d') order_date, o.order_status, 
+sum(oi.order_item_subtotal) order_revenue,
+oi.order_item_subtotal/sum(oi.order_item_subtotal) pct_revenue,
+sum(oi.order_item_subtotal) / count(1) avg_revenue
+from order_items oi
+inner join orders o on o.order_id = oi.order_item_order_id
+where o.order_id = 57779
+group by order_id, order_item_subtotal;
+
++----------+------------+--------------+--------------------+-------------+--------------------+
+| order_id | order_date | order_status | order_revenue      | pct_revenue | avg_revenue        |
++----------+------------+--------------+--------------------+-------------+--------------------+
+|    57779 | 2013-07-25 | COMPLETE     | 149.94000244140625 |           1 | 149.94000244140625 |
+|    57779 | 2013-07-25 | COMPLETE     | 299.95001220703125 |           1 | 299.95001220703125 |
+|    57779 | 2013-07-25 | COMPLETE     |  299.9800109863281 |           1 |  299.9800109863281 |
+|    57779 | 2013-07-25 | COMPLETE     |  399.9800109863281 |           1 |  399.9800109863281 |
+|    57779 | 2013-07-25 | COMPLETE     | 499.95001220703125 |           1 | 499.95001220703125 |
++----------+------------+--------------+--------------------+-------------+--------------------+
+
+select o.order_id, date_format(o.order_date, '%Y-%m-%d') order_date, o.order_status, 
+sum(oi.order_item_subtotal) order_revenue,
+oi.order_item_subtotal/sum(oi.order_item_subtotal) pct_revenue,
+sum(oi.order_item_subtotal) / count(1) avg_revenue
+from order_items oi
+inner join orders o on o.order_id = oi.order_item_order_id
+where o.order_id = 57779
+group by order_id, order_item_subtotal;
 
 
 
+
+--Ranking using Analytical functions
+select * from (
+select o.order_id, o.order_date, o.order_status, oi.order_item_subtotal, 
+round(sum(oi.order_item_subtotal) over (partition by o.order_id), 2) order_revenue,
+oi.order_item_subtotal/round(sum(oi.order_item_subtotal) over (partition by o.order_id), 2) pct_revenue,
+round(avg(oi.order_item_subtotal) over (partition by o.order_id), 2) avg_revenue,
+rank() over (partition by o.order_id order by oi.order_item_subtotal desc) rnk_revenue,
+dense_rank() over (partition by o.order_id order by oi.order_item_subtotal desc) dense_rnk_revenue,
+percent_rank() over (partition by o.order_id order by oi.order_item_subtotal desc) pct_rnk_revenue,
+row_number() over (partition by o.order_id order by oi.order_item_subtotal desc) rn_orderby_revenue,
+row_number() over (partition by o.order_id) rn_revenue
+from orders o join order_items oi
+on o.order_id = oi.order_item_order_id
+where o.order_status in ('COMPLETE', 'CLOSED')) q
+where order_revenue >= 1000 and order_id in (57779, 12, 28, 62)
+order by order_date, order_revenue desc, rnk_revenue;
+
+order_id order_date  order_status	 order_item_subtotal order_revenue pct_revenue avg_revenue rnk_revenue dense_rnk_revenue pct_rnk_revenue rn_orderby_revenue rn_revenue
+57779   2013-07-25   COMPLETE        499.95  			 1649.8  		0.30     	329.96  	1       	1       		0.0     			1       			5
+57779   2013-07-25   COMPLETE        399.98  			 1649.8  		0.24     	329.96  	2       	2       		0.25    			2       			3
+57779   2013-07-25   COMPLETE        299.98  			 1649.8  		0.18     	329.96  	3       	3       		0.5     			3       			2
+57779   2013-07-25   COMPLETE        299.95  			 1649.8  		0.18     	329.96  	4       	4       		0.75    			4       			4
+57779   2013-07-25   COMPLETE        149.94  			 1649.8  		0.09     	329.96  	5       	5       		1.0     			5       			1
+12      2013-07-25   CLOSED  		 499.95  			 1299.87 		0.38     	259.97  	1       	1       		0.0     			1       			4
+12      2013-07-25   CLOSED  		 299.98  			 1299.87 		0.23     	259.97  	2       	2       		0.25    			2       			1
+12      2013-07-25   CLOSED  		 250.0   			 1299.87 		0.19     	259.97  	3       	3       		0.5     			3       			5
+12      2013-07-25   CLOSED  		 149.94  			 1299.87 		0.11     	259.97  	4       	4       		0.75    			4       			3
+12      2013-07-25   CLOSED  		 100.0   			 1299.87 		0.07     	259.97  	5       	5       		1.0     			5       			2
+28      2013-07-25   COMPLETE        399.96  			 1159.9  		0.34     	231.98  	1       	1       		0.0     			1       			2
+28      2013-07-25   COMPLETE        299.98  			 1159.9  		0.25     	231.98  	2       	2       		0.25    			3       			3
+28      2013-07-25   COMPLETE        299.98  			 1159.9  		0.25     	231.98  	2       	2       		0.25    			2       			1
+28      2013-07-25   COMPLETE        99.99   			 1159.9  		0.08     	231.98  	4       	3       		0.75    			4       			4
+28      2013-07-25   COMPLETE        59.99   			 1159.9  		0.05     	231.98  	5       	4       		1.0     			5       			5
+62      2013-07-25   CLOSED  		 399.98  			 1149.94 		0.34     	287.49  	1       	1       		0.0     			1       			1
+62      2013-07-25   CLOSED  		 399.98  			 1149.94 		0.34     	287.49  	1       	1       		0.0     			2       			2
+62      2013-07-25   CLOSED  		 299.98  			 1149.94 		0.26     	287.49  	3       	2       		0.66    			3       			3
+62      2013-07-25   CLOSED  		 50.0    			 1149.94 		0.04     	287.49  	4       	3       		1.0     			4       			4
+
+
+select * from (
+select o.order_id, date_format(o.order_date, 'YYYYMMDD') order_date, o.order_status, oi.order_item_subtotal, 
+round(sum(oi.order_item_subtotal) over (partition by o.order_id), 2) order_revenue,
+round(oi.order_item_subtotal/round(sum(oi.order_item_subtotal) over (partition by o.order_id), 2),2) pct_revenue,
+round(avg(oi.order_item_subtotal) over (partition by o.order_id), 2) avg_revenue,
+rank() over (partition by o.order_id order by oi.order_item_subtotal desc) rnk_revenue,
+dense_rank() over (partition by o.order_id order by oi.order_item_subtotal desc) dense_rnk_revenue,
+percent_rank() over (partition by o.order_id order by oi.order_item_subtotal desc) pct_rnk_revenue,
+row_number() over (partition by o.order_id order by oi.order_item_subtotal desc) rn_orderby_revenue,
+row_number() over (partition by o.order_id) rn_revenue,
+lead(oi.order_item_subtotal) over (partition by o.order_id order by oi.order_item_subtotal desc) lead_order_item_subtotal,
+lag(oi.order_item_subtotal) over (partition by o.order_id order by oi.order_item_subtotal desc) lag_order_item_subtotal,
+first_value(oi.order_item_subtotal) over (partition by o.order_id order by oi.order_item_subtotal desc) first_order_item_subtotal,
+last_value(oi.order_item_subtotal) over (partition by o.order_id order by oi.order_item_subtotal desc) last_order_item_subtotal
+from orders o join order_items oi
+on o.order_id = oi.order_item_order_id
+where o.order_status in ('COMPLETE', 'CLOSED')) q
+where order_revenue >= 1000 and order_id in (57779, 12, 28, 62)
+order by order_date, order_revenue desc, rnk_revenue;
