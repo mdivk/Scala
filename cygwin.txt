@@ -1,0 +1,6 @@
+cygwin configuration
+1. download and install cygwin 
+2. after installation, do again and search for openssh and inetutils/inetutils-server packages to complete the installation
+3. run cygwin:
+ssh paslechoix@gw01.itversity.com
+
