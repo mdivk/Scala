@@ -52,3 +52,33 @@ mysql> select count(1) from categories where category_id > 22;
 +----------+
 1 row in set (0.00 sec)
 
+3. Import data from catagories table, where catagory between 1 and 22 (Data should be stored in categories_subset_3) 
+
+sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+	--username=retail_user \
+	--password=itversity \
+	--table=categories \
+	--warehouse-dir=categories_subset3 \
+	--where "category_id>1 and category_id <22";
+
+18/01/30 21:57:09 INFO mapreduce.ImportJobBase: Retrieved 20 records.
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls categories_subset3/categories
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-01-30 21:57 categories_subset3/categories/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs         84 2018-01-30 21:57 categories_subset3/categories/part-m-00000
+-rw-r--r--   3 paslechoix hdfs         96 2018-01-30 21:57 categories_subset3/categories/part-m-00001
+-rw-r--r--   3 paslechoix hdfs         99 2018-01-30 21:57 categories_subset3/categories/part-m-00002
+-rw-r--r--   3 paslechoix hdfs         94 2018-01-30 21:57 categories_subset3/categories/part-m-00003
+
+
+mysql> select count(1) from categories where category_id > 1 and category_id <22;
++----------+
+| count(1) |
++----------+
+|       20 |
++----------+
+1 row in set (0.00 sec)
+
+
+	
