@@ -36,11 +36,46 @@ sqoop eval \
 ------------------------
 
 
-3. Import all the tables as avro files in /user/hive/warehouse/retail_cca174.db 
+3. Import all the tables as avro files in /user/hive/warehouse/paslechoix 
+
+sqoop import-all-tables  \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--warehouse-dir=/user/hive/warehouse/paslechoix \
+--as-avrodatafile
+
+hdfs dfs -ls /user/hive/warehouse/paslechoix
+[paslechoix@gw01 ~]$ hdfs dfs -ls /user/hive/warehouse/paslechoix
+Found 4 items
+drwxr-xr-x   - paslechoix hadoopthoughtworks          0 2018-01-31 07:18 /user/hive/warehouse/paslechoix/categories
+drwxr-xr-x   - paslechoix hadoopthoughtworks          0 2018-01-31 07:19 /user/hive/warehouse/paslechoix/customers
+drwxr-xr-x   - paslechoix hadoopthoughtworks          0 2018-01-31 07:19 /user/hive/warehouse/paslechoix/departments
+drwxr-xr-x   - paslechoix hadoopthoughtworks          0 2018-01-31 07:20 /user/hive/warehouse/paslechoix/order_items
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls /user/hive/warehouse/paslechoix/customers
+Found 5 items
+-rw-r--r--   3 paslechoix hadoopthoughtworks          0 2018-01-31 07:19 /user/hive/warehouse/paslechoix/customers/_SUCCESS
+-rw-r--r--   3 paslechoix hadoopthoughtworks     258086 2018-01-31 07:19 /user/hive/warehouse/paslechoix/customers/part-m-00000.avro
+-rw-r--r--   3 paslechoix hadoopthoughtworks     257862 2018-01-31 07:19 /user/hive/warehouse/paslechoix/customers/part-m-00001.avro
+-rw-r--r--   3 paslechoix hadoopthoughtworks     259118 2018-01-31 07:19 /user/hive/warehouse/paslechoix/customers/part-m-00002.avro
+-rw-r--r--   3 paslechoix hadoopthoughtworks     260893 2018-01-31 07:19 /user/hive/warehouse/paslechoix/customers/part-m-00003.avro
 
 
+4. Import departments table as a text tile in /user/hive/warehouse/paslechoix/departments_as_txt.  
+sqoop import  \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--warehouse-dir=/user/hive/warehouse/paslechoix/departments_as_txt \
+--as-textfile
 
-4. Import departments table as a text tile in /user/cloudera/departments. 
-
-
+[paslechoix@gw01 ~]$ hdfs dfs -cat /user/hive/warehouse/paslechoix/departments_as_txt/departments/*
+2,Fitness
+3,Footwear
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
 
