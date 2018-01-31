@@ -1,0 +1,54 @@
+1. Import data from catagories table, where category=22 (Data should be stored in categories_subset) 
+
+sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+	--username=retail_user \
+	--password=itversity \
+	--table=categories \
+	--warehouse-dir=categories_subset \
+	--where "category_id=22";
+
+18/01/30 21:36:24 INFO mapreduce.ImportJobBase: Retrieved 1 records.
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls categories_subset_2/categories                                           Found 2 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-01-30 21:36 categories_subset/categories/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs         17 2018-01-30 21:36 categories_subset/categories/part-m-00000
+[paslechoix@gw01 ~]$ hdfs dfs -cat categories_subset/categories/*
+22,4,Accessories
+
+
+mysql> select * from categories where category_id = 22;
++-------------+------------------------+---------------+
+| category_id | category_department_id | category_name |
++-------------+------------------------+---------------+
+|          22 |                      4 | Accessories   |
++-------------+------------------------+---------------+
+1 row in set (0.00 sec)
+
+	
+2. Import data from categories table, where category>22 (Data should be stored in categories_subset_2) 	
+sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+	--username=retail_user \
+	--password=itversity \
+	--table=categories \
+	--warehouse-dir=categories_subset2 \
+	--where "category_id>22";
+
+18/01/30 21:48:16 INFO mapreduce.ImportJobBase: Retrieved 36 records.
+
+hdfs dfs -ls categories_subset2/categories 	
+[paslechoix@gw01 ~]$ hdfs dfs -ls categories_subset2/categories
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-01-30 21:48 categories_subset2/categories/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs        177 2018-01-30 21:48 categories_subset2/categories/part-m-00000
+-rw-r--r--   3 paslechoix hdfs        161 2018-01-30 21:48 categories_subset2/categories/part-m-00001
+-rw-r--r--   3 paslechoix hdfs        162 2018-01-30 21:48 categories_subset2/categories/part-m-00002
+-rw-r--r--   3 paslechoix hdfs        126 2018-01-30 21:48 categories_subset2/categories/part-m-00003
+	
+mysql> select count(1) from categories where category_id > 22;	
++----------+
+| count(1) |
++----------+
+|       36 |
++----------+
+1 row in set (0.00 sec)
+
