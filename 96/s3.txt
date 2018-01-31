@@ -80,5 +80,63 @@ mysql> select count(1) from categories where category_id > 1 and category_id <22
 +----------+
 1 row in set (0.00 sec)
 
+4. While importing catagories data change the delimiter to 'I' (Data should be stored in categories_subset_6) 
+sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+	--username=retail_user \
+	--password=itversity \
+	--table=categories \
+	--warehouse-dir=categories_subset6 \
+	--fields-terminated-by '|';
+18/01/30 22:02:43 INFO mapreduce.ImportJobBase: Retrieved 58 records.
+[paslechoix@gw01 ~]$ hdfs dfs -cat categories_subset6/categories/*
+1|2|Football
+2|2|Soccer
+3|2|Baseball & Softball
+....
+55|8|International Soccer
+56|8|World Cup Shop
+57|8|MLB Players
+58|8|NFL Players
+
+5. Importing data from catagories table and restrict the import to category_name,category_id columns only with delimiter as '|' 
+
+sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+	--username=retail_user \
+	--password=itversity \
+	--table=categories \
+	--columns category_name,category_id \
+	--warehouse-dir=categories_subset7 \
+	--fields-terminated-by '|';	
+
+[paslechoix@gw01 ~]$ hdfs dfs -cat categories_subset7/categories/*
+Football|1
+Soccer|2
+Baseball & Softball|3
+....
+International Soccer|55
+World Cup Shop|56
+MLB Players|57
+NFL Players|58
+	
+6. Add null values in the table using below SQL statement 
+ALTER TABLE categories modify category_department_id int(11); 
+INSERT INTO categories values(60,null, ‘testing’); 
+
+
+7. Importing data from catagories table (In categories_subset_17 directory) using 'l' delimiter and category_id between 1 and 61 and encode null values for both string and non string columns. 
 
 	
+	
+8. Import entire schema retail_db in a directory categories_subset all tables 
+sqoop import-all-tables \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+	--username=retail_user \
+	--password=itversity \
+	--warehouse-dir=retail_db
+[paslechoix@gw01 ~]$ hdfs dfs -ls retail_db
+Found 7 items
+drwxr-xr-x   - paslechoix hdfs          0 2018-01-30 22:33 retail_db/categories
+drwxr-xr-x   - paslechoix hdfs          0 2018-01-30 22:34 retail_db/customers
+drwxr-xr-x   - paslechoix hdfs          0 2018-01-30 22:34 retail_db/departments
+drwxr-xr-x   - paslechoix hdfs          0 2018-01-16 00:21 retail_db/order_def
+drwxr-xr-x   - paslechoix hdfs          0 2018-01-15 16:58 retail_db/order_items
