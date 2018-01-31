@@ -132,7 +132,20 @@ INSERT INTO categories values(60,null, ‘testing’);
 
 7. Importing data from catagories table (In categories_subset_17 directory) using 'l' delimiter and category_id between 1 and 61 and encode null values for both string and non string columns. 
 
-	
+As I know the category_id is 60 that contains NULL value for testing, so I I just use where "category_id = 60" as the where condition below:
+
+sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_export -m 1 \
+	--username=retail_user \
+	--password=itversity \
+	--table=categories \
+	--warehouse-dir=categories_subset8 \
+	--where "category_id = 60" \
+	--fields-terminated-by '|' \
+	--null-string=’N’ \
+	--null-non-string=’N’ 
+
+[paslechoix@gw01 java_output]$ hdfs dfs -cat categories_subset8/categories/part-m-00000
+60|’N’|testing
 	
 8. Import entire schema retail_db in a directory categories_subset all tables 
 sqoop import-all-tables \

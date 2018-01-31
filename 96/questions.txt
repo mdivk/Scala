@@ -30,3 +30,52 @@ FAILED: IllegalStateException Unxpected Exception thrown: Unable to fetch table 
 
 Can anyone please help me? Thank you very much.
 
+
+Answer:
+sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+	--username=retail_user \
+	--password=itversity \
+	--table=categories \
+	--warehouse-dir=categories_subset8 \
+	--where "category_id = 60" \
+	--fields-terminated-by "|" \
+	--input-null-non-string ='NA' \
+	--input-null-string=0
+
+sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_export -m 1 \
+	--username=retail_user \
+	--password=itversity \
+	--table=categories \
+	--warehouse-dir=categories_subset8 \
+	--where "category_id = 60" \
+	--fields-terminated-by '|' \
+	--null-string=’N’ \
+	--null-non-string=’N’ 
+
+
+Scenario 6:
+sqoop import-all-tables -m 3 \
+--connect "jdbc:mysql://ms.itversity.com:3306/retail_db" \
+--username=retail_user \
+--password=itversity \
+--hive-import \
+--hive-home /apps/hive/warehouse \
+--hive-database paslechoix \
+--create-hive-table \
+--compress \
+--compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+--outdir java_output
+
+[paslechoix@gw01 ~]$ cd java_output/
+[paslechoix@gw01 java_output]$ ls
+categories.java  customers.java  departments.java  order_items.java  order_items_nopk.java
+[paslechoix@gw01 java_output]$ ll
+total 104
+-rw-r--r-- 1 paslechoix students 14122 Jan 31 13:32 categories.java
+-rw-r--r-- 1 paslechoix students 27624 Jan 31 13:35 customers.java
+-rw-r--r-- 1 paslechoix students 11571 Jan 31 13:36 departments.java
+-rw-r--r-- 1 paslechoix students 22553 Jan 31 13:37 order_items.java
+-rw-r--r-- 1 paslechoix students 22643 Jan 31 13:37 order_items_nopk.java
+
+
+Where is the order_items_nopk.java from?

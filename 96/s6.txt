@@ -7,4 +7,55 @@ Compression Codec : org.apache.hadoop.io.compress.snappycodec
 Please accomplish following. 
 1. Import entire database such that it can be used as a hive tables, it must be created in default schema. 
 2. Also make sure each tables file is partitioned in 3 files e.g. part-0000, part-00002, part-00003 
-3. Store all the java tiles in a directory called java_output to evalute the further 
+3. Store all the java files in a directory called java_output to evaluate the further 
+
+1. Clean up previous work
+
+drop table ....
+drop database ....
+
+2. 
+sqoop import-all-tables -m 3 \
+--connect "jdbc:mysql://ms.itversity.com:3306/retail_db" \
+--username=retail_user \
+--password=itversity \
+--hive-import \
+--hive-home /apps/hive/warehouse \
+--hive-database paslechoix \
+--create-hive-table \
+--compress \
+--compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+--outdir java_output
+
+hive (paslechoix)> show tables;
+OK
+categories
+customers
+departments
+order_items
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls /apps/hive/warehouse/paslechoix.db
+Found 4 items
+drwxrwxrwx   - paslechoix hdfs          0 2018-01-31 13:35 /apps/hive/warehouse/paslechoix.db/categories
+drwxrwxrwx   - paslechoix hdfs          0 2018-01-31 13:36 /apps/hive/warehouse/paslechoix.db/customers
+drwxrwxrwx   - paslechoix hdfs          0 2018-01-31 13:37 /apps/hive/warehouse/paslechoix.db/departments
+drwxrwxrwx   - paslechoix hdfs          0 2018-01-31 13:37 /apps/hive/warehouse/paslechoix.db/order_items
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls /apps/hive/warehouse/paslechoix.db/customers
+Found 3 items
+-rwxrwxrwx   3 paslechoix hdfs     137665 2018-01-31 13:36 /apps/hive/warehouse/paslechoix.db/customers/part-m-00000.snappy
+-rwxrwxrwx   3 paslechoix hdfs     137323 2018-01-31 13:36 /apps/hive/warehouse/paslechoix.db/customers/part-m-00001.snappy
+-rwxrwxrwx   3 paslechoix hdfs     137239 2018-01-31 13:36 /apps/hive/warehouse/paslechoix.db/customers/part-m-00002.snappy
+
+[paslechoix@gw01 ~]$ cd java_output/
+[paslechoix@gw01 java_output]$ ls
+categories.java  customers.java  departments.java  order_items.java  order_items_nopk.java
+[paslechoix@gw01 java_output]$ ll
+total 104
+-rw-r--r-- 1 paslechoix students 14122 Jan 31 13:32 categories.java
+-rw-r--r-- 1 paslechoix students 27624 Jan 31 13:35 customers.java
+-rw-r--r-- 1 paslechoix students 11571 Jan 31 13:36 departments.java
+-rw-r--r-- 1 paslechoix students 22553 Jan 31 13:37 order_items.java
+-rw-r--r-- 1 paslechoix students 22643 Jan 31 13:37 order_items_nopk.java
+
+

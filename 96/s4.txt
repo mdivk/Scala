@@ -7,4 +7,15 @@ jdbc URL = jdbc:mysql://quickstart:3306/retail_db
 Please accomplish following activities. 
 Import Single table categories(Subset data) to hive managed table , where category_id between 1 and 22 
 
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=categories \
+--where "category_id between 1 and 22" \
+--target-dir paslechoix \
+--hive-import  
+
+--hive-home paslechoix \
+
 Squoop import --connect jdbc:mysql://quickstart:3306/retail_db –username=retail_dba --password=cloudera --table=categories --where ”\’category_id\’ between 1 and 22” --hive-import --m1
