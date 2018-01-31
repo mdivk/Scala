@@ -1,3 +1,10 @@
+3. Problem Scenario 3: You have been given MySQL DB with following details. 
+user=retail_dba 
+password=cloudera 
+database=retail_db 
+table=retail_db.categories 
+jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
+
 1. Import data from catagories table, where category=22 (Data should be stored in categories_subset) 
 
 sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
@@ -134,7 +141,7 @@ sqoop import-all-tables \
 	--password=itversity \
 	--warehouse-dir=retail_db
 [paslechoix@gw01 ~]$ hdfs dfs -ls retail_db
-Found 7 items
+Found 5 items
 drwxr-xr-x   - paslechoix hdfs          0 2018-01-30 22:33 retail_db/categories
 drwxr-xr-x   - paslechoix hdfs          0 2018-01-30 22:34 retail_db/customers
 drwxr-xr-x   - paslechoix hdfs          0 2018-01-30 22:34 retail_db/departments

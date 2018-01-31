@@ -1,0 +1,32 @@
+Problem Scenario 4: You have been given MySQL DB with following details. 
+user=retail_dba 
+password=cloudera 
+database=retail_db 
+table=retail_db.categories 
+jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
+Please accomplish following activities. 
+Import Single table categories(Subset data) to hive managed table, where category_id between 1 and 22 
+
+So the following is the answer but not clear nor working:
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=categories \
+--where "category_id between 1 and 22" \
+--hive-import  
+
+Unfortunately it is not working with the following error:
+FAILED: IllegalStateException Unxpected Exception thrown: Unable to fetch table categories. org.apache.hadoop.security.AccessControlException: Permission denied: user=paslechoix, access=EXECUTE, inode="/user/narendrareddy/categories":narendrareddy:hdfs:drwx------
+
+
+I thought maybe I need to indicate hive-home?  so I added 
+--hive-home paslechoix
+(paslechoix is my user id on lab)
+
+I removed the created directory on hdfs and run the import again with the new option, I got the same error:
+
+FAILED: IllegalStateException Unxpected Exception thrown: Unable to fetch table categories. org.apache.hadoop.security.AccessControlException: Permission denied: user=paslechoix, access=EXECUTE, inode="/user/narendrareddy/categories":narendrareddy:hdfs:drwx------
+
+Can anyone please help me? Thank you very much.
+
