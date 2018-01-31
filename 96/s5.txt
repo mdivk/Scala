@@ -6,6 +6,41 @@ jdbc URL = jdbc:mysql://quickstart:3306/retail_db
 
 Please accomplish following activities. 
 1. List all the tables using sqoop command from retail_db 
+
+sqoop list-tables \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+
+categories
+customers
+departments
+order_items
+order_items_nopk
+orders
+products
+
+
 2. Write simple sqoop eval command to check whether you have permission to read database tables or not. 
-3. Import all the tables as avro tiles in /user/hive/warehouse/retail_cca174.db 
+
+sqoop eval \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--query "select count(1) from customers"
+
+------------------------
+| count(1)             |
+------------------------
+| 12435                |
+------------------------
+
+
+3. Import all the tables as avro files in /user/hive/warehouse/retail_cca174.db 
+
+
+
 4. Import departments table as a text tile in /user/cloudera/departments. 
+
+
+
