@@ -1,0 +1,42 @@
+Problem Scenario 39 : You have been given two files 
+spark16/file1 .txt 
+spark16/file2.txt 
+1,9,5
+2,7,4
+3,8,3
+Spark16/file2.txt
+1,g,h
+2,I,j
+3,k,l
+Load these two files as Spark RDD and join them to produce the below results 
+(1, ( (9,5), (g,h) )) 
+(2, ( (7,4), (i,j) )) 
+(3, ( (8,3), (k,l) )) 
+And write code snippet which will sum the second columns of above joined results (5+4+3). 
+
+==================================================================================
+Solution : 
+Step 1 : Create files in hdfs using Hue. 
+Step 2 : Create pairRDD tor both the files. 
+val one =sc.textfile(“spark16/file2 .txt").map{ 
+_.split(",", -1) match { 
+case Array(a, b, c) => (a, ( b, c)) 
+}
+}
+
+val two = sc.textFile("spark16/tile2.txt").map{ 
+
+_.split(",", -1) match { 
+
+case Array(a, b, c) => (a, (b, c)) 
+}
+}
+
+step 3 : JOin both the RDD. 
+val joined = one.join(two) 
+
+Step 4 : Sum second column values. 
+val sum = joined.map { 
+case (_, ((_, num2), (_, _))) => num2.tolnt 
+}.reduce(_ + _)
+

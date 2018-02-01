@@ -1,0 +1,25 @@
+Problem Scenario 34 : You have given a tile named spark6/user.csv. 
+Data is given in RHS (Righ hand side). 
+Now write a Spark code in scala which will remove the header part and create ROD of values as below, for all rows. And also if id is "myself" than filter out row.
+
+Map(id 0m, topic scala, hits 120) 
+
+Info : Dell-pc P security Code :1100148121513 
+============================================================================
+Solution : 
+
+Step 1 : Create file in hdfs (We will do using Hue). However, you can first create in local filesystem and then upload it to hdfs. 
+Step 2 : Load user.csv file from hdfs and create PairRDDs 
+val csv = sc.textFile("spark6/user.csv") 
+Step 3 : split and clean data 
+val headerAndRows = csv.map(line => line.split(",").map(_.trim)) 
+Step 4 : Get header row 
+val header = headerAndRows.first 
+Step 5 : Filter out header (We need to check it the first val matches the first header name) 
+val data = headerAndRows.filter(_(O)!= header(O)) 
+Step 6 : Splits to map (header/value pairs) 
+val maps = data.map(splits => header.zip(splits).toMap) 
+Stepn 7 : Filter out the user "myself" 
+val result = maps.filter(map => map("id") "myself") 
+Step 8 : Save the output as a Text file. 
+result.saveAsTextFile("spark6/result.txt") 
