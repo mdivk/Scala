@@ -1,0 +1,18 @@
+10. Problem Scenario  : You have been given following mysql database details as well as other into. 
+
+User=retail=dba 
+password=cloudera 
+database=retail_db 
+jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
+Please accomplish following. 
+1. Create a database named hadoopexam and then create a table named departments in it, with following fields. 
+department_id int, 
+department_name string 
+e.g. location should be hdfs://quickstart.cloudera:8020/user/hive/warehouse/hadoopexam.db/departments 
+2. Please import data in existing table created above from retai_db.departments into hive table hadoopexam.departments. 
+3. Please import data in a non-existing table, means while importing create hive table named hadoopexam.departments_new 
+
+
+create database hadoopexam;
+create table departments(department_id int, department_name string)
+with location=

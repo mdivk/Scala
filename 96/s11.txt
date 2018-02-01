@@ -1,0 +1,14 @@
+Problem Scenario 11 :  You have been given following mysql database details as well as other info.
+user=retail_dba 
+password=cloudera 
+database=retail_db 
+jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
+Please accomplish following. 
+1. Import departments table in a directory called departments. 
+2. Once import is done, please isert following 5 records in departments mysql table. 
+Insert into departments(10, physics); 
+Insert into departments(11, Chemistry); 
+Insert into departments(12, Maths); 
+Insert into departments(13, Science); 
+Insert into departments(14, Engineering); 
+3. Now import only new inserted records and append to existring directory , which has been created in first step. 
