@@ -244,12 +244,5 @@ Note: Recompile with -Xlint:deprecation for details.
 
 Thank you very much.
 
-
-
-
-
-
-hdfs dfs -rm -R /apps/hive/warehouse/paslechoix.db
-
-ssh paslechoix@gw01.itversity.com:/home/paslechoix/java_output /cygdrive/c/Users/RXIE
-
+s12:
+what's the difference between "incremental append" and "append" in sqoop import
