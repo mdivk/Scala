@@ -4,6 +4,13 @@ password=cloudera
 database=retail db 
 jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
 Please accomplish following. 
-1.Import department tables using your custome boundary query, which import departments between 1 to 25. 
-2. Also make sure each tables tile is partitioned in 2 tiles e.g. part-0000, part-00002 
-3. Also make sure you have imported only two columns trom table, which are department_id,department_name 
+1. Import department tables using your custome boundary query, which import departments between 1 to 25. 
+2. Also make sure each tables tile is partitioned in 2 tiles e.g. part-00001, part-00002 
+3. Also make sure you have imported only two columns from table, which are department_id,department_name 
+
+sqoop import -m 2 --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--columns=department_id,department_name \
+--where="department_id between 1 and 25" 
