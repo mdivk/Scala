@@ -246,3 +246,24 @@ Thank you very much.
 
 s12:
 what's the difference between "incremental append" and "append" in sqoop import
+
+
+s16:
+I need to do an import from mysql table departments to hive table departments_hive, here is the script:
+
+sqoop import 
+–connect jdbc:mysql://ms.itversity.com:3306/retail_db 
+–username=retail_user 
+–password=itversity 
+–table=departments 
+–hive-import 
+–hive-table departments_hive
+
+I got the following error:
+18/02/01 15:54:24 ERROR tool.ImportTool: Encountered IOException running import job: org.apache.hadoop.mapred.FileAlreadyExistsException: Output directory hdfs://nn01.itversity.com:8020/user/paslechoix/departments already exists
+
+So it seems the command is trying to output to hdfs instead of hive despite I have the hive options.
+
+What am I missing or wrong here?
+
+Thank you very much.
