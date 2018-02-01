@@ -1,0 +1,9 @@
+Problem Scenario 7 : You have been given following mysql database details as well as other info. 
+User=retail_dba 
+password=cloudera 
+database=retail db 
+jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
+Please accomplish following. 
+1.Import department tables using your custome boundary query, which import departments between 1 to 25. 
+2. Also make sure each tables tile is partitioned in 2 tiles e.g. part-0000, part-00002 
+3. Also make sure you have imported only two columns trom table, which are department_id,department_name 

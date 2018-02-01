@@ -54,6 +54,26 @@ sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_export -m 1 \
 
 
 Scenario 6:
+
+In a practice I ran the following script:
+mysql> show tables;
++---------------------+
+| Tables_in_retail_db |
++---------------------+
+| categories          |
+| customers           |
+| departments         |
+| order_items         |
+| order_items_nopk    |
+| orders              |
+| products            |
++---------------------+
+7 rows in set (0.00 sec)
+
+mysql>
+
+By running the following sqoop import-all-tables, presumably I should have all the 7 tables imported to hive:
+
 sqoop import-all-tables -m 3 \
 --connect "jdbc:mysql://ms.itversity.com:3306/retail_db" \
 --username=retail_user \
@@ -66,6 +86,18 @@ sqoop import-all-tables -m 3 \
 --compression-codec org.apache.hadoop.io.compress.SnappyCodec \
 --outdir java_output
 
+However, here is what I got on hive:
+hive (paslechoix)> show tables;
+OK
+categories
+customers
+departments
+order_items
+Time taken: 0.053 seconds, Fetched: 4 row(s)
+hive (paslechoix)>
+
+In the host the jave folder is generated:
+
 [paslechoix@gw01 ~]$ cd java_output/
 [paslechoix@gw01 java_output]$ ls
 categories.java  customers.java  departments.java  order_items.java  order_items_nopk.java
@@ -77,5 +109,147 @@ total 104
 -rw-r--r-- 1 paslechoix students 22553 Jan 31 13:37 order_items.java
 -rw-r--r-- 1 paslechoix students 22643 Jan 31 13:37 order_items_nopk.java
 
+Why there are two tables missing?
 
-Where is the order_items_nopk.java from?
+Here are the full screen output:
+[paslechoix@gw01 ~]$ sqoop import-all-tables -m 3 \
+> --connect "jdbc:mysql://ms.itversity.com:3306/retail_db" \
+> --username=retail_user \
+> --password=itversity \
+> --hive-import \
+> --hive-home /apps/hive/warehouse \
+> --hive-database paslechoix \
+> --create-hive-table \
+> --compress \
+> --compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+> --outdir java_output
+Warning: /usr/hdp/2.5.0.0-1245/accumulo does not exist! Accumulo imports will fail.
+Please set $ACCUMULO_HOME to the root of your Accumulo installation.
+18/01/31 14:51:36 INFO sqoop.Sqoop: Running Sqoop version: 1.4.6.2.5.0.0-1245
+18/01/31 14:51:36 WARN tool.BaseSqoopTool: Setting your password on the command-line is insecure. Consider using -P instead.
+18/01/31 14:51:36 INFO tool.BaseSqoopTool: Using Hive-specific delimiters for output. You can override
+18/01/31 14:51:36 INFO tool.BaseSqoopTool: delimiters with --fields-terminated-by, etc.
+18/01/31 14:51:36 INFO manager.MySQLManager: Preparing to use a MySQL streaming resultset.
+18/01/31 14:51:36 INFO tool.CodeGenTool: Beginning code generation
+18/01/31 14:51:36 INFO manager.SqlManager: Executing SQL statement: SELECT t.* FROM `categories` AS t LIMIT 1
+18/01/31 14:51:37 INFO manager.SqlManager: Executing SQL statement: SELECT t.* FROM `categories` AS t LIMIT 1
+18/01/31 14:51:37 INFO orm.CompilationManager: HADOOP_MAPRED_HOME is /usr/hdp/2.5.0.0-1245/hadoop-mapreduce
+Note: /tmp/sqoop-paslechoix/compile/ced5124bd0243077baf3b8bbb2683033/categories.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+18/01/31 14:51:38 INFO orm.CompilationManager: Writing jar file: /tmp/sqoop-paslechoix/compile/ced5124bd0243077baf3b8bbb2683033/categories.jar
+18/01/31 14:51:38 WARN manager.MySQLManager: It looks like you are importing from mysql.
+18/01/31 14:51:38 WARN manager.MySQLManager: This transfer can be faster! Use the --direct
+18/01/31 14:51:38 WARN manager.MySQLManager: option to exercise a MySQL-specific fast path.
+18/01/31 14:51:38 INFO manager.MySQLManager: Setting zero DATETIME behavior to convertToNull (mysql)
+18/01/31 14:51:38 INFO mapreduce.ImportJobBase: Beginning import of categories
+18/01/31 14:51:40 INFO impl.TimelineClientImpl: Timeline service address: http://rm01.itversity.com:8188/ws/v1/timeline/
+18/01/31 14:51:40 INFO client.RMProxy: Connecting to ResourceManager at rm01.itversity.com/172.16.1.106:8050
+18/01/31 14:51:40 INFO client.AHSProxy: Connecting to Application History server at rm01.itversity.com/172.16.1.106:10200
+18/01/31 14:51:56 INFO db.DBInputFormat: Using read commited transaction isolation
+18/01/31 14:51:56 INFO db.DataDrivenDBInputFormat: BoundingValsQuery: SELECT MIN(`category_id`), MAX(`category_id`) FROM `categories`
+18/01/31 14:51:56 INFO db.IntegerSplitter: Split size: 19; Num splits: 3 from: 1 to: 58
+18/01/31 14:51:56 INFO mapreduce.JobSubmitter: number of splits:3
+18/01/31 14:51:59 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1517228278761_1318
+18/01/31 14:51:59 INFO impl.YarnClientImpl: Submitted application application_1517228278761_1318
+18/01/31 14:51:59 INFO mapreduce.Job: The url to track the job: http://rm01.itversity.com:8088/proxy/application_1517228278761_1318/
+18/01/31 14:51:59 INFO mapreduce.Job: Running job: job_1517228278761_1318
+18/01/31 14:52:06 INFO mapreduce.Job: Job job_1517228278761_1318 running in uber mode : false
+18/01/31 14:52:06 INFO mapreduce.Job:  map 0% reduce 0%
+18/01/31 14:52:12 INFO mapreduce.Job:  map 33% reduce 0%
+18/01/31 14:52:13 INFO mapreduce.Job:  map 100% reduce 0%
+18/01/31 14:52:14 INFO mapreduce.Job: Job job_1517228278761_1318 completed successfully
+18/01/31 14:52:14 INFO mapreduce.Job: Counters: 30
+        File System Counters
+                FILE: Number of bytes read=0
+                FILE: Number of bytes written=479997
+                FILE: Number of read operations=0
+                FILE: Number of large read operations=0
+                FILE: Number of write operations=0
+                HDFS: Number of bytes read=354
+                HDFS: Number of bytes written=962
+                HDFS: Number of read operations=12
+                HDFS: Number of large read operations=0
+                HDFS: Number of write operations=6
+        Job Counters
+                Launched map tasks=3
+                Other local map tasks=3
+                Total time spent by all maps in occupied slots (ms)=18020
+                Total time spent by all reduces in occupied slots (ms)=0
+                Total time spent by all map tasks (ms)=9010
+                Total vcore-milliseconds taken by all map tasks=9010
+                Total megabyte-milliseconds taken by all map tasks=18452480
+        Map-Reduce Framework
+                Map input records=58
+                Map output records=58
+                Input split bytes=354
+                Spilled Records=0
+                Failed Shuffles=0
+                Merged Map outputs=0
+                GC time elapsed (ms)=141
+                CPU time spent (ms)=3470
+                Physical memory (bytes) snapshot=720773120
+                Virtual memory (bytes) snapshot=11169325056
+                Total committed heap usage (bytes)=661651456
+        File Input Format Counters
+                Bytes Read=0
+        File Output Format Counters
+                Bytes Written=962
+18/01/31 14:52:14 INFO mapreduce.ImportJobBase: Transferred 962 bytes in 34.6498 seconds (27.7635 bytes/sec)
+18/01/31 14:52:14 INFO mapreduce.ImportJobBase: Retrieved 58 records.
+18/01/31 14:52:14 INFO mapreduce.ImportJobBase: Publishing Hive/Hcat import job data to Listeners
+18/01/31 14:52:14 INFO manager.SqlManager: Executing SQL statement: SELECT t.* FROM `categories` AS t LIMIT 1
+18/01/31 14:52:14 INFO hive.HiveImport: Loading uploaded data into Hive
+
+Logging initialized using configuration in jar:file:/usr/hdp/2.5.0.0-1245/hive/lib/hive-common-1.2.1000.2.                                                                                              5.0.0-1245.jar!/hive-log4j.properties
+OK
+Time taken: 2.14 seconds
+Loading data to table paslechoix.categories
+Table paslechoix.categories stats: [numFiles=3, numRows=0, totalSize=962, rawDataSize=0]
+OK
+Time taken: 0.578 seconds
+Note: /tmp/sqoop-paslechoix/compile/ced5124bd0243077baf3b8bbb2683033/customers.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+Logging initialized using configuration in jar:file:/usr/hdp/2.5.0.0-1245/hive/lib/hive-common-1.2.1000.2.                                                                                              5.0.0-1245.jar!/hive-log4j.properties
+OK
+Time taken: 0.246 seconds
+Loading data to table paslechoix.customers
+Table paslechoix.customers stats: [numFiles=3, numRows=0, totalSize=412227, rawDataSize=0]
+OK
+Time taken: 0.368 seconds
+Note: /tmp/sqoop-paslechoix/compile/ced5124bd0243077baf3b8bbb2683033/departments.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+Logging initialized using configuration in jar:file:/usr/hdp/2.5.0.0-1245/hive/lib/hive-common-1.2.1000.2.                                                                                              5.0.0-1245.jar!/hive-log4j.properties
+OK
+Time taken: 0.614 seconds
+Loading data to table paslechoix.departments
+Table paslechoix.departments stats: [numFiles=3, numRows=0, totalSize=90, rawDataSize=0]
+OK
+Time taken: 0.525 seconds
+Note: /tmp/sqoop-paslechoix/compile/ced5124bd0243077baf3b8bbb2683033/order_items.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+Logging initialized using configuration in jar:file:/usr/hdp/2.5.0.0-1245/hive/lib/hive-common-1.2.1000.2.                                                                                              5.0.0-1245.jar!/hive-log4j.properties
+OK
+Time taken: 0.276 seconds
+Loading data to table paslechoix.order_items
+Table paslechoix.order_items stats: [numFiles=3, numRows=0, totalSize=1828703, rawDataSize=0]
+OK
+Time taken: 0.364 seconds
+Note: /tmp/sqoop-paslechoix/compile/ced5124bd0243077baf3b8bbb2683033/order_items_nopk.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+[paslechoix@gw01 ~]$ 
+
+
+Thank you very much.
+
+
+
+
+
+
+hdfs dfs -rm -R /apps/hive/warehouse/paslechoix.db
+
+ssh paslechoix@gw01.itversity.com:/home/paslechoix/java_output /cygdrive/c/Users/RXIE
+
