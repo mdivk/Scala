@@ -1,0 +1,59 @@
+13. Problem Scenario 13 : You have been given following mysql database details as well as other info. 
+user=retail_dba 
+password=cloudera 
+database=retail_db 
+jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
+Please accomplish following. 
+1. Create a table in retail_db with following definition. 
+CREATE table departments_export (department_id int(11), department_name varchar(45), created_date TIMESTAMP DEFAULT NOW()); 
+
+mysql> CREATE table departments_export (department_id int(11), department_name varchar(45), created_date TIMESTAMP DEFAULT NOW());
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from departments_export;
+Empty set (0.00 sec)
+
+
+2. Now import the data from following directory into departments_export table. 
+/user/cloudera/departments_new 
+
+sqoop export \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table departments_export \
+--export-dir departments_new 
+
+
+mysql> select * from departments_export;
++---------------+--------------------+---------------------+
+| department_id | department_name    | created_date        |
++---------------+--------------------+---------------------+
+|           111 | Mechanical         | 2018-01-31 22:32:49 |
+|           112 | Automobile         | 2018-01-31 22:32:49 |
+|           113 | Pharma             | 2018-01-31 22:32:49 |
+|           114 | social engineering | 2018-01-31 22:32:52 |
+|           111 | Mechanical         | 2018-01-31 22:32:49 |
+|           112 | Automobile         | 2018-01-31 22:32:49 |
+|           113 | Pharma             | 2018-01-31 22:32:49 |
+|           114 | social engineering | 2018-01-31 22:32:52 |
+|            10 | physicss           | 2018-01-31 22:24:18 |
+|            11 | chemistry          | 2018-01-31 22:24:18 |
+|            12 | math               | 2018-01-31 22:24:18 |
+|            13 | science            | 2018-01-31 22:24:18 |
+|            14 | engineering        | 2018-01-31 22:24:18 |
+|           110 | Civil              | 2018-01-31 22:32:41 |
+|            10 | physicss           | 2018-01-31 22:24:18 |
+|            11 | chemistry          | 2018-01-31 22:24:18 |
+|            12 | math               | 2018-01-31 22:24:18 |
+|            13 | science            | 2018-01-31 22:24:18 |
+|            14 | engineering        | 2018-01-31 22:24:18 |
+|            10 | physicss           | 2018-01-31 22:24:18 |
+|            11 | chemistry          | 2018-01-31 22:24:18 |
+|            12 | math               | 2018-01-31 22:24:18 |
+|            13 | science            | 2018-01-31 22:24:18 |
+|            14 | engineering        | 2018-01-31 22:24:18 |
+|           110 | Civil              | 2018-01-31 22:32:41 |
++---------------+--------------------+---------------------+
+25 rows in set (0.00 sec)
+
