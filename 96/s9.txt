@@ -6,4 +6,56 @@ jdbc URL = jdbc:mysql://quickstart:3306/retail_db
 Please accomplish following. 
 1. Import departments table in a directory. 
 2. Again import departments table same directory (However, directory already exist hence it should not overrride and append the results) 
-3. Also make sure your results fields are terminated by 'l' and lines terminated by '\n'. 
+3. Also make sure your results fields are terminated by '|' and lines terminated by '\n'. 
+
+Before the import:
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments
+Found 3 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-01-31 22:28 departments/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs         31 2018-01-31 22:28 departments/part-m-00000
+-rw-r--r--   3 paslechoix hdfs         29 2018-01-31 22:28 departments/part-m-00001
+[paslechoix@gw01 ~]$ hdfs dfs -cat departments/*
+2,Fitness
+3,Footwear
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
+[paslechoix@gw01 ~]$
+
+sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--columns=department_id,department_name \
+--append \
+--where="department_id between 1 and 25"  \
+--fields-terminated-by '|' \
+--lines-terminated-by '\n'
+
+After import:
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments
+Found 7 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-01-31 22:28 departments/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs         31 2018-01-31 22:28 departments/part-m-00000
+-rw-r--r--   3 paslechoix hdfs         29 2018-01-31 22:28 departments/part-m-00001
+-rw-r--r--   3 paslechoix hdfs         21 2018-01-31 22:41 departments/part-m-00002
+-rw-r--r--   3 paslechoix hdfs         10 2018-01-31 22:41 departments/part-m-00003
+-rw-r--r--   3 paslechoix hdfs          7 2018-01-31 22:41 departments/part-m-00004
+-rw-r--r--   3 paslechoix hdfs         22 2018-01-31 22:41 departments/part-m-00005
+
+[paslechoix@gw01 ~]$ hdfs dfs -cat departments/*
+2,Fitness
+3,Footwear
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
+2|Fitness
+3|Footwear
+4|Apparel
+5|Golf
+6|Outdoors
+7|Fan Shop
+
+
