@@ -4,7 +4,7 @@ password=cloudera
 database=retail_ db 
 jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
 Please accomplish following. 
-1. Create a table in retail_db with following definition. 
+1. Create a table in retail_export with following definition. 
 
 CREATE table departments_new (department_id int(11), department_name varchar(45), created_date  TIMESTAMP DEFAULT NOW());
 
@@ -38,10 +38,125 @@ mysql> select * from departments_new;
 5 rows in set (0.00 sec)
  
 3. Now import data from departments_new table to hdfs. 
+
+sqoop import \
+--connect="jdbc:mysql://ms.itversity.com/retail_export" \
+--username=retail_user \
+--password=itversity \
+--table=departments_new \
+-m 1
+
+18/01/31 23:32:35 INFO mapreduce.ImportJobBase: Retrieved 5 records.
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments_new
+Found 2 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-01-31 23:32 departments_new/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs        169 2018-01-31 23:32 departments_new/part-m-00000
+
+[paslechoix@gw01 ~]$ hdfs dfs -cat departments_new/*
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+
+
 4. Insert following 5 records in departments_new table. 
-Insert into departments _ new values(110, "Civil" , null); 
-Insert into departments _ new values(111, "Mechanical" , null); 
-Insert into departments _ new values(112, "Automobile" , null); 
-Insert into departments _ new values(113, "Pharma" , null); 
-Insert into departments _ new values(114, "social engineering" , null);
+Insert into departments_new values(110, "Civil" , null); 
+Insert into departments_new values(111, "Mechanical" , null); 
+Insert into departments_new values(112, "Automobile" , null); 
+Insert into departments_new values(113, "Pharma" , null); 
+Insert into departments_new values(114, "social engineering" , null);
+
+mysql> select * from departments_new;
++---------------+--------------------+---------------------+
+| department_id | department_name    | created_date        |
++---------------+--------------------+---------------------+
+|            10 | physicss           | 2018-01-31 22:24:18 |
+|            11 | chemistry          | 2018-01-31 22:24:18 |
+|            12 | math               | 2018-01-31 22:24:18 |
+|            13 | science            | 2018-01-31 22:24:18 |
+|            14 | engineering        | 2018-01-31 22:24:18 |
+|           110 | Civil              | 2018-01-31 22:32:41 |
+|           111 | Mechanical         | 2018-01-31 22:32:49 |
+|           112 | Automobile         | 2018-01-31 22:32:49 |
+|           113 | Pharma             | 2018-01-31 22:32:49 |
+|           114 | social engineering | 2018-01-31 22:32:52 |
++---------------+--------------------+---------------------+
+
+
 5. Now do the incremental import based on created_date column. 
+sqoop import -m 1 \
+--connect="jdbc:mysql://ms.itversity.com/retail_export" \
+--username=retail_user \
+--password=itversity \
+--table=departments_new \
+--check-column "department_id" \
+--incremental append 
+
+ following this import, supply the following arguments:
+18/01/31 23:40:44 INFO tool.ImportTool:  --incremental append
+18/01/31 23:40:44 INFO tool.ImportTool:   --check-column department_id
+18/01/31 23:40:44 INFO tool.ImportTool:   --last-value 114
+18/01/31 23:40:44 INFO tool.ImportTool: (Consider saving this with 'sqoop job --create')
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments_new
+Found 3 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-01-31 23:32 departments_new/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs        169 2018-01-31 23:32 departments_new/part-m-00000
+-rw-r--r--   3 paslechoix hdfs        353 2018-01-31 23:40 departments_new/part-m-00001
+[paslechoix@gw01 ~]$ hdfs dfs -cat departments_new/*
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+110,Civil,2018-01-31 22:32:41.0
+111,Mechanical,2018-01-31 22:32:49.0
+112,Automobile,2018-01-31 22:32:49.0
+113,Pharma,2018-01-31 22:32:49.0
+114,social engineering,2018-01-31 22:32:52.0
+
+sqoop import -m 1 \
+--connect="jdbc:mysql://ms.itversity.com/retail_export" \
+--username=retail_user \
+--password=itversity \
+--table=departments_new \
+--append 
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments_new
+Found 4 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-01-31 23:32 departments_new/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs        169 2018-01-31 23:32 departments_new/part-m-00000
+-rw-r--r--   3 paslechoix hdfs        353 2018-01-31 23:40 departments_new/part-m-00001
+-rw-r--r--   3 paslechoix hdfs        353 2018-01-31 23:43 departments_new/part-m-00002
+[paslechoix@gw01 ~]$ hdfs dfs -cat departments_new/*
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+110,Civil,2018-01-31 22:32:41.0
+111,Mechanical,2018-01-31 22:32:49.0
+112,Automobile,2018-01-31 22:32:49.0
+113,Pharma,2018-01-31 22:32:49.0
+114,social engineering,2018-01-31 22:32:52.0
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+110,Civil,2018-01-31 22:32:41.0
+111,Mechanical,2018-01-31 22:32:49.0
+112,Automobile,2018-01-31 22:32:49.0
+113,Pharma,2018-01-31 22:32:49.0
+114,social engineering,2018-01-31 22:32:52.0
+
