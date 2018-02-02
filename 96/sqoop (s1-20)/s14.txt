@@ -13,6 +13,23 @@ Please accomplish following activities.
 14,engineering 
 1000,management 
 
+
+RXIE@RXIE-SERVER /cygdrive/c/RXIE/Learning/Scala/cca175/96
+$ vi updated_departments.csv
+
+RXIE@RXIE-SERVER /cygdrive/c/RXIE/Learning/Scala/cca175/96
+$ cat updated_departments.csv
+2,fitness
+3,footwear
+12,fathematics
+13,fcience
+14,engineering
+1000,management
+
+
 2. Upload this csv file to hdfs filesystem, 
+[paslechoix@gw01 ~]$ hdfs dfs -mkdir updated_departments
+
+hdfs dfs -put updated_departments.csv updated_departments/ 
 3. Now export this data from hdfs to mysql retail_db.departments table. During upload make sure existing department will just updated and new departments needs to be inserted.
 4. Now update updated_departments.csv file with below content. 
