@@ -2,7 +2,7 @@
 This repository contains useful information for cca175 preparation, credits to https://www.udemy.com/user/it-versity/,
 some changes made to allow the codes working with the data.
 
-repository structure:
+Repository structure:
 
 96: contains questions and answers for the 96 scenarios
 
