@@ -246,3 +246,31 @@ Thank you very much.
 
 s12:
 what's the difference between "incremental append" and "append" in sqoop import
+
+s14: copy file from local to hdfs fails
+RXIE@RXIE-SERVER /cygdrive/c/RXIE/Learning/Scala/cca175/96
+$ cat /cygdrive/c/RXIE/Learning/Scala/cca175/96/updated_departments.csv
+2,fitness
+3,footwear
+12,fathematics
+13,fcience
+14,engineering
+1000,management
+
+RXIE@RXIE-SERVER /cygdrive/c/RXIE/Learning/Scala/cca175/96
+$ ssh paslechoix@gw01.itversity.com
+Last login: Thu Feb  1 06:54:24 2018 from 174.88.190.123
+CentOS Linux release 7.2.1511 (Core)
+
+Linux gw01.itversity.com 3.14.32-xxxx-grs-ipv6-64 #9 SMP Thu Oct 20 14:53:52 CEST 2016 x86_64 x86_64 x86_64 GNU/Linux
+
+server    : 266639
+hostname  : gw01.itversity.com
+eth0 IPv4 : 149.56.24.210
+eth0 IPv6 : 2607:5300:61:9d2::/64
+
+[paslechoix@gw01 ~]$ hdfs dfs -put /cygdrive/c/RXIE/Learning/Scala/cca175/96/updated_departments.csv updated_departments
+put: `/cygdrive/c/RXIE/Learning/Scala/cca175/96/updated_departments.csv': No such file or directory
+[paslechoix@gw01 ~]$
+
+
