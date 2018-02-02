@@ -5,10 +5,12 @@ database=retail_db
 jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
 Please accomplish below assignment.
 
-1. Create a table in hive as below. create table departments_hive(department_id int, department_name string); 2. Now import data from mysql table departments to this hive table. Please make sure that data should be visible using below hive command. select • from departments_hive
+1. Create a table in hive as below. create table departments_hive(department_id int, department_name string); 
+
+2. Now import data from mysql table departments to this hive table. Please make sure that data should be visible using below hive command. select * from departments_hive
 
 hive
-create table departments_hive(department_id int, department_name string)
+create table departments_hive(department_id int, department_name string);
 
 sqoop import \
 --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
@@ -18,3 +20,25 @@ sqoop import \
 --hive-import \
 --hive-table departments_hive
 
+Output directory hdfs://nn01.itversity.com:8020/user/paslechoix/departments already exists
+
+It seems to indicate that the mysql data needs to use hdfs://nn01.itversity.com:8020/user/paslechoix/departments as a staging folder before it can be loaded into hive table
+
+[paslechoix@gw01 ~]$ hdfs dfs -rm -R /user/paslechoix/departments  
+
+Run the import again, succeed!
+
+hive (default)> select * from default.departments_hive;
+OK
+2       Fitness
+3       Footwear
+2       Fitness
+3       Footwear
+4       Apparel
+4       Apparel
+5       Golf
+5       Golf
+6       Outdoors
+7       Fan Shop
+6       Outdoors
+7       Fan Shop
