@@ -1,0 +1,35 @@
+Problem Scenario 30 : You have been given three csv files in hdfs as below. 
+EmployeeName.csv with the field (id, name) 
+EmployeeManager.csv (id, managerName) 
+Employeesalary.csv (id, Salary) 
+using Spark and its API you have to generate a joined output as below and save as a text file (Separated by comma) tor final distribution and output must be sorted by id.
+Id,name,salary,managerName 
+==================================================================================
+Solution : 
+
+Step 1 : Create all three files in hdfs in directory called spark1(We will do using Hue). However, you can first create in local filesystem and then upload it to hdfs.
+Step 2 : Load EmployeeManager.csv file from hdfs and create PairRDDs 
+val manager = sc.textFile("spark1/EmployeeManager.csv") 
+val managerPairRDD = manager.map(x=> (x.split(" ,”)(0),x.split(“,”)(1)))
+
+Step 3 : Load EmployeeName.csv file from hdfs and create PairRDDs 
+val name = sc.textFile("spark1/EmployeeName.csv") 
+val namePairRDD = name.map(x=> (x.split(",")(O),x.split(",”)(1))) 
+
+Step 4 : Load Employeesalary.csv file from hdfs and create PairRDDs 
+val salary = sc.textFile("spark1/EmployeeSalary.csv") 
+val salaryPairRDD = salary.map(x=> (x.split(",")(O),x.split(",”)(1)))
+ 
+
+step 4 : Join all pairRDDS 
+val joined = namePairRDD.join(salaryPairRDD).join(managerPairRDD) 
+
+Step 5 : Now sort the joined results. 
+val joinedData = joined.sortByKey() 
+
+Step 6 : Now generate comma separated data. 
+val finalData = joinedData.map(v=> (v._1, v._2._1._1,v._2._1._2,v._2._2))
+
+Step 7 : Save this output in hdfs as text file. 
+finalData.saveAsTextFile("spark1/result.txt") 
+

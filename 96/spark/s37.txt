@@ -1,0 +1,36 @@
+Problem Scenario 37 : HadoopExam.com has done survey on their Exam Products feedback using a web based form. With the following tree text field as input in web ui.
+Name : String 
+Subscription Date : String 
+Rating : String 
+And servey data has been saved in a tile called spark9/feedback.txt 
+Christopher|Jan 11, 2015|5 
+Kapil|11 jan, 2015|5
+Thomas|6/17/2014|5 
+J0hn|22-08-2013|5 
+Mithun|2013|5 
+Jitendra||5 
+Write a spark program using regular expression which will filter all the valid dates and save in two separate tile (good record and bad record) 
+==================================================================================
+Solution : 
+Step 1 : Create a file first using Hue in hdfs. 
+Step 2 : Write all valid regular expressions sysntex tor checking whether records are having valid dates or not. 
+
+val reg1 = “””(\d+)\s(\w{3})(,)\s(\d{4})”””.r//11 Jan,2015
+val reg2 = “””(\d+)(\/)(/d+)(\/)(/d{4})”””.r//6/17/2014
+val reg3 = “””(\d+)(-)(\d+)(-)(\d{4})”””.r//22-08-2013
+val reg4 = “””(\w{3})\s(\d+)(,)\s(\d{4})”””.r//Jan 11,2015
+Step 3 : Load the file as an RDD. 
+val feedbackRDD = sc.textFile("spark9/feedback.txt") 
+Step 4 : As data are pipe separated , hence split the same. 
+val feedbackSplit = feedbackRDD.map(line => line.split('l')) 
+Step 5 : Now get the valid records as well as , bad records. 
+val validRecords = feedbackSplit.filter(x =>! (reg1.pattern.matches(x(1).trim).matches|reg2.pattern.matcher(x(1).trim).matches|reg3.pattern.matcher(x(1).trim).matchees|reg4.pattern.matcher(x(1).trim).matches))
+val badRecords = feedbackSplit.filter(x => ! (reg1.pattern.matches(x(1).trim).matches|reg2.pattern.matcher(x(1).trim).matches|reg3.pattern.matcher(x(1).trim).matchees|reg4.pattern.matcher(x(1).trim).matches))
+
+Step 6 : Now convert each Array to Strings 
+val valid =validRecords.map(e => (e(O),e(1),e(2))) 
+val bad =badRecords.map(e => (e(O),e(1),e(2))) 
+
+Step 7 : Save the output as a Text file and output must be written in a single file. 
+valid.repartition(1).saveAsTextFile("spark9/good.txt") 
+bad. repartition saveAsTextFile(" spark9/bad.txt")

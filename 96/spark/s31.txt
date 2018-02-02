@@ -1,0 +1,33 @@
+Problem Scenario 31 : You have given following two files 
+1. Content.txt : Contain a huge text file containing space separated words. 
+2. Remove.txt : Ignore/filter all the words given in this file (Comma Separated). 
+Write a Spark program which reads the Content.txt tile and load as an ROD, remove all the words from a broadcast variables (which is loaded as an RDDof words from remove.txt). and count the occurrence of the each word and save ie as a text file  HDFS.
+
+==================================================================
+Solution : 
+Step 1 : Create all three files in hdfs in directory called spark2 (We will do using Hue). However, you can first create in local filesystem and then upload it to hdfs.
+Step 2 : Load the Content.txt file 
+val content = sc.textFile("spark2/Content.txt") //Load the text file 
+Step 3 : Load the Remove.txt file 
+val remove = sc.textFile("spark2/Remove.txt") //Load the text file 
+Step 4 : Create- an RDD from remove, However, there is a possibility each word could have trailing spaces, remove these whitespaces as well.We have used two functions here flatMap,map and trim.
+val removeRDD= remove.flatMap(x=> x.split(",") ).map(word=>word.trim)//Create an array of words 
+
+Step 5 : Broadcast the variable, which you want to ignore 
+val bRemove = sc.broadcast(removeRDD.collect().toList) // It should be array ot Strings 
+
+Step 6 : Split the content ROD, so we can have Array of String. 
+val words = content.flatMap(line => line.split(“ ” ))
+
+Step 7 : Filter the RDD, so it can have only content which are not present in "Broadcast Variable". 
+val filtered = words.filter{case (word) => !bRemove.value.contains(word)} 
+
+Step 8 : Create a PairRDD, so we can have (word,1) tuple or PairRDD. 
+val pairRDD = filtered.map(word => (word, 1)) 
+
+Step 9 : Now do the word count on PairRDD. 
+val wordCount = pairRDD.reduceByKey(_ + _) 
+
+Step 10 : Save the output as a Text file. 
+wordCount.saveAsTextFile("spark2/result.txt") 
+

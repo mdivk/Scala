@@ -1,0 +1,47 @@
+Problem Scenario 32 : You have given three files as below. 
+spark3/sparkdir1/file1 .txt 
+spark3/sparkdir2/file2.txt 
+spark3/sparkdir3/file3.txt 
+Each file contain some text. As given in RHS (Righ hand side). 
+Now write a Spark code in scala which will load all these three files from hdfs and do the word count by filtering following words. 
+And result should be sorted by word count in reverse order. 
+Filter words (“a”,”the”,”an”, “as”, “a”,  “with”, “this”, “this”, “these”, “is”, “are”, “in”, “for”, “to”, “and”, “the”, “of” 
+Also please make sure you load all three files as a Single RDD (All three files must be loaded using single API call). 
+You have also been given following codec 
+import org.apache.hadoop.io.compress.GzipCodec 
+Please use above codec to compress tile, while saving in hdfs. 
+
+Solution : 
+Step 1 : Create all three files in hdfs (We will do using Hue). However, you can first create in local filesystem and then upload it to hdfs.
+Step 2 : Load content from all files. 
+valcontent=sc.textFile("spark3/sparkdir1/file1.txt,spark3/sparkdir2/file2.txt,spark3/sparkdir3/file3.txt") //Load the text file 
+Step 3 : Now create split each line and create RDD of words. 
+val flatContent = content.flatMap(word=>word.split(" ")) 
+
+Step 4 : Remove space after each word (trim it) 
+val trimmedContent = flatcontent.map(word=>word.trim) 
+
+Step 5 : Create an RDD from remove, all the words that needs to be removed. 
+
+val removeRDD =sc.parallelize(List(“a”, “the”, “an”, "as", “a”, “with”, “this”, “these”, “is”, “are”, “in”,"for", “to”, “and”, “the”, “of”))
+
+Step 6 : Filter the RDD, so it can have only content which are not present in removeRDD. 
+val filtered = trimmedContent.subtract(removeRDD) 
+
+Step 7 : Create a PairRDD, so we can have (word,1) tuple or PairRDD. 
+val pairRDD = filtered.map(word => (word,1)) 
+
+Step 8 : Now do the word count on PairRDD. 
+val wordCount = pairRDD.reduceByKey(_ + _) 
+
+step 9 : NOW swap PairRDD. 
+val swapped = wordCount.map(item => item. swap) 
+
+Stepn 10 : Now revers order the content. 
+val sortedOutput = swapped. sortByKey(false) 
+
+Step 11 : Save the output as a Text file. 
+sortedOutput.saveAsTextFile("spark3/result") 
+Step12:Save compressed output.
+Import org.apache.hadoop.io.compress.Gzipcodec
+sortedOutput.saveAsTextFile(“spark3/compressedresult”,classOf[GZipCodec])

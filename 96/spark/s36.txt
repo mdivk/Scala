@@ -1,0 +1,22 @@
+Problem Scenario 36 : You have been given a tile named spark8/data.csv (type,name). 
+
+1. Load this file from hdfs and save it back as (id, (all names of same type)) in results directory. However, make sure while saving it should be able to write in a single file.
+
+
+============================================================================
+Solution : 
+Step 1 : Create file in hdfs (We will do using Hue). However, you can first create in local filesystem and then upload it to hdfs. 
+Step 2 : Load data.csv file from hdfs and create PairRDDs 
+val name = sc.textFile("spark8/data.csv") 
+val namePairRDD = name.map(x=> (x.split(",")(O),x.split(",”)(1))) 
+step 3 : NOW swap namepairRDD RDD. 
+val swapped = namePairRDD.map(item => item.swap) 
+
+Step 4 : Now combine the rdd by key. 
+
+val combinedOutput = namePairRDD.combineByKey(List(_), (x:List[String], y:String)=> y :: x, (x:List[String], y:List[String]) => x ::y)
+
+Step 5 : Save the output as a Text file and output must be written in a single file. 
+
+combinedOutput. repartition (1). saveAsTextFile(" spark8/result.txt") 
+

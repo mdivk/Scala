@@ -1,0 +1,30 @@
+Problem Scenario 33 : You have given a files as below. 
+spark5/EmployeeName.csv (id,name) 
+spark5/EmployeeSalary.csv (id,salary) 
+Data is given in RHS (Righ hand side). 
+Now write a Spark code in scala which will load these two files from hdfs and join the same, and produce the (name,salary) values. 
+And save the data in multiple file group by salary (Means each tile will have name of employees with same salary). Make sure file name include salary as well.
+
+==================================================================================
+Solution : 
+Step 1 : Create all three files in hdfs (We will do using Hue). However, you can first create in local filesystem and then upload it to hdfs. 
+
+Step 2 : Load EmployeeName.csv file from hdfs and create PairRDDs 
+val name = sc.textFile("spark5/EmployeeName.csv") 
+val namePairRDD = name.map(x=> (x.split(",")(O),x.split(",”)(1)))
+
+Step 3 : Load Employeesalary.csv file from hdfs and create PairRDDs 
+val salary = sc.textFile("spark5/EmployeeSalary.csv") 
+val salaryPairRDD = salary.map(x=> (x.split(",")(O),x.split(",”)(1))) 
+step 4 : Join all pairRDDS 
+val joined = namePairRDD.join(salaryPairRDD) 
+Step 5 : Remove key from RDD and Salary as a Key. 
+val keyRemoved = joined.values 
+Step 6 : Now swap filtered RDD. 
+val swapped = keyRemoved.map(item => item. swap) 
+Stepn 7 : Now groupBy keys (It will generate key and value array) 
+val grpByKey = swapped.groupByKey().collect() 
+Step 8 : Now create RDD tor values collection 
+val rddByKey = grpByKey.map{case (k,v) => k->sc.makeRDD(v.toSeq)} 
+Step 9 : Save the output as a Text file. 
+rddByKey.foreach{ case (k,rdd) => rdd.saveAsTextFile("spark5/Employee"+k)} 

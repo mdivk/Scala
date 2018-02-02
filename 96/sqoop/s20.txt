@@ -1,0 +1,56 @@
+20. Problem Scenario 20 : 
+You have been given following mysql database details as well as other info. 
+user=retail_dba 
+password=cloudera 
+database=retail_db 
+jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
+Please accomplish below assignment.
+
+1.Write a Sqoop Job which will import "retail_db.categories" table to hdfs, in a directory name "categories_target_job".
+Step 1 : Connecting to existing MySQL Database mysql –user=retail_dba --password=cloudera retail_db
+step 2 . Show all the available tables show tables;
+Step 3 : Below is the command to create Sqoop Job (Please note that — import space is mandatory) 
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username=retail_user \
+--password=itversity \
+--table categories \
+--target-dir categories_target_job \
+--fields-terminated-by '|' \
+--lines-terminated-by '\n'
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls categories_target_job
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-02-01 15:44 categories_target_job/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs        271 2018-02-01 15:44 categories_target_job/part-m-00000
+-rw-r--r--   3 paslechoix hdfs        263 2018-02-01 15:44 categories_target_job/part-m-00001
+-rw-r--r--   3 paslechoix hdfs        266 2018-02-01 15:44 categories_target_job/part-m-00002
+-rw-r--r--   3 paslechoix hdfs        229 2018-02-01 15:44 categories_target_job/part-m-00003
+
+
+
+Step 4 : List all the Sqoop Jobs 
+[paslechoix@gw01 ~]$ sqoop job --list
+
+Step 5 : Show details of the Sqoop Job sqoop job 
+--show sqoop_job
+
+Step 6 : Execute the sqoop job sqoop job 
+--exec sqoop_job
+
+Step 7 : Check the output of import job 
+hdfs dfs -ls categories_target_job 
+hdfs dfs -cat categories_target_job/part*
+[paslechoix@gw01 ~]$ hdfs dfs -cat categories_target_job/part*
+1|2|Football
+2|2|Soccer
+3|2|Baseball & Softball
+....
+55|8|International Soccer
+56|8|World Cup Shop
+57|8|MLB Players
+58|8|NFL Players
+[paslechoix@gw01 ~]$ 
+
+

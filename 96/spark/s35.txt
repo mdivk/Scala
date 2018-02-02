@@ -1,0 +1,18 @@
+Problem Scenario 35 : You have been given a file named spark7/EmployeeName.csv (id,name). 
+1. Load this file from hdfs and sort it by name and save it back as (id,name) in results directory. However, make sure while saving it should be able to write in a single file.
+
+==============================================================================
+Solution : 
+ Step 1 : Create file in hdfs (We will do using Hue). However, you can first create in local filesystem and then upload it to hdfs. 
+Step 2 : Load EmployeeName.csv file from hdfs and create PairRDDs 
+val name = sc.textFile("spark7/EmployeeName.csv") 
+val namePairRDD = name.map(x=> (x.split(",")(O),x.split(",”)(1))) 
+step 3 : NOW swap namepairRDD RDD. 
+val swapped = namePairRDD.map(item => item.swap) 
+Step 4 : Now sort the rdd by key. 
+val sortedOutput = swapped.sortByKey() 
+Step 5 : Now swap the result back 
+val swappedBack =sortedOutput.map(item => item. swap) 
+Step 6 : Save the output as a Text file and output must be written in a single file. 
+swapped Back. repartition (1). saveAsTextFile(" spark7/result.txt") 
+

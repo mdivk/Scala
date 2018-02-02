@@ -1,0 +1,73 @@
+Problem Scenario 24 : You have been given below comma separated employee information. 
+name,salary,sex,age 
+alok,1000000,male,29
+Jatin, 105000,male,32
+yogesh,134000,male,39 
+ragini,112000,female,35
+jyotsana,129000,female,39 
+Valmiki,123000,male,29
+use the netcat service on port 44444, and nc above data line by line. Please do the following activities. 
+
+1. Create a flume conf file using fastest channel, which write data in hive warehouse directory, in a table called flumemaleemployee (create hive table as well for given data).
+2. While importing, make sure only male employee data is stored. 
+
+Solution : 
+Step 1 : Create hive table for flumeemployee.' 
+CREATE TABLE numemaleemployee 
+{
+name string, 
+salary int, 
+sex string, 
+age int 
+}
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY ‘,’;
+
+Step 2 : Create flume configuration file, with below configuration for source, sink and channel and save it in flume4.conf. 
+#Define source , sink , channel and agent. 
+agent1.sources = source1 
+agent1.sinks = sink1 
+agent1.channels = channel1 
+# Describe/configure source1 
+Agent1.sources.source1 .type = netcat 
+agent1.sources.source1.bind = 127.0.0.1 
+agent1. sources. Source1. port = 44444 
+#Define interceptors 
+agent1.sources. source1.interceptors=i1 
+agent1.sources.source1.interceptors.i1.type=regex_filter 
+agent1.sources.source1.interceptors.i1. regex=female 
+agent1.sources.source1. interceptors.i1.excludeEvents=true 
+## Describe sink1
+agent1.sinks.sink1.channel = memory-channel 
+agent1.sinks.sink1.type = hdfs 
+agent1.sinks.sink1.hdfs.path = /user/hive/warehouse/flumemaleemployee 
+hdfs-agent.sinks.hdfs-write.hdfs.writeFormat=Text 
+agent1.sinks.sink1.hdfs.fileType = DataStream 
+
+# Now we need to define channel1 property. 
+agent1.channels.channel1.type = memory 
+agent1.channels.channel1.capacity = 1000 
+agent1.channels.channel1.transactioncapacity = 100
+
+# Bind the source and sink to the channel 
+agent1.sources.source1.channels = channel1 
+agent1.sinks.sink1.channel = channel1
+
+Step 3 : Run below command which will use this configuration file and append data in hdfs. 
+Start flume service : 
+flume-ng agent --conf /home/cloudera/flumeconf --conf-file /home/cloudera/flumeconf/flume4.conf --name agent1 
+
+Step 4 : Open another terminal and use the netcat service. 
+nc localhost 44444 
+
+Step 5 : Enter data-line by line. 
+alok,1000000,male,29
+Jatin, 105000,male,32
+yogesh,134000,male,39 
+ragini,112000,ftemale,35
+jyotsana,129000,temale,39 
+Valmiki,123000,male,29
+Step 6: Open hue and check the data is available In hive table or not.
+Step7: stop flume service by pressing ctrl+c
+Step8 : Calculate average salary on hive table using below query. You can use either hive command line tool or hue. 
+Select avg(salary)from flumeemployee;

@@ -1,0 +1,11 @@
+Problem Scenario 38 : You have been given an RDD as below. 
+val rdd: RDD[array[Byte]]
+Now you have to save this RDD as a SequenceFile. And below is the code snippet. 
+import org.apache.hadoop.io.compress.GzipCodec 
+rdd.map(bytesArray => (A.get(), new B(bytesArray))).saveAsSequenceFile ("/output/path",classOt[GzipCodec]) 
+What would be the correct replacement tor A and B in above snippet. 
+
+=======================================================================
+Solution : 
+A. NullWritable 
+B. BytesWritable 

@@ -1,0 +1,27 @@
+Problem Scenario 42 : You have been given a file (spark10/sales.txt), with the content as given in RHS. 
+
+And want to produce the output as a csv with group by Department,Designation,State with additional columns with sum(costToCompany) and TotalEmployeeCount
+
+Should get result like 
+
+Dept,Desg,state,empCount,totalCost 
+Sales,Lead,AP,2,64000
+Sales,Lead,LA,3,96000
+Sales,Lead,TN,2,64000
+==================================================================================
+
+Solution : 
+
+Step 1 : Create a file first using Hue in hdfs. 
+step 2 : Load file as an RDD 
+val rawlines = sc.textFile("spark10/sales.txt") 
+Step 3 : Create a case class, which can represent its column fileds. 
+case class Employee(dep: String, des: String, cost: Double, state: String) 
+Step 4 : Split the data and create RDD of all Employee objects. 
+val employees = rawlines.map(_.split(",")).map(row =>Employee(row(0), row(1), row(2).toDouble, row(3))) 
+Step 5 : Create a row as we needed. All group by fields as a key and value as a count for each employee as well as its cost. 
+val keyVals = employees.map( em=> ((em.dep, em.des, em.state), (1 , em.cost))) 
+Step 6 : Group by all the records using reduceByKey method as we want summation as well. For number of employees and their total cost. 
+val results = keyVals.reduceByKey{ (a,b) => (a._1+ b._1, a._2 + b. _2)} // (a.count + b.count , a.cost + b.cost )} 
+Step 7 : Save the results in a text file as below. 
+results. repartition (1). saveAsTextFile("spark10/group.txt") 

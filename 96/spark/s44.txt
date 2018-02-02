@@ -1,0 +1,33 @@
+Problem Scenario 44 : You have been given 4 files , with the content as given in RHS. 
+(spark11/file1 .txt) 
+(spark11/file2.txt) 
+(spark11/file3.txt) 
+(spark11/file4.txt) 
+Write a Spark program, which will give you the highest occuring words in each file. With their file name and highest occuring words. 
+
+=============================================================================
+
+Solution : 
+
+Step 1 : Create all 4 file first using Hue in hdfs. 
+step 2 : Load all file as an RDD 
+val file1 = sc.textFile("spark11/file1.txt") 
+val file2 = sc.textFile("spark11/file2.txt")
+val file3 = sc.textFile("spark11/file3.txt")
+val file4 = sc.textFile("spark11/file4.txt")
+
+Step 3 : Now do the word count for each file and sort in rverse order of count. 
+val content1 = file1 .flatMap( line => line.split(" ")).map(word => (word,1)).reduceByKey(_ + _).map(item => item.swap).sortByKey(false).map(e=>e.swap)
+val content2 = file2.flatMap( line => line.split(" ")).map(word => (word,1)).reduceByKey(_ + _).map(item => item.swap).sortByKey(false).map(e=>e.swap) 
+val content3 = file3.flatMap( line => line.split(" ")).map(word => (word,1)).reduceByKey(_ + _).map(item => item.swap).sortByKey(false).map(e=>e.swap) 
+val content4 = file4.flatMap( line => line.split(" ")).map(word => (word, 1)).reduceByKey(_ + _).map(item => item.swap).sortByKey(talse).map(e=>e.swap) 
+Step 4 : Split the data and create RDD ot all Employee objects. 
+
+val file1word = sc.makeRDD(Array(file1.name+"->"+content1(0)._1+"-" +content1(0)._2))
+val file2word = sc.makeRDD(Array(file2.name+"->"+content2(0)._1+"-" +content2(0)._2)) 
+val file3word = sc.makeRDD(Array(file3.name+"->"+content3(0)._1+"-" +content3(0)._2)) 
+val file4word = sc.makeRDD(Array(file4.name+"->"+content4(0)._1+"-" +content4(0)._2)) 
+step 5 : union all the RDDS 
+val unionRDDs = file1word.union(file2word).union(file3word).union(file4word) 
+Step 6 : Save the results in a text file as below.
+unionRDDs.repartition(1).saveAsTextFile(“spark11/union.txt”) 

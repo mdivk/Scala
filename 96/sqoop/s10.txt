@@ -15,4 +15,4 @@ e.g. location should be hdfs://quickstart.cloudera:8020/user/hive/warehouse/hado
 
 create database hadoopexam;
 create table departments(department_id int, department_name string)
-with location=
+with location= 
