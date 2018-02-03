@@ -137,3 +137,5 @@ OK
 
 Now the string field (department_name) that contains null has been replaced by ''
 
+
+

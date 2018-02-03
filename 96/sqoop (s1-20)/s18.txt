@@ -8,7 +8,32 @@ Now accomplish following activities.
 
 1. Create mysql table as below. 
 mysql --user =retail_dba --password=cloudera 
-CREATE TABLE IF NOT EXISTS departments_hive02(id int, department_name varcnar(45), avg_salary int); 
+CREATE TABLE IF NOT EXISTS departments_hive02(id int, department_name varchar(45), avg_salary int); 
 show tables; 
 
 2. Now export data from hive table departments_hive01 in departments_hive02. While exporting, please note following. wherever there is a empty string it should be loaded as a null value in mysql. wherever there is -999 value for int field, it should be created as null value.
+
+mysql> select * From departments_hive02;
++------+-----------------+------------+
+| id   | department_name | avg_salary |
++------+-----------------+------------+
+|    2 | Fitness         |       NULL |
+|    3 | Footwear        |       NULL |
+|    4 | Apparel         |       NULL |
+|    5 | Golf            |       NULL |
+|    6 | Outdoors        |       NULL |
+|    7 | Fan Shop        |       NULL |
+|  777 | Not known       |       1000 |
+| 8888 | NULL            |       1000 |
+|  666 | NULL            |       1100 |
++------+-----------------+------------+
+9 rows in set (0.00 sec)
+udpate departments_hive01 set department_name = '' where department_name is null;
+
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ‘udpate departments_hive01 set department_name = ‘’ where department_name is null’ at line 1
+
+However, if created a new table dep with the same structure;
+then copid all records from the hive01 table;
+then did the same update command and it worked!
+
+Conclusion: hive01 is a table derived from sqoop import from mysql to hive table,
