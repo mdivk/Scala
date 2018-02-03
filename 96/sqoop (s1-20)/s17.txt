@@ -6,10 +6,134 @@ database=retail_db
 jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
 
 Please accomplish below assignment. 
-1. Create a table in hive as below. create table departments_hive01(department_id int, department_name string, avg_salary int); 
-2. Create another table in mysql using below statement CREATE TABLE IF NOT EXISTS departments_hive01(id int, department_name varcnar(45), avg_salary int); 
-3. Copy all the data from departments table to departments_hive01 using insert into departments_hive01 select a.*, null from departments a; Also insert following records as below insert into departments_hive01 values(777, "Not known",1000); insert into departments_hive01 values(8888, null,1000); insert into departments_hive01 values(666, null,1100); 
+1. Create a table in hive as below. 
+
+create table departments_hive01(department_id int, department_name string, avg_salary int); 
+
+2. Create another table in mysql using below statement 
+as retail_user has full privilege on database retail_export, so use this database for following task:
+
+CREATE TABLE IF NOT EXISTS departments_hive01(id int, department_name varchar(45), avg_salary int); 
+
+3. Copy all the data from departments table to departments_hive01 using 
+insert into departments_hive01 select a.*, null from retail_db.departments a; 
+
+mysql> CREATE TABLE IF NOT EXISTS departments_hive01(id int, department_name varchar(45), avg_salary int);
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> insert into departments_hive01 select a.*, null from retail_db.departments a;
+Query OK, 6 rows affected (0.00 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql> select * from departments_hive01;
++------+-----------------+------------+
+| id   | department_name | avg_salary |
++------+-----------------+------------+
+|    2 | Fitness         |       NULL |
+|    3 | Footwear        |       NULL |
+|    4 | Apparel         |       NULL |
+|    5 | Golf            |       NULL |
+|    6 | Outdoors        |       NULL |
+|    7 | Fan Shop        |       NULL |
++------+-----------------+------------+
+6 rows in set (0.01 sec)
+
+
+Also insert following records as below 
+
+insert into departments_hive01 values(777, "Not known",1000); 
+insert into departments_hive01 values(8888, null,1000); 
+insert into departments_hive01 values(666, null,1100); 
+
+mysql> select * from departments_hive01;
++------+-----------------+------------+
+| id   | department_name | avg_salary |
++------+-----------------+------------+
+|    2 | Fitness         |       NULL |
+|    3 | Footwear        |       NULL |
+|    4 | Apparel         |       NULL |
+|    5 | Golf            |       NULL |
+|    6 | Outdoors        |       NULL |
+|    7 | Fan Shop        |       NULL |
+|  777 | Not known       |       1000 |
+| 8888 | NULL            |       1000 |
+|  666 | NULL            |       1100 |
++------+-----------------+------------+
+
+
 4. Now import data from mysql table departments_hive01 to this hive table. Please make sure that data should be visible using below hive command. 
 
+sqoop import -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=departments_hive01 \
+--hive-import \
+--hive-table retail_db.departments_hive01 
+
+hive (retail_db)> select * from departments_hive01;
+OK
+2       Fitness NULL
+3       Footwear        NULL
+4       Apparel NULL
+5       Golf    NULL
+6       Outdoors        NULL
+7       Fan Shop        NULL
+777     Not known       1000
+8888    null    1000
+666     null    1100
+Time taken: 0.217 seconds, Fetched: 9 row(s)
+
+
 Also, while importing if null value found for department_name column replace it with “” (empty string) and for id column with -999 select * from departments_hive;
+sqoop import -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=departments_hive01 \
+--hive-import \
+--hive-table retail_db.departments_hive01 \
+--hive-overwrite \
+--input-null-string=''
+
+why null is not replaced by ''? See below, 
+
+hive (retail_db)> select * from departments_hive01;
+OK
+2       Fitness NULL
+3       Footwear        NULL
+4       Apparel NULL
+5       Golf    NULL
+6       Outdoors        NULL
+7       Fan Shop        NULL
+777     Not known       1000
+8888    null    1000
+666     null    1100
+Time taken: 0.375 seconds, Fetched: 9 row(s)
+
+hdfs dfs -rm -R /user/paslechoix/departments_hive01
+
+sqoop import -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=departments_hive01 \
+--hive-import \
+--hive-table retail_db.departments_hive01 \
+--hive-overwrite \
+--null-string=''
+
+hive (retail_db)> select * from departments_hive01;
+OK
+2       Fitness NULL
+3       Footwear        NULL
+4       Apparel NULL
+5       Golf    NULL
+6       Outdoors        NULL
+7       Fan Shop        NULL
+777     Not known       1000
+8888            1000
+666             1100
+
+Now the string field (department_name) that contains null has been replaced by ''
 
