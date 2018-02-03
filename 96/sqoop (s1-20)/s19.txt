@@ -5,7 +5,104 @@ database=retail_db
 jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
 Now accomplish following activities. 
 
+mysql> select * from departments;
++---------------+-----------------+
+| department_id | department_name |
++---------------+-----------------+
+|            10 | physicss        |
+|            11 | chemistry       |
+|            12 | math            |
+|            13 | science         |
+|            14 | engineering     |
+|          9999 | Data Science    |
+|          8888 | "Data Science"  |
++---------------+-----------------+
+
+
 1. Import departments table from mysql to hdfs as textfile in departments _ text directory. 
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--target-dir=departments_text \
+--as-textfile 
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments_text
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-02-02 22:14 departments_text/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs         21 2018-02-02 22:14 departments_text/part-m-00000
+-rw-r--r--   3 paslechoix hdfs         10 2018-02-02 22:14 departments_text/part-m-00001
+-rw-r--r--   3 paslechoix hdfs          7 2018-02-02 22:14 departments_text/part-m-00002
+-rw-r--r--   3 paslechoix hdfs         22 2018-02-02 22:14 departments_text/part-m-00003
+[paslechoix@gw01 ~]$ hdfs dfs -cat departments_text/*
+2,Fitness
+3,Footwear
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
+
+
 2. Import departments table from mysql to hdfs as sequncefile in departments _ sequence directory. 
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--target-dir=departments_sequence \
+--as-sequencefile
+
+hdfs dfs -ls departments_sequence
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments_sequence
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-02-02 22:19 departments_sequence/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs        133 2018-02-02 22:19 departments_sequence/part-m-00000
+-rw-r--r--   3 paslechoix hdfs        102 2018-02-02 22:19 departments_sequence/part-m-00001
+-rw-r--r--   3 paslechoix hdfs         99 2018-02-02 22:19 departments_sequence/part-m-00002
+-rw-r--r--   3 paslechoix hdfs        134 2018-02-02 22:19 departments_sequence/part-m-00003
+
+To inspect the content, rdd is to create and read from this format and then show the rdd 
+
+
 3. Import departments table from mysql to hdfs as avro file in departments_avro directory. 
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--target-dir=departments_avro \
+--as-avrodatafile
+
+hdfs dfs -ls departments_avro
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments_avro
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-02-02 22:35 departments_avro/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs        406 2018-02-02 22:35 departments_avro/part-m-00000.avro
+-rw-r--r--   3 paslechoix hdfs        394 2018-02-02 22:35 departments_avro/part-m-00001.avro
+-rw-r--r--   3 paslechoix hdfs        391 2018-02-02 22:35 departments_avro/part-m-00002.avro
+-rw-r--r--   3 paslechoix hdfs        407 2018-02-02 22:35 departments_avro/part-m-00003.avro
+
+
 4. Import departments table from mysql to hdfs as parquet file in departments _ parquet directory.
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--target-dir=departments_parquet \
+--as-parquetfile
+
+hdfs dfs -ls departments_parquet
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments_parquet
+Found 5 items
+drwxr-xr-x   - paslechoix hdfs          0 2018-02-02 22:39 departments_parquet/.metadata
+-rw-r--r--   3 paslechoix hdfs        637 2018-02-02 22:40 departments_parquet/b7cc3ecd-9b73-49e1-acde-361425a4d5da.parquet
+-rw-r--r--   3 paslechoix hdfs        671 2018-02-02 22:40 departments_parquet/caf6fbfd-65b4-425c-91a7-b3ffc6a71b34.parquet
+-rw-r--r--   3 paslechoix hdfs        640 2018-02-02 22:40 departments_parquet/d600b1d8-d1fb-4b5a-803a-a3af848d01d7.parquet
+-rw-r--r--   3 paslechoix hdfs        658 2018-02-02 22:40 departments_parquet/ee70fdc0-47ed-4409-9a00-14eae0dee6f3.parquet
+
