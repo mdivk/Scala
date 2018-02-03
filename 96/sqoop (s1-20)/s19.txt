@@ -106,3 +106,37 @@ drwxr-xr-x   - paslechoix hdfs          0 2018-02-02 22:39 departments_parquet/.
 -rw-r--r--   3 paslechoix hdfs        640 2018-02-02 22:40 departments_parquet/d600b1d8-d1fb-4b5a-803a-a3af848d01d7.parquet
 -rw-r--r--   3 paslechoix hdfs        658 2018-02-02 22:40 departments_parquet/ee70fdc0-47ed-4409-9a00-14eae0dee6f3.parquet
 
+hdfs dfs -cat departments_parquet/b7cc3ecd-9b73-49e1-acde-361425a4d5da.parquet
+
+[paslechoix@gw01 ~]$ hdfs dfs -cat departments_parquet/b7cc3ecd-9b73-49e1-acde-361425a4d5da.parquet
+PAR1,
+$ 4Golf<H
+department_idrtments%
+department_id6:&Bartment_name%,5
+                 department_name>B&Bt
+                                     avro.schema▒{"type":"record","name":"departments","doc":"Sqoop import of departments","fields":[{"name":"department_id","type":["null","int"],"default":null,"columnName":"department_id","sqlType":"4"},{"name":"department_name","type":["null","string"],"default":null,"columnName":"department_name","sqlType":"12"}],"tableName":"departments"};parquet-mr (build 27f71a18579ebac6db2b0e9ac758d64288b6dbff)3PAR1
+as indicated from the content, parquet is literally text in json format with schema built-in 									 
+
+quoted below from Apache: https://parquet.apache.org/documentation/latest/ 
+Parquet file format
+This file and the thrift definition should be read together to understand the format.
+
+4-byte magic number "PAR1"
+<Column 1 Chunk 1 + Column Metadata>
+<Column 2 Chunk 1 + Column Metadata>
+...
+<Column N Chunk 1 + Column Metadata>
+<Column 1 Chunk 2 + Column Metadata>
+<Column 2 Chunk 2 + Column Metadata>
+...
+<Column N Chunk 2 + Column Metadata>
+...
+<Column 1 Chunk M + Column Metadata>
+<Column 2 Chunk M + Column Metadata>
+...
+<Column N Chunk M + Column Metadata>
+File Metadata
+4-byte length in bytes of file metadata
+4-byte magic number "PAR1"									 
+
+Don't understand the actual parquet file, for example, what does the second line means? $ 4Golf<H and what does 3 means at the end (3PAR1)? 
