@@ -7,35 +7,41 @@ Now write a flume configuration file named flume3.conf, using that configuration
 (Means every minute new directory should be created). Please us the interceptors to provide timestamp information, it message header does not have header info.
 And also note that you have to preserve existing timestamp, it message contains it. 
 Flume channel should have following property as well. After every 100 message it should be committed, use non-durable/faster channel and it should be able to hold maximum 1000 events.
+
 Solution : 
+
 Step 1 : Create flume configuration file, with below configuration for source, sink and channel. 
+/home/paslechoix/flume/flume_p23.conf
+
 #Define source , sink , channel and agent. 
 agent1.sources = source1 
 agent1.sinks = sink1 
 agent1.channels = channel1
 # Describe/configure source1 
-Agent1.sources.source1 .type = exec 
+agent1.sources.source1.type = exec 
 agent1.sources.source1.command = tail -F /opt/gen_logs/logs/access.log 
 #Define interceptors 
-agent1.sources.sourcel.interceptors=i1 
-Agent1.sources.source1. interceptors.i1.type=timestamp 
-agent1.sources.source1. interceptors.i1.preserveExisting=true 
+agent1.sources.source1.interceptors=i1 
+agent1.sources.source1.interceptors.i1.type=timestamp 
+agent1.sources.source1.interceptors.i1.preserveExisting=true 
 ## Describe sink1
 agent1.sinks.sink1.channel = memory-channel 
 agent1.sinks.sink1.type = hdfs 
-agent1.sinks. sink1.hdts.path = flume3/% y/%m/%d/%H%M
-agent1 .sinks.sink1 .hdfs.fileType = DataStream 
+agent1.sinks.sink1.hdfs.path = flume/% y/%m/%d/%H%M
+agent1.sinks.sink1.hdfs.fileType = DataStream 
 # Now we need to define channel1 property. 
 agent1.channels.channel1.type = memory 
 agent1.channels.channel1.capacity = 1000 
-agent1 .channels.channel1 .transactioncapacity = 100 
+agent1.channels.channel1.transactionCapacity = 100 
 # Bind the source and sink to the channel 
 agent1.sources.source1.channels = channel1 
-agent1.sinks.sink1 .channel = channel1
+agent1.sinks.sink1.channel = channel1
 
 Step 2 : Run below command which will use this configuration file and append data in hdfs. 
-Start log service using : start_logs 
+Start log service using : 
+cd /opt/gen_logs
+start_logs.sh 
 Start flume service : 
-flume-ng agent ---conf/home/cloudera/flumeconf —conf-file /home/cloudera/flumeconf/flume3.conf -Dflume.root.logger=DEBUG,lNFO,console  --name agent1
+flume-ng agent --conf/home/paslechoix/flume —conf-file /home/paslechoix/flume/flume_p23.conf -Dflume.root.logger=DEBUG,lNFO,console  --name agent1
 Wait for few mins and than stop log service. 
-stop_logs 
+stop_logs.sh 
