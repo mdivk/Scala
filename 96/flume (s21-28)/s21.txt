@@ -1,40 +1,66 @@
 Problem Scenario 21 : You have been given log generating service as below. 
 start_logs (It will generate continuous logs) 
-tail _ logs (You can check , what logs are being generated) 
-stop_logs (It will stop the log servoce) 
+tail_logs (You can check , what logs are being generated) 
+stop_logs (It will stop the log service) 
 Path where logs are generated using above service : /opt/gen_logs/logs/access.log 
 Now write a flume configuration file named flume1 .conf, using that configuration file dumps logs in HDFS file system in a directory called flume1 
 Flume channel should have following property as well. After every 100 message it should be committed, use non-durable/faster channel and it should be able to hold maximu 1000 events. 
 
 Solution:
 Step 1 : Create flume configuration file, with below configuration for source, sink and channel. 
-#Define source , sink , channel and agent. 
-agent1 .sources = source1 
-agent1.sinks = sink1 
-agent1 .channels = channel1
 
-# Describe/configure source1 
-agent1 .sources.source1 .type = exec 
-agent1.sources.source1 .command = tail -F /opt/gen_logs/logs/access.log
+go to flume user guide and copy the example conf below:
+====================================================================
+# example.conf: A single-node Flume configuration
 
-## Describe sink1 
-agent1 .sinks.sink1.channel = memory-channel 
-agent1 .sinks.sink1.type = hdFs 
-agent1 .sinks.sink1.hdfs.path = flume1 
-agent1.sinks.sink1.hdfs.fileType = DataStream 
+# Name the components on this agent
+agent1.sources = source1
+agent1.sinks = sink1
+agent1.channels = channel1
 
-# Now we need to define channel1 property. 
-agent1.channels.channel1.type = memory 
-agent1.channels.channel1 .capacity = 1000 
-agent1.channels.channel1.transactionCapacity= 100
+# Describe/configure the source
+agent1.sources.source1.type = netcat
+agent1.sources.source1.bind = localhost
+agent1.sources.source1.port = 44444
 
-# Bind the source and sink to the channel 
-agent1.sources.source1 .channels = channel1
-agent1.sinks.sink1.channel=channel1
+# Describe the sink
+agent1.sinks.sink1.type = logger
+
+# Use a channel which buffers events in memory
+agent1.channels.channel1.type = memory
+agent1.channels.channel1.capacity = 1000
+agent1.channels.channel1.transactionCapacity = 100
+
+# Bind the source and sink to the channel
+agent1.sources.source1.channels = channel1
+agent1.sinks.sink1.channel = channel1
+
 
 Step 2 : Run below command which will use this configuration file and append data in hdfs. 
 Start log service using : start_logs 
 Start flume service : 
-flume-ng agent –conf/ home/cloudera/flumeconf --conf-file /home/cloudera/flumeconf/flume1 .conf -Dflume.root.logger=DEBUG,lNFO,console –name agent1
-Wait for few mins and than stop log service. 
-Stop_logs
+
+flume-ng agent --conf /home/paslechoix/flume --conf-file /home/paslechoix/flume/paslechoix_agent.conf --name agent1 -Dflume.root.logger=DEBUG,INFO,console 
+
+
+18/02/03 20:16:02 INFO node.PollingPropertiesFileConfigurationProvider: Configuration provider starting
+18/02/03 20:16:02 INFO node.PollingPropertiesFileConfigurationProvider: Reloading configuration file:/home/paslechoix/flume/paslechoix_agent.conf
+18/02/03 20:16:02 INFO conf.FlumeConfiguration: Processing:sink1
+18/02/03 20:16:02 INFO conf.FlumeConfiguration: Added sinks: sink1 Agent: agent1
+18/02/03 20:16:02 WARN conf.FlumeConfiguration: Invalid property specified: channel
+18/02/03 20:16:02 WARN conf.FlumeConfiguration: Configuration property ignored: agent1.channel = channel1
+18/02/03 20:16:02 INFO conf.FlumeConfiguration: Processing:sink1
+18/02/03 20:16:02 WARN conf.FlumeConfiguration: Agent configuration for 'agent1' does not contain any channels. Marking it as invalid.
+18/02/03 20:16:02 WARN conf.FlumeConfiguration: Agent configuration invalid for agent 'agent1'. It will be removed.
+18/02/03 20:16:02 INFO conf.FlumeConfiguration: Post-validation flume configuration contains configuration for agents: []
+18/02/03 20:16:02 WARN node.AbstractConfigurationProvider: No configuration found for this host:agent1
+18/02/03 20:16:02 INFO node.Application: Starting new configuration:{ sourceRunners:{} sinkRunners:{} channels:{} }
+
+
+
+Now from another terminal:
+Telnet localhost 44444
+
+paslechoix@gw01 ~]$ telnet localhost 44444
+Trying 127.0.0.1…
+telnet: connect to address 127.0.0.1: Connection refused

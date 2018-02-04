@@ -7,9 +7,6 @@ jdbc URL = jdbc:mysql://quickstart:3306/retail_db
 Please accomplish below assignment.
 
 1.Write a Sqoop Job which will import "retail_db.categories" table to hdfs, in a directory name "categories_target_job".
-Step 1 : Connecting to existing MySQL Database mysql –user=retail_dba --password=cloudera retail_db
-step 2 . Show all the available tables show tables;
-Step 3 : Below is the command to create Sqoop Job (Please note that — import space is mandatory) 
 
 sqoop import \
 --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
@@ -29,11 +26,10 @@ Found 5 items
 -rw-r--r--   3 paslechoix hdfs        229 2018-02-01 15:44 categories_target_job/part-m-00003
 
 
-
-Step 4 : List all the Sqoop Jobs 
+List all the Sqoop Jobs 
 [paslechoix@gw01 ~]$ sqoop job --list
 
-Step 5 : Show details of the Sqoop Job sqoop job 
+Show details of the Sqoop Job sqoop job 
 --show sqoop_job
 
 Step 6 : Execute the sqoop job sqoop job 
@@ -53,4 +49,74 @@ hdfs dfs -cat categories_target_job/part*
 58|8|NFL Players
 [paslechoix@gw01 ~]$ 
 
+
+sqoop job --create myjob \
+-- import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username=retail_user \
+--password=itversity \
+--table categories \
+--target-dir categories_target_job \
+--fields-terminated-by '|' \
+--lines-terminated-by '\n'
+
+[paslechoix@gw01 ~]$ sqoop job --show myjob
+Warning: /usr/hdp/2.5.0.0-1245/accumulo does not exist! Accumulo imports will fail.
+Please set $ACCUMULO_HOME to the root of your Accumulo installation.
+18/02/03 09:46:39 INFO sqoop.Sqoop: Running Sqoop version: 1.4.6.2.5.0.0-1245
+Enter password:
+Job: myjob
+Tool: import
+Options:
+----------------------------
+verbose = false
+hcatalog.drop.and.create.table = false
+db.connect.string = jdbc:mysql://ms.itversity.com:3306/retail_db
+codegen.output.delimiters.escape = 0
+codegen.output.delimiters.enclose.required = false
+codegen.input.delimiters.field = 0
+split.limit = null
+hbase.create.table = false
+mainframe.input.dataset.type = p
+db.require.password = true
+hdfs.append.dir = false
+hive.compute.stats.table = false
+db.table = categories
+codegen.input.delimiters.escape = 0
+accumulo.create.table = false
+import.fetch.size = null
+codegen.input.delimiters.enclose.required = false
+db.username = retail_user
+reset.onemapper = false
+codegen.output.delimiters.record = 10
+import.max.inline.lob.size = 16777216
+hbase.bulk.load.enabled = false
+hcatalog.create.table = false
+db.clear.staging.table = false
+codegen.input.delimiters.record = 0
+enable.compression = false
+hive.overwrite.table = false
+hive.import = false
+codegen.input.delimiters.enclose = 0
+accumulo.batch.size = 10240000
+hive.drop.delims = false
+customtool.options.jsonmap = {}
+codegen.output.delimiters.enclose = 0
+hdfs.delete-target.dir = false
+codegen.output.dir = .
+codegen.auto.compile.dir = true
+relaxed.isolation = false
+mapreduce.num.mappers = 4
+accumulo.max.latency = 5000
+import.direct.split.size = 0
+codegen.output.delimiters.field = 124
+export.new.update = UpdateOnly
+incremental.mode = None
+hdfs.file.format = TextFile
+codegen.compile.dir = /tmp/sqoop-paslechoix/compile/54a793146e775dc81474d18c104044ae
+direct.import = false
+temporary.dirRoot = _sqoop
+hdfs.target.dir = categories_target_job
+hive.fail.table.exists = false
+db.batch = false
 
