@@ -27,7 +27,7 @@ agent1.sources.source1.interceptors.i1.preserveExisting=true
 ## Describe sink1
 agent1.sinks.sink1.channel = memory-channel 
 agent1.sinks.sink1.type = hdfs 
-agent1.sinks.sink1.hdfs.path = flume/% y/%m/%d/%H%M
+agent1.sinks.sink1.hdfs.path = /user/paslechoix/flume/received/%y/%m/%d/%H%M
 agent1.sinks.sink1.hdfs.fileType = DataStream 
 # Now we need to define channel1 property. 
 agent1.channels.channel1.type = memory 
@@ -42,16 +42,32 @@ Start log service using :
 cd /opt/gen_logs
 start_logs.sh 
 Start flume service : 
-flume-ng agent --conf /home/paslechoix/flume --conf-file /home/paslechoix/flume/flume_p23.conf -Dflume.root.logger=DEBUG,lNFO,console  --name agent1
+flume-ng agent --conf /user/paslechoix/flume --conf-file /home/paslechoix/flume/flume_p23.conf -Dflume.root.logger=DEBUG,lNFO,console  --name agent1
 Wait for few mins and than stop log service. 
 stop_logs.sh 
 
+[paslechoix@gw01 logs]$ tail access.log
+197.214.252.177 - - [04/Feb/2018:16:19:16 -0800] "GET /checkout HTTP/1.1" 200 498 "-" "Mozilla/5.0 (Windows NT 6.1; rv:30.0) Gecko/20100101 Firefox/30.0"
+171.36.181.46 - - [04/Feb/2018:16:19:17 -0800] "GET /department/team%20sports/categories HTTP/1.1" 200 251 "-" "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36"
+11.175.42.17 - - [04/Feb/2018:16:19:18 -0800] "GET /support HTTP/1.1" 200 1549 "-" "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:30.0) Gecko/20100101 Firefox/30.0"
+99.210.15.203 - - [04/Feb/2018:16:19:19 -0800] "GET /departments HTTP/1.1" 503 366 "-" "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:30.0) Gecko/20100101 Firefox/30.0"
+92.17.97.244 - - [04/Feb/2018:16:19:20 -0800] "GET /department/fan%20shop/categories HTTP/1.1" 200 780 "-" "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36"
+220.3.58.155 - - [04/Feb/2018:16:19:21 -0800] "GET /department/team%20sports/products HTTP/1.1" 200 1547 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36"
+115.110.77.243 - - [04/Feb/2018:16:19:22 -0800] "GET /departments HTTP/1.1" 200 892 "-" "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36"
+171.42.47.220 - - [04/Feb/2018:16:19:23 -0800] "GET /department/apparel/categories HTTP/1.1" 200 949 "-" "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36"
+151.222.184.50 - - [04/Feb/2018:16:19:24 -0800] "GET /categories/accessories/products HTTP/1.1" 200 360 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:30.0) Gecko/20100101 Firefox/30.0"
+113.104.50.192 - - [04/Feb/2018:16:19:25 -0800] "GET /departments HTTP/1.1" 200 1107 "-" "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36"
 
-Permission denied: user=paslechoix, access=WRITE, inode="/home/paslechoix/flume/received/18/02/04/0717/FlumeData.1517746647434.tmp":hdfs:hdfs:drwxrwxr-x
 
 
-18/02/04 07:31:54 INFO hdfs.BucketWriter: Creating /home/paslechoix/flume/received/18/02/04/0731/FlumeData.1517747513976.tmp
-18/02/04 07:31:55 WARN retry.RetryInvocationHandler: Exception while invoking ClientNamenodeProtocolTranslatorPB.create over null. Not retrying because try once and fail.
-org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.security.AccessControlException): Permission denied: user=paslechoix, access=WRITE, inode="/home/paslechoix/flume/received/18/02/04/0731/FlumeData.1517747513976.tmp":hdfs:hdfs:drwxrwxr-x
+[paslechoix@gw01 flume]$ hdfs dfs -cat /user/paslechoix/flume/received/18/02/04/1616/*
+19.236.64.227 - - [04/Feb/2018:16:16:07 -0800] "GET /product/1143 HTTP/1.1" 200 388 "-" "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36"
+206.68.45.238 - - [04/Feb/2018:16:16:08 -0800] "GET /department/apparel/products HTTP/1.1" 200 1871 "-" "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36"
+202.196.177.224 - - [04/Feb/2018:16:16:09 -0800] "GET /departments HTTP/1.1" 200 1605 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.77.4 (KHTML, like Gecko) Version/7.0.5 Safari/537.77.4"
+152.3.120.177 - - [04/Feb/2018:16:16:10 -0800] "GET /departments HTTP/1.1" 200 1380 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:30.0) Gecko/20100101 Firefox/30.0"
+39.25.60.116 - - [04/Feb/2018:16:16:11 -0800] "GET /product/347 HTTP/1.1" 200 1950 "-" "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko"
+189.156.25.18 - - [04/Feb/2018:16:16:12 -0800] "GET /departments HTTP/1.1" 200 545 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.77.4 (KHTML, like Gecko) Version/7.0.5 Safari/537.77.4"
+164.220.5.188 - - [04/Feb/2018:16:16:13 -0800] "GET /departments HTTP/1.1" 200 509 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.77.4 (KHTML, like Gecko) Version/7.0.5 Safari/537.77.4"
+131.87.145.87 - - [04/Feb/2018:16:16:14 -0800] "GET /product/331 HTTP/1.1" 200 855 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:30.0) Gecko/20100101 Firefox/30.0"
 
 

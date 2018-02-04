@@ -160,3 +160,6 @@ drwxr-xr-x   - paslechoix hdfs          0 2018-01-30 22:34 retail_db/customers
 drwxr-xr-x   - paslechoix hdfs          0 2018-01-30 22:34 retail_db/departments
 drwxr-xr-x   - paslechoix hdfs          0 2018-01-16 00:21 retail_db/order_def
 drwxr-xr-x   - paslechoix hdfs          0 2018-01-15 16:58 retail_db/order_items
+
+
+Import data from 
