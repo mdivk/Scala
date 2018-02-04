@@ -42,6 +42,16 @@ Start log service using :
 cd /opt/gen_logs
 start_logs.sh 
 Start flume service : 
-flume-ng agent --conf/home/paslechoix/flume —conf-file /home/paslechoix/flume/flume_p23.conf -Dflume.root.logger=DEBUG,lNFO,console  --name agent1
+flume-ng agent --conf /home/paslechoix/flume --conf-file /home/paslechoix/flume/flume_p23.conf -Dflume.root.logger=DEBUG,lNFO,console  --name agent1
 Wait for few mins and than stop log service. 
 stop_logs.sh 
+
+
+Permission denied: user=paslechoix, access=WRITE, inode="/home/paslechoix/flume/received/18/02/04/0717/FlumeData.1517746647434.tmp":hdfs:hdfs:drwxrwxr-x
+
+
+18/02/04 07:31:54 INFO hdfs.BucketWriter: Creating /home/paslechoix/flume/received/18/02/04/0731/FlumeData.1517747513976.tmp
+18/02/04 07:31:55 WARN retry.RetryInvocationHandler: Exception while invoking ClientNamenodeProtocolTranslatorPB.create over null. Not retrying because try once and fail.
+org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.security.AccessControlException): Permission denied: user=paslechoix, access=WRITE, inode="/home/paslechoix/flume/received/18/02/04/0731/FlumeData.1517747513976.tmp":hdfs:hdfs:drwxrwxr-x
+
+
