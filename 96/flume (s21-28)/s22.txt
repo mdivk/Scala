@@ -12,8 +12,8 @@ use the netcat service on port 44444, and nc above data line by line. Please do 
 
 Solution : 
 
-Step 1 : Create hive table tor flumeemployee.' 
-CREATE TABLE flumeemployee 
+Step 1 : Create hive table employee_flume 
+CREATE TABLE employee_flume 
 (
 name string, 
 salary int, 
@@ -21,38 +21,52 @@ sex string,
 age int 
 )
 ROW FORMAT DELIMITED 
-FIELDS TERMINATED BY ‘,’;
-Step 2 : Create flume configuration file, with below configuration for source, sink and channel and save it in flume2.conf. 
-#Define source , sink , channel and agent. 
+FIELDS TERMINATED BY ',';
+
+Step 2 : Create flume configuration file, with below configuration for source, sink and channel and save it in paslechoix_agent2.conf
+
+#Define source, sink , channel and agent. 
 agent1.sources = source1
-Agent1.sinks = sink1 
+agent1.sinks = sink1 
 agent1.channels = channel1 
-# Describe/configure source1 
+
+#Describe/configure source1 
 agent1.sources.source1.type = netcat 
-agent1.sources.source1.bind = 127.0.0.1 
+agent1.sources.source1.bind = localhost 
 agent1.sources.source1.port = 44444 
 
-## Describe sink1
-agent1.sinks.sink1.channel = memory-channel 
+#Describe sink1
 agent1.sinks.sink1.type = hdfs 
-agent1.sinks.sink1.hdfs.path = /user/hive/warehouse/flumeemployee 
-hdfs-agent.sinks.hdfs-write.hdfs.writeFormat=Text 
+
+agent1.sinks.sink1.channel = memory-channel 
+agent1.sinks.sink1.hdfs.path = /user/hive/warehouse/employee_flume 
 agent1.sinks.sink1.hdfs.filetype = DataStream
 
 # Now we need to define channel1 property. 
-agent1 .channels.channel1 .type = memory 
-agent1 .channels.channel1 .capacity = 1000 
-agent1 .channels.channel1. transaction capacity = 100
+agent1.channels.channel1.type = memory 
+agent1.channels.channel1.capacity = 1000 
+agent1.channels.channel1.transactionCapacity = 100
 
 # Bind the source and sink to the channel 
-Agent1 .sources.source1 .channels = channel1 
-agent1.sinks.sink1 .channel = channel1 
+agent1.sources.source1.channels = channel1 
+agent1.sinks.sink1.channel = channel1 
+
+
+hdfs-agent.sinks.hdfs-write.hdfs.writeFormat=Text 
 
 Step 3 : Run below command which will use this configuration file and append data in hdfs. 
-Start flume service : 
-flume-ng agent --conf /home/cloudera/flumeconf --conf-file /home/cloudera/flumecont/flume2.conf —name agent1
+Start flume service:
+ 
+[paslechoix@gw01 ~]$ flume-ng agent --conf /home/paslechoix/flume --conf-file /home/paslechoix/flume/paslechoix_agent.conf --name agent1 -Dflume.root.logger=DEBUG,INFO,console
+
+
 Step 4 : Open another terminal and use the netcat service. 
+========================================================
 nc localhost 44444 
+telnet localhost 44444
+
+connected rejected
+========================================================
 Step 5 : Enter data line by line. 
 alok,1000000,male,29
 Jatin, 105000,male,32
