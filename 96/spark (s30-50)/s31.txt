@@ -1,33 +1,134 @@
 Problem Scenario 31 : You have given following two files 
 1. Content.txt : Contain a huge text file containing space separated words. 
 2. Remove.txt : Ignore/filter all the words given in this file (Comma Separated). 
-Write a Spark program which reads the Content.txt tile and load as an ROD, remove all the words from a broadcast variables (which is loaded as an RDDof words from remove.txt). and count the occurrence of the each word and save ie as a text file  HDFS.
+Write a Spark program which reads the Content.txt tile and load as an RDD, remove all the words from a broadcast variables (which is loaded as an RDD of words from remove.txt). and count the occurrence of the each word and save ie as a text file  HDFS.
 
 ==================================================================
 Solution : 
 Step 1 : Create all three files in hdfs in directory called spark2 (We will do using Hue). However, you can first create in local filesystem and then upload it to hdfs.
+
+[paslechoix@gw01 data]$ hdfs dfs -ls spark2
+Found 2 items
+-rw-r--r--   3 paslechoix hdfs      22756 2018-02-04 22:15 spark2/Peter.txt
+-rw-r--r--   3 paslechoix hdfs       2912 2018-02-04 22:15 spark2/stopwordlist.txt
+
 Step 2 : Load the Content.txt file 
-val content = sc.textFile("spark2/Content.txt") //Load the text file 
+val Peter = sc.textFile("spark2/Peter.txt") //Load the text file 
+
+scala> Peter.count
+res0: Long = 167
+
+scala> Peter.take(10).foreach(println)
+1 Peter, an apostle of Jesus Christ, to the strangers scattered throughout Pontus, Galatia, Cappadocia, Asia, and Bithynia,
+2 Elect according to the foreknowledge of God the Father, through sanctification of the Spirit, unto obedience and sprinkling of the blood of Jesus Christ: Grace unto you, and peace, be multiplied.
+3 Blessed be the God and Father of our Lord Jesus Christ, which according to his abundant mercy hath begotten us again unto a lively hope by the resurrection of Jesus Christ from the dead,
+4 To an inheritance incorruptible, and undefiled, and that fadeth not away, reserved in heaven for you,
+5 Who are kept by the power of God through faith unto salvation ready to be revealed in the last time.
+6 Wherein ye greatly rejoice, though now for a season, if need be, ye are in heaviness through manifold temptations:
+7 That the trial of your faith, being much more precious than of gold that perisheth, though it be tried with fire, might be found unto praise and honour and glory at the appearing of Jesus Christ:
+8 Whom having not seen, ye love; in whom, though now ye see him not, yet believing, ye rejoice with joy unspeakable and full of glory:
+9 Receiving the end of your faith, even the salvation of your souls.
+10 Of which salvation the prophets have inquired and searched diligently, who prophesied of the grace that should come unto you:
+
+
+
+
+
 Step 3 : Load the Remove.txt file 
-val remove = sc.textFile("spark2/Remove.txt") //Load the text file 
+val stopwordlist = sc.textFile("spark2/stopwordlist.txt") //Load the text file 
+
+Peter.txt is the content, stopwordlist.txt is the list of words to be removed
+
 Step 4 : Create- an RDD from remove, However, there is a possibility each word could have trailing spaces, remove these whitespaces as well.We have used two functions here flatMap,map and trim.
-val removeRDD= remove.flatMap(x=> x.split(",") ).map(word=>word.trim)//Create an array of words 
+
+val stopwordlistRDD= stopwordlist.flatMap(x=> x.split(",") ).map(word=>word.trim)//Create an array of words 
+
+stopwordlistRDD.count 
+res10: Long = 429
+
 
 Step 5 : Broadcast the variable, which you want to ignore 
-val bRemove = sc.broadcast(removeRDD.collect().toList) // It should be array ot Strings 
+val bRemove = sc.broadcast(stopwordlistRDD.collect().toList) // It should be array or Strings 
+
+scala> bRemove.value
+res6: List[String] = List(a, about, above, across, after, again, against, all, almost, alone, along, already, also, although, always, among, an, and, another, any, anybody, anyone, anything, anywhere, are, area, areas, around, as, ask, asked, asking, asks, at, away, b, back, backed, backing, backs, be, became, because, become, becomes, been, before, began, behind, being, beings, best, better, between, big, both, but, by, c, came, can, cannot, case, cases, certain, certainly, clear, clearly, come, could, d, did, differ, different, differently, do, does, done, down, down, downed, downing, downs, during, e, each, early, either, end, ended, ending, ends, enough, even, evenly, ever, every, everybody, everyone, everything, everywhere, f, face, faces, fact, facts, far, felt, few, find, finds, ...
+
 
 Step 6 : Split the content ROD, so we can have Array of String. 
-val words = content.flatMap(line => line.split(“ ” ))
+val words = Peter.flatMap(line => line.split(" "))
+scala> words.count
+res3: Long = 4196
 
 Step 7 : Filter the RDD, so it can have only content which are not present in "Broadcast Variable". 
+
 val filtered = words.filter{case (word) => !bRemove.value.contains(word)} 
+
+scala> filtered.count
+res4: Long = 2032
 
 Step 8 : Create a PairRDD, so we can have (word,1) tuple or PairRDD. 
 val pairRDD = filtered.map(word => (word, 1)) 
 
+
 Step 9 : Now do the word count on PairRDD. 
 val wordCount = pairRDD.reduceByKey(_ + _) 
 
+Step 9.1: Sort the result 
+val sorted = wordCount.sortBy(_._2, false)
+
+
 Step 10 : Save the output as a Text file. 
-wordCount.saveAsTextFile("spark2/result.txt") 
+sorted.saveAsTextFile("spark2/result1.txt") 
+
+=======================================================
+new stopwordlist added with numbers from 1 to 21
+
+[paslechoix@gw01 data]$ hdfs dfs -put stopwordlist2.txt spark2
+[paslechoix@gw01 data]$ hdfs dfs -ls spark2
+Found 4 items
+-rw-r--r--   3 paslechoix hdfs      22756 2018-02-04 22:15 spark2/Peter.txt
+drwxr-xr-x   - paslechoix hdfs          0 2018-02-05 06:54 spark2/result1.txt
+-rw-r--r--   3 paslechoix hdfs       2912 2018-02-04 22:15 spark2/stopwordlist.txt
+-rw-r--r--   3 paslechoix hdfs       2989 2018-02-05 07:23 spark2/stopwordlist2.txt
+
+
+Step 3 : Load the Remove.txt file 
+val stopwordlist2 = sc.textFile("spark2/stopwordlist2.txt") //Load the text file 
+
+Step 4 : Create- an RDD from remove, However, there is a possibility each word could have trailing spaces, remove these whitespaces as well.We have used two functions here flatMap,map and trim.
+
+val stopwordlistRDD2= stopwordlist2.flatMap(x=> x.split(",") ).map(word=>word.trim)//Create an array of words 
+
+stopwordlistRDD2.count 
+res10: Long = 450
+
+
+Step 5 : Broadcast the variable, which you want to ignore 
+val bRemove2 = sc.broadcast(stopwordlistRDD2.collect().toList) // It should be array or Strings 
+
+Step 6 : Split the content ROD, so we can have Array of String. 
+val words = Peter.flatMap(line => line.split(" "))
+scala> words.count
+res3: Long = 4196
+
+Step 7 : Filter the RDD, so it can have only content which are not present in "Broadcast Variable". 
+
+val filtered2 = words.filter{case (word) => !bRemove2.value.contains(word)} 
+
+scala> filtered2.count
+res4: Long = 1876
+
+Step 8 : Create a PairRDD, so we can have (word,1) tuple or PairRDD. 
+val pairRDD2 = filtered2.map(word => (word, 1)) 
+
+
+Step 9 : Now do the word count on PairRDD. 
+val wordCount2 = pairRDD2.reduceByKey(_ + _) 
+
+Step 9.1: Sort the result 
+val sorted2 = wordCount2.sortBy(_._2, false)
+
+
+Step 10 : Save the output as a Text file. 
+sorted2.saveAsTextFile("spark2/result2.txt") 
 
