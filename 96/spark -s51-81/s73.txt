@@ -1,0 +1,41 @@
+Problem Scenario 73 : You have been given data in json format as below. 
+{"first_name":"Ankit","last_name".”jain”},  
+{"first_name":"Amir",”last_name”.”Khan”} 
+{"first_name":"Rajesh", "last_name":"Khanna"} 
+{"first_name":"Priynka", "last_name":"Chopra"} 
+{"first_name":"Kareena", "last_name":"Kapoor"} 
+{"first_name":"Lokesh",”last_name”.”Yadav”} 
+Do the following activity 
+1. create employee.json file locally. 
+2. Load this file on hdfs 
+3. Register this data as a temp table in Spark using Python. 
+4. Write select query and print this data. 
+5. Now save back this selected data in json format. 
+
+=========================================================================== 
+
+Solution : 
+Step 1 : create employee.json tile locally. 
+vi employee.json 
+(press insert) 
+past the content.
+Step2:Upload this file to hdfs,default location
+Hadoop fs -put employee.json
+Step3:Write spark script
+#Import SQLContext
+From pyspark import SQLContext
+#Create instance of SQLContext
+sqlContext=SQLContext(sc)
+#Load json file
+Employee=sqlContext.jsonFile(“employee.json”)
+#Register RDD as a temp table
+Employee.registerTempTable(“EmployeeTab”)
+#Select data from Employee table
+employeeInfo=sqlContext.sql(“select * from EmployeeTab”)
+#Iterate data and print
+For row in employeeInfo.collect():
+Print(row)
+Step4:Write data as s Text file
+employeeInfo.toJSON().saveAsTextFile(“employeeJson1”)
+Step5:Check whether data has been created or not
+Hadoop fs -cat employeeJson1/part* 

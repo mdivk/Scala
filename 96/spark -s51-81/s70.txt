@@ -1,0 +1,34 @@
+Problem Scenario 70 : Write down a Spark Application using Python, 
+In which it read a file "Content.txt" (On hdfs) with following content. 
+Do the word count and save the results in a directory called "problem85" (On hdfs) 
+Content.txt 
+Hello this is HadoopExam.com 
+This is QuickTechie.com 
+Apache Spark Training 
+This is Spark Learning Session 
+Spark is faster than MapReduce 
+
+====================================================================== 
+Solution : 
+Step 1 : Create an application with following code and store it in problem84.py 
+# Import SparkContext and SparkConf 
+from pyspark import SparkContext, SparkConf 
+# Create configuration object and set App name 
+conf = SparkConf().setAppName("CCA 175 Problem 85") 
+sc = SparkContext(conf=conf) 
+#load data from hdfs 
+contentRDD = sc.textFile("Content.txt") 
+#filter out non-empty lines 
+nonempty_lines = contentRDD.filter(lambda x: len(x) > O) 
+#Split line based on space 
+words = nonempty_lines.flatMap(lambda x: x.split('’)) 
+#Do the word count 
+wordcounts = words.map(lambda x: (x, 1)) \ 
+.reduceByKey(lambda x, y: x+y) \ 
+.map(lambda x: (x[l],x[0])).sortByKey(Flase) 
+for word in wordcounts.collect(): 
+print(word) 
+#Save final data
+Wordcounts.saveAsTextFile(“problem85”) 
+Stpe 2 : Submit this application 
+spark-submit --master yarn problem85.py 

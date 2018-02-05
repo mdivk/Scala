@@ -1,0 +1,40 @@
+Problem Scenario 75 : You have been given MySQL DB with following details. 
+user=retail_dba 
+password=cloudera 
+database=retail_db 
+table=retail_db.order_items 
+jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
+Please accomplish following activities. 
+1. Copy "retail_db.order_items" table to hdfs in respective directory P90_order_items. 
+2. Do the summation of entire revenue in this table using pyspark. 
+3. Find the maximum and minimum revenue as well. 
+4. Calculate average revenue 
+Columns of order_items table : (order_item_id , order_item_order_id , order_item_product_id, order_item_quantity,order_item_subtotal,order_item_product_price) 
+
+========================================================================= 
+
+Solution : 
+Step 1 : Import Single table . 
+sqoop import –connect jdbc:mysql://quickstart:3306/retail_db –username=retail_dba --password=cloudera -table=order_items --target-dir=p90_order_items—m1 
+Note : Please check you dont have space between before or after ‘=’ sign. 
+Sqoop uses the MapReduce framework to copy data from RDBMS to hdfs 
+Step 2 : Read the data from one of the partition, created using above command. 
+hadoop fs -cat p90_order_items/part-m-00000 
+Step 3 : In pyspark, get the total revenue across all days and orders. 
+entireTableRDD = sc.textFile("p90_order_items") 
+#Cast string to float 
+extractedRevenueColumn = entireTableRDD.map(lambda line:flat(line.split(“,”)[4])) 
+Step 4 : Verity extracted data 
+for revenue in extractedRevenueColumn.collect(): 
+print revenue 
+#use reduce function to sum a single column vale 
+totalRevenue = extractedRevenueColumn.reduce(lambda a, b: a + b) 
+Step 5 : Calculate the maximum revenue 
+maximumRevenue = extractedRevenueColumn.reduce(lambda a, b: (a if a>=b else b) ) 
+Step 6 : Calculate the minimum revenue 
+minimumRevenue = extractedRevenueColumn.reduce(lambda a, b: (a if a<=b else b) ) 
+
+Step 7 : Caclculate average revenue 
+
+Count=extractedRevenuecolumn.count() 
+averageRev=totalRevenue/count

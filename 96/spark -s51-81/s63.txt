@@ -1,0 +1,13 @@
+Problem Scenario 63 : You have been given below code snippet. 
+val a = sc.parallelize(List("dog", "tiger", "lion", "cat", "panther", "eagle"), 2) 
+val b = a.map(x => (x.length, x)) 
+operation1
+Write a correct code snippet tor operation1 which will produce desired output, shown below. 
+Array[(Int,String)] = Array((4,lion), (3,dogcat), (7,panther), (5,tigereagle)) 
+
+
+Solution : 
+
+b. reduceByKey(_ + _).collect 
+reduceByKey [Pair] : This function provides the well-known reduce functionality in Spark. Please note that any function f you provide, 
+should be commutative in order to generate reproducible results. 

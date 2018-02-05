@@ -1,0 +1,11 @@
+Problem Scenario 66 : You have been given below code snippet. 
+val a = sc.parallelize(List("dog", "tiger", "lion", "cat", "spider", "eagle"), 2) 
+val b = a.keyBy(_.length) 
+val c = sc.parallelize(List("ant", "falcon", "squid"), 2) 
+val d = c.keyBy(_.length) 
+operation 1 
+Write a correct code snippet for operationl which will produce desired output, shown below. 
+======================================================================== 
+Solution : 
+b.subtractByKey(d).collect 
+subtractByKey [Pair] : Very similar to subtract, but instead of supplying a function, the key-component of each pair will be automatically used as criterion for removing items from the first RDD.

@@ -1,0 +1,14 @@
+Problem Scenario 62 : You have been given below code snippet. 
+val a = sc.parallelize(List("dog", "tiger", "lion", "cat", "panther", "eagle"), 2) 
+val b = a.map(x => (x.length, x)) 
+operationl 
+Write a correct code snippet for operation1 which will produce desired output, shown below. 
+Array[(Int,String)] = Array((3,xdogx), (5,xtigerx), (4,xlionx), (3,xcatx), (7,xpantherx), (5,xeaglex)) 
+
+================================================================================
+
+Solution : 
+
+b.mapValues("x" + _ + “X”).collect
+mapValues [Pair] : Takes the values of a RDD that consists of two-component tuples, and applies the provided function to transform each value. Then,it forms new two-component
+tuples using the key and the transformed value and stores them in a new RDD. 
