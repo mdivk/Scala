@@ -1,0 +1,31 @@
+Problem Scenario 82 : You have been given table in Hive with following structure (Which you have created in previous exercise). 
+productid int 
+code string 
+name string 
+quantity int 
+price float 
+using SparkSQL accomplish following activities. 
+1. Select all the products name and quantity having quantity <=2000 
+2. Select name and price ot the product having code as 'PEN' 
+3. Select all the products, which name starts with PENCIL 
+4. Select all products which "name" begins with 'P', followed by any two characters, followed by space, followed by zero or more characters 
+
+Solution . 
+Step 1 : Copy following tile (Mandatory Step in Cloudera QuickVM) if you have not done it. 
+sudo su root 
+cp /usr/lib/hive/cont/hive-site.xml /usr/lib/spark/conf/ 
+Step 2 : Now start spark-shell 
+Step 3 : Select all the products name and quantity having quantity<=2000 
+val results = sqlContext.sql( """SELECT name, quantity FROM products WHERE quantity 2000 """)
+results.show() 
+Step 4 : Select name and price of the product having code as 'PEN' 
+val results = sqcontext.sql( """ SELECT name, price FROM products WHERE code = 'PEN' """) 
+results.show() 
+Step 5 : Select all the products , which name starts with PENCIL 
+val results = sqcontext.sql(""" SELECT name, price FROM products WHERE upper(name) LIKE 'PENCIL%' """) 
+results.show() 
+Step 6 : select all products which "name" begins with 'P', followed by any two characters, followed by space, followed by zero or more characters
+--"name" begins with 'P', followed by any two characters, 
+--followed by space, followed by zero or more characters 
+val results = sqcontext.sql( """ SELECT name, price FROM products WHERE name LIKE 'P_ %’ """) 
+results.show() 
