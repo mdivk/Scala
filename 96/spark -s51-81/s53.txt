@@ -13,7 +13,13 @@ Write a correct code snippet tor operation1 and operation2 which will produce de
 
 Solution : 
 val b = a.filter(_ % 2 == 0) 
-a.filter(_ < 4).collect 
+
+scala> a.filter(_ %2 ==0).take(10)
+res14: Array[Int] = Array(2, 4, 6, 8, 10)
+
+scala> a.filter(_ < 4).collect 
+res15: Array[Int] = Array(1, 2, 3)
+
 filter 
 Evaluates a boolean function for each data item of the RDD and puts the items for which the function returned true into the resulting RDD. 
 When you provide a filter function, it must be able to handle all data items contained in the RDD. Scala provides so-called partial functions to deal with mixed data-types.(Tip:
