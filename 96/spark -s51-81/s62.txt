@@ -9,6 +9,11 @@ Array[(Int,String)] = Array((3,xdogx), (5,xtigerx), (4,xlionx), (3,xcatx), (7,xp
 
 Solution : 
 
+scala> b.collect
+res2: Array[(Int, String)] = Array((3,dog), (5,tiger), (4,lion), (3,cat), (7,panther), (5,eagle))
+
 b.mapValues("x" + _ + “X”).collect
+res1: Array[(Int, String)] = Array((3,xdogX), (5,xtigerX), (4,xlionX), (3,xcatX), (7,xpantherX), (5,xeagleX))
+
 mapValues [Pair] : Takes the values of a RDD that consists of two-component tuples, and applies the provided function to transform each value. Then,it forms new two-component
 tuples using the key and the transformed value and stores them in a new RDD. 
