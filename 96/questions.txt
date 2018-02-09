@@ -273,4 +273,13 @@ eth0 IPv6 : 2607:5300:61:9d2::/64
 put: `/cygdrive/c/RXIE/Learning/Scala/cca175/96/updated_departments.csv': No such file or directory
 [paslechoix@gw01 ~]$
 
+S67:
+lines = sc.parallelize(List['its fun to have fun,','but you have to know how.']) 
+<console>:1: error: unclosed character literal
+       lines = sc.parallelize(List['its fun to have fun,','but you have to know how.'])
+                                                                                    ^
+s68. 
+
+lambda
+
 
