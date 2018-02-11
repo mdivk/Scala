@@ -163,6 +163,38 @@ final_result.sortBy(_(1)).take(20).foreach(println)
 final_result.sortBy(_(1).toDate()).take(20).foreach(println)
 
 5. Sort by order date, and then by order amount 
+scala> result.first
+res12: (String, (String, String)) = (2828,(2828,2013-08-10 00:00:00.0,4952,SUSPECTED_FRAUD,7097,2828,403,1,129.99,129.99))
+
+//create a new RDD with tuple like (order_date, (order_id, order_revenue))
+val new_result = result.map(x => (x._2._1.split(",")(1).substring(0,10), (x._1,x._2._2.split(",")(4))))
+
+(2013-08-10 00:00:00.0,(2828,129.99))
+
+//now sort the new result based on the tuple element: order_date, and then order_revenue in desc
+val sorted_new_result = new_result.sortBy(x => (x._1,true,x._2._2,false))
+(2013-07-25,(57762,99.96))
+(2013-07-25,(96,99.96))
+(2013-07-25,(14,99.96))
+(2013-07-25,(63,99.96))
+(2013-07-25,(10,99.96))
+(2013-07-25,(57776,99.99))
+(2013-07-25,(57776,99.99))
+(2013-07-25,(77,99.99))
+(2013-07-25,(28,99.99))
+(2013-07-25,(101,99.99))
+(2013-07-25,(43,99.99))
+(2013-07-26,(141,100.0))
+(2013-07-26,(213,100.0))
+(2013-07-26,(334,100.0))
+(2013-07-26,(161,100.0))
+(2013-07-26,(220,100.0))
+(2013-07-26,(181,100.0))
+(2013-07-26,(230,100.0))
+(2013-07-26,(57799,100.0))
+(2013-07-26,(263,100.0))
+
+
 
 6. Group by order date
 
