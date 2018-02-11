@@ -1,12 +1,15 @@
 Problem Scenario 68 : You have given a file as below. 
-spark75/file1.txt 
+/home/paslechoix/Lorem.txt
+
 File contain some text. As given in RHS (Righ hand side). 
 A bigram is pair of successive tokens in some sequence. Please build bigrams from the sequences of words in each sentence, 
 and then try to find the most frequently occuring ones. 
 
 =========================================================================
 Solution : 
+
 Step 1 : Create all three files in hdfs (We will do using Hue). However, you can first create in local filesystem and then upload it to hdfs. 
+
 Step 2 : The first problem is that values in each partition ot our initial RDD describe lines from the file rather than sentences. 
 Sentences may be split over multiple lines. 
 The glom() RDD method is used to create a single entry for each document containing the list of all lines, we can then join the lines up, 

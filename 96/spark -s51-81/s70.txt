@@ -10,11 +10,15 @@ Spark is faster than MapReduce
 
 ====================================================================== 
 Solution : 
+
+source file:
+spark2/Peter.txt
+
 Step 1 : Create an application with following code and store it in problem84.py 
 # Import SparkContext and SparkConf 
 from pyspark import SparkContext, SparkConf 
 # Create configuration object and set App name 
-conf = SparkConf().setAppName("CCA 175 Problem 85") 
+conf = SparkConf().setAppName("CCA 175 Problem 84") 
 sc = SparkContext(conf=conf) 
 #load data from hdfs 
 contentRDD = sc.textFile("Content.txt") 
@@ -29,6 +33,6 @@ wordcounts = words.map(lambda x: (x, 1)) \
 for word in wordcounts.collect(): 
 print(word) 
 #Save final data
-Wordcounts.saveAsTextFile(“problem85”) 
+Wordcounts.saveAsTextFile(“problem84”) 
 Stpe 2 : Submit this application 
-spark-submit --master yarn problem85.py 
+spark-submit --master yarn problem84.py 
