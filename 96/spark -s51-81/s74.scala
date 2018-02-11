@@ -156,14 +156,38 @@ scala> final_result.take(20).foreach(println)
 17422,2013-11-10,239.96
 17422,2013-11-10,129.99
 
+scala> val final_resultMap1 = final_result.map(x=>(x.split(",")(1), x.split(",")(2).toFloat))
+scala> final_resultMap1.take(20).foreach(println)
+(2013-08-10,129.99)
+(2014-04-20,100.0)
+(2014-04-20,129.99)
+(2014-04-20,49.98)
+(2013-09-19,119.97)
+(2013-09-19,299.97)
+(2013-09-19,299.97)
+(2013-09-19,111.96)
+(2013-11-29,399.98)
+(2013-11-29,119.97)
+(2013-11-29,399.98)
+(2013-11-29,399.96)
+(2014-03-03,100.0)
+(2014-03-03,199.99)
+(2014-03-03,149.94)
+(2014-03-03,299.95)
+(2014-03-03,119.98)
+(2013-11-10,129.99)
+(2013-11-10,239.96)
+(2013-11-10,129.99)
 
-final_result.sortBy(_.apply(1))
-final_result.sortBy(_.apply(1)).take(20).foreach(println)
-final_result.sortBy(_(1)).take(20).foreach(println)
-final_result.sortBy(_(1).toDate()).take(20).foreach(println)
 
-final_resultMap = final_result.map(x=>(x._1.tostring(), x._2, x._3))
-final_result.sortBy(_._0, false).take(20).foreach(println)
+
+scala> val sorted_final_resultMap1 = final_resultMap1.sortByKey()
+scala> val grouped_final_resultMap1 = final_resultMap1.groupByKey()
+
+scala> grouped_final_resultMap1.first
+res34: (String, Iterable[Float]) = (2014-02-01,CompactBuffer(239.96, 129.99, ...
+
+val sumed = final_resultMap1.reduceByKey((_: Float) + (_: Float))         
 
 5. Sort by order date, and then by order amount 
 scala> result.first
@@ -197,7 +221,7 @@ val sorted_new_result = new_result.sortBy(x => (x._1,true,x._2._2,false))
 (2013-07-26,(57799,100.0))
 (2013-07-26,(263,100.0))
 
-
+val grouped_final_resultMap = grouped_final_result1.map{case (str, nums) => (str, nums.sum)}
 
 6. Group by order date
 val grouped_sorted_new_result = sorted_new_result.groupByKey
@@ -211,7 +235,7 @@ res10: Int = 757
 //for 2014-02-01, there are 757 orders 
 7. Group by order date, and then sort by submount in desc order
 
-//do this in RDD:
+//do this in RDD via redeuce:
 //---------------------------------------------------------------------
 
 
