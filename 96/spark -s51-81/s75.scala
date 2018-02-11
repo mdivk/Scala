@@ -23,6 +23,13 @@ sqoop import -m 1 \
 --table=order_items \
 --target-dir=p90_order_items
 
+mysql> select count(1) from order_items;
++----------+
+| count(1) |
++----------+
+|   172198 |
++----------+
+1 row in set (0.03 sec)
 
 //Note : Please check you dont have space between before or after ‘=’ sign. 
 //Sqoop uses the MapReduce framework to copy data from RDBMS to hdfs 
@@ -31,23 +38,35 @@ sqoop import -m 1 \
 hadoop fs -cat p90_order_items/part-m-00000 
 
 //Step 3 : In scala, get the total revenue across all days and orders. 
-entireTableRDD = sc.textFile("p90_order_items") 
-#Cast string to float 
-extractedRevenueColumn = entireTableRDD.map(lambda line:flat(line.split(“,”)[4])) 
+scala> val entireTableRDD = sc.textFile("p90_order_items")
+scala> entireTableRDD.first
+res16: String = 1,1,957,1,299.98,299.98
 
-//Step 4 : Verity extracted data 
-for revenue in extractedRevenueColumn.collect(): 
-print revenue 
-#use reduce function to sum a single column vale 
-totalRevenue = extractedRevenueColumn.reduce(lambda a, b: a + b) 
 
-//Step 5 : Calculate the maximum revenue 
-maximumRevenue = extractedRevenueColumn.reduce(lambda a, b: (a if a>=b else b) ) 
+//#Cast string to float 
+scala> val extractedRevenueColumnRDD = entireTableRDD.map(rec=>rec.split(",")(4).toFloat) 
+scala> extractedRevenueColumnRDD.take(20).foreach(println)
+res17: Float = 299.98
 
-//Step 6 : Calculate the minimum revenue 
-minimumRevenue = extractedRevenueColumn.reduce(lambda a, b: (a if a<=b else b) ) 
 
-//Step 7 : Caclculate average revenue 
+//Calculate the max, min, sum and avg
 
-Count=extractedRevenuecolumn.count() 
-averageRev=totalRevenue/count
+scala> val totalRevenue = extractedRevenueColumnRDD.reduce(_+_)
+totalRevenue: Float = 3.4326256E7
+
+val maximumRevenue = extractedRevenueColumnRDD.reduce((max, revenue) => if(max < revenue) revenue else max)
+maximumRevenue: Float = 1999.99
+
+val minimumRevenue = extractedRevenueColumnRDD.reduce((min, revenue) => if(min < revenue) min else revenue)
+minimumRevenue: Float = 9.99
+
+
+
+scala> val Count=extractedRevenueColumnRDD.count()
+Count: Long = 172198
+
+scala> val totalRevenue = extractedRevenueColumnRDD.reduce(_+_)
+totalRevenue: Float = 3.4326256E7
+
+scala> val averageRev=totalRevenue/Count
+averageRev: Float = 199.34178
