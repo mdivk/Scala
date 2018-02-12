@@ -290,4 +290,6 @@ empty string causing error
 s80:
 empty string causing error
 
+s81:
+error when creating external table on the generated parquet format data
 
