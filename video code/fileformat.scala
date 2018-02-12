@@ -1,5 +1,12 @@
 Reading and writing into various file formats in hdfs. 
 
+RAW data:
+
+
+
+TextFile:
+
+
 
 File Format	Action	Procedure and points to remember
 TEXT FILE	READ	sparkContext.textFile(<path to file>);
