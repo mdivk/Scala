@@ -17,9 +17,9 @@ Please accomplish following activities.
 
 Solution : 
 
-Step 0: find out the schema in MySQL
+Step 0: Insepct the data in mysql 
 
-mysql -h mw.itversity.com -u retail_user -p
+mysql -h ms.itversity.com -u retail_user -p
 
 mysql> desc orders;
 +-------------------+-------------+------+-----+---------+----------------+
