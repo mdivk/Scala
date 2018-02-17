@@ -19,22 +19,38 @@ Solution :
 
 Step 1 : Import Single table . 
 
-sqoop import –connect jdbc:mysql://quickstart:3306/retail_db –username=retail_dba --password=cloudera -table=order_items --target-dir=p90_order_items—m1 
+[paslechoix@gw03 ~]$ sqoop import -m=1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=order_items 
+--target-dir=p90_order_items
+
 
 Step 2 : Read the data from one of the partition, created using above command. 
 
-hadoop fs -cat p90_order_items/part-m-00000 
+[paslechoix@gw03 ~]$ hdfs dfs -cat p90_order_items/*
+152860,61113,957,1,299.98,299.98
+152861,61114,1014,5,249.9,49.98
+152862,61115,725,1,108.0,108.0
+152863,61115,1073,1,199.99,199.99
+152864,61115,191,4,399.96,99.99
+152865,61115,1014,4,199.92,49.98
 
 Step 3 : In pyspark, get the total revenue across all days and orders. 
 
-entireTableRDD = sc.textFile("p90_order_items") 
+order_items = sc.textFile("p90_order_items") 
 #Cast string to float 
-extractedRevenueColumn = entireTableRDD.map(lambda line:flat(line.split(“,”)[4])) 
 
+order_items_rev = order_items.map(lambda line: flatMap(line.split(",")([4])))
 Step 4 : Verity extracted data 
 
-for revenue in extractedRevenueColumn.collect(): 
-print revenue 
+order_items_rev = order_items.flatMap(lambda line: line.split(",")[4]).map
+for revenue in order_items_rev.collect(): print(revenue) 
+
+counts = text_file.flatMap(lambda line: line.split(" ")) \
+             .map(lambda word: (word, 1)) \
+             .reduceByKey(lambda a, b: a + b)
 
 #use reduce function to sum a single column vale 
 totalRevenue = extractedRevenueColumn.reduce(lambda a, b: a + b) 
