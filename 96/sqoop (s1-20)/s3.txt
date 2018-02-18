@@ -7,6 +7,62 @@ jdbc URL = jdbc:mysql://quickstart:3306/retail_db
 
 1. Import data from catagories table, where category=22 (Data should be stored in categories_subset) 
 
+Raw data in mysql:
+[paslechoix@gw03 ~]$ mysql -h ms.itversity.com -u retail_user -p
+mysql> select * From retail_db.categories where category_id = 22;
++-------------+------------------------+---------------+
+| category_id | category_department_id | category_name |
++-------------+------------------------+---------------+
+|          22 |                      4 | Accessories   |
++-------------+------------------------+---------------+
+1 row in set (0.00 sec)
+
+
+mysql> select * from retail_db.categories where category_id > 22;
++-------------+------------------------+----------------------+
+| category_id | category_department_id | category_name        |
++-------------+------------------------+----------------------+
+|          23 |                      5 | Men's Apparel        |
+|          24 |                      5 | Women's Apparel      |
+|          25 |                      5 | Boys' Apparel        |
+|          26 |                      5 | Girls' Apparel       |
+|          27 |                      5 | Accessories          |
+|          28 |                      5 | Top Brands           |
+|          29 |                      5 | Shop By Sport        |
+|          30 |                      6 | Men's Golf Clubs     |
+|          31 |                      6 | Women's Golf Clubs   |
+|          32 |                      6 | Golf Apparel         |
+|          33 |                      6 | Golf Shoes           |
+|          34 |                      6 | Golf Bags & Carts    |
+|          35 |                      6 | Golf Gloves          |
+|          36 |                      6 | Golf Balls           |
+|          37 |                      6 | Electronics          |
+|          38 |                      6 | Kids' Golf Clubs     |
+|          39 |                      6 | Team Shop            |
+|          40 |                      6 | Accessories          |
+|          41 |                      6 | Trade-In             |
+|          42 |                      7 | Bike & Skate Shop    |
+|          43 |                      7 | Camping & Hiking     |
+|          44 |                      7 | Hunting & Shooting   |
+|          45 |                      7 | Fishing              |
+|          46 |                      7 | Indoor/Outdoor Games |
+|          47 |                      7 | Boating              |
+|          48 |                      7 | Water Sports         |
+|          49 |                      8 | MLB                  |
+|          50 |                      8 | NFL                  |
+|          51 |                      8 | NHL                  |
+|          52 |                      8 | NBA                  |
+|          53 |                      8 | NCAA                 |
+|          54 |                      8 | MLS                  |
+|          55 |                      8 | International Soccer |
+|          56 |                      8 | World Cup Shop       |
+|          57 |                      8 | MLB Players          |
+|          58 |                      8 | NFL Players          |
++-------------+------------------------+----------------------+
+
+
+
+
 sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
 	--username=retail_user \
 	--password=itversity \
@@ -14,22 +70,19 @@ sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
 	--warehouse-dir=categories_subset \
 	--where "category_id=22";
 
-18/01/30 21:36:24 INFO mapreduce.ImportJobBase: Retrieved 1 records.
+hdfs dfs -rm -R categories_subset	
 
-[paslechoix@gw01 ~]$ hdfs dfs -ls categories_subset_2/categories                                           Found 2 items
--rw-r--r--   3 paslechoix hdfs          0 2018-01-30 21:36 categories_subset/categories/_SUCCESS
--rw-r--r--   3 paslechoix hdfs         17 2018-01-30 21:36 categories_subset/categories/part-m-00000
-[paslechoix@gw01 ~]$ hdfs dfs -cat categories_subset/categories/*
+[paslechoix@gw03 ~]$ sqoop import --connect jdbc:mysql://ms.itversity.com/retail_db \
+ --username=retail_user \
+ --password=itversity \
+ --table=categories \
+ --warehouse-dir=categories_subset \
+ --where "category_id=22";
+
+#Verification:
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat categories_subset/categories/*
 22,4,Accessories
-
-
-mysql> select * from categories where category_id = 22;
-+-------------+------------------------+---------------+
-| category_id | category_department_id | category_name |
-+-------------+------------------------+---------------+
-|          22 |                      4 | Accessories   |
-+-------------+------------------------+---------------+
-1 row in set (0.00 sec)
 
 	
 2. Import data from categories table, where category>22 (Data should be stored in categories_subset_2) 	
@@ -40,24 +93,56 @@ sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
 	--warehouse-dir=categories_subset2 \
 	--where "category_id>22";
 
+hdfs dfs -rm -R categories_subset_2
+
+sqoop import --connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=categories \
+--warehouse-dir=categories_subset_2 \
+--where "category_id >22"	
+
 18/01/30 21:48:16 INFO mapreduce.ImportJobBase: Retrieved 36 records.
 
-hdfs dfs -ls categories_subset2/categories 	
-[paslechoix@gw01 ~]$ hdfs dfs -ls categories_subset2/categories
-Found 5 items
--rw-r--r--   3 paslechoix hdfs          0 2018-01-30 21:48 categories_subset2/categories/_SUCCESS
--rw-r--r--   3 paslechoix hdfs        177 2018-01-30 21:48 categories_subset2/categories/part-m-00000
--rw-r--r--   3 paslechoix hdfs        161 2018-01-30 21:48 categories_subset2/categories/part-m-00001
--rw-r--r--   3 paslechoix hdfs        162 2018-01-30 21:48 categories_subset2/categories/part-m-00002
--rw-r--r--   3 paslechoix hdfs        126 2018-01-30 21:48 categories_subset2/categories/part-m-00003
+[paslechoix@gw03 ~]$ hdfs dfs -cat categories_subset_2/categories/*
+23,5,Men's Apparel
+24,5,Women's Apparel
+25,5,Boys' Apparel
+26,5,Girls' Apparel
+27,5,Accessories
+28,5,Top Brands
+29,5,Shop By Sport
+30,6,Men's Golf Clubs
+31,6,Women's Golf Clubs
+32,6,Golf Apparel
+33,6,Golf Shoes
+34,6,Golf Bags & Carts
+35,6,Golf Gloves
+36,6,Golf Balls
+37,6,Electronics
+38,6,Kids' Golf Clubs
+39,6,Team Shop
+40,6,Accessories
+41,6,Trade-In
+42,7,Bike & Skate Shop
+43,7,Camping & Hiking
+44,7,Hunting & Shooting
+45,7,Fishing
+46,7,Indoor/Outdoor Games
+47,7,Boating
+48,7,Water Sports
+49,8,MLB
+50,8,NFL
+51,8,NHL
+52,8,NBA
+53,8,NCAA
+54,8,MLS
+55,8,International Soccer
+56,8,World Cup Shop
+57,8,MLB Players
+58,8,NFL Players
+[paslechoix@gw03 ~]$
 	
-mysql> select count(1) from categories where category_id > 22;	
-+----------+
-| count(1) |
-+----------+
-|       36 |
-+----------+
-1 row in set (0.00 sec)
 
 3. Import data from catagories table, where catagory between 1 and 22 (Data should be stored in categories_subset_3) 
 
@@ -67,6 +152,14 @@ sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
 	--table=categories \
 	--warehouse-dir=categories_subset3 \
 	--where "category_id>1 and category_id <22";
+
+sqoop import --connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--warehouse-dir=categories_subset3 \
+--table=categories \
+--where "category_id between 1 and 22"	
+
 
 18/01/30 21:57:09 INFO mapreduce.ImportJobBase: Retrieved 20 records.
 
@@ -78,14 +171,27 @@ Found 5 items
 -rw-r--r--   3 paslechoix hdfs         99 2018-01-30 21:57 categories_subset3/categories/part-m-00002
 -rw-r--r--   3 paslechoix hdfs         94 2018-01-30 21:57 categories_subset3/categories/part-m-00003
 
+[paslechoix@gw01 ~]$ hdfs dfs -cat categories_subset3/categories/*
 
 mysql> select count(1) from categories where category_id > 1 and category_id <22;
+select count(1) from categories where category_id between 1 and 22;
 +----------+
 | count(1) |
 +----------+
 |       20 |
 +----------+
 1 row in set (0.00 sec)
+
+mysql> select count(1) from categories where category_id between 1 and 22;
++----------+
+| count(1) |
++----------+
+|       22 |
++----------+
+1 row in set (0.00 sec)
+
+Attention: between is a close set, "between 1 and 22" includes 1 and 22, to exclude 1 and 22, either use "between 2 and 21" or use "category_id > 1 and category_id <22"
+
 
 4. While importing catagories data change the delimiter to 'I' (Data should be stored in categories_subset_6) 
 sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
