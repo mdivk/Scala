@@ -194,6 +194,75 @@ Attention: between is a close set, "between 1 and 22" includes 1 and 22, to excl
 
 
 4. While importing catagories data change the delimiter to 'I' (Data should be stored in categories_subset_6) 
+sqoop import --connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=categories \
+--warehouse-dir=categories_subset_6 \
+--fields-terminated-by '|'
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat categories_subset_6/categories/*
+1|2|Football
+2|2|Soccer
+3|2|Baseball & Softball
+4|2|Basketball
+5|2|Lacrosse
+6|2|Tennis & Racquet
+7|2|Hockey
+8|2|More Sports
+9|3|Cardio Equipment
+10|3|Strength Training
+11|3|Fitness Accessories
+12|3|Boxing & MMA
+13|3|Electronics
+14|3|Yoga & Pilates
+15|3|Training by Sport
+16|3|As Seen on  TV!
+17|4|Cleats
+18|4|Men's Footwear
+19|4|Women's Footwear
+20|4|Kids' Footwear
+21|4|Featured Shops
+22|4|Accessories
+23|5|Men's Apparel
+24|5|Women's Apparel
+25|5|Boys' Apparel
+26|5|Girls' Apparel
+27|5|Accessories
+28|5|Top Brands
+29|5|Shop By Sport
+30|6|Men's Golf Clubs
+31|6|Women's Golf Clubs
+32|6|Golf Apparel
+33|6|Golf Shoes
+34|6|Golf Bags & Carts
+35|6|Golf Gloves
+36|6|Golf Balls
+37|6|Electronics
+38|6|Kids' Golf Clubs
+39|6|Team Shop
+40|6|Accessories
+41|6|Trade-In
+42|7|Bike & Skate Shop
+43|7|Camping & Hiking
+44|7|Hunting & Shooting
+45|7|Fishing
+46|7|Indoor/Outdoor Games
+47|7|Boating
+48|7|Water Sports
+49|8|MLB
+50|8|NFL
+51|8|NHL
+52|8|NBA
+53|8|NCAA
+54|8|MLS
+55|8|International Soccer
+56|8|World Cup Shop
+57|8|MLB Players
+58|8|NFL Players
+[paslechoix@gw03 ~]$
+
+
 sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
 	--username=retail_user \
 	--password=itversity \
@@ -212,6 +281,76 @@ sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
 58|8|NFL Players
 
 5. Importing data from catagories table and restrict the import to category_name,category_id columns only with delimiter as '|' 
+
+sqoop import --connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=categories \
+--columns "category_name,category_id" \
+--warehouse-dir=categories_subset_7
+
+[paslechoix@gw01 ~]$ hdfs dfs -cat categories_subset_7/categories/*
+Football,1
+Soccer,2
+Baseball & Softball,3
+Basketball,4
+Lacrosse,5
+Tennis & Racquet,6
+Hockey,7
+More Sports,8
+Cardio Equipment,9
+Strength Training,10
+Fitness Accessories,11
+Boxing & MMA,12
+Electronics,13
+Yoga & Pilates,14
+Training by Sport,15
+As Seen on  TV!,16
+Cleats,17
+Men's Footwear,18
+Women's Footwear,19
+Kids' Footwear,20
+Featured Shops,21
+Accessories,22
+Men's Apparel,23
+Women's Apparel,24
+Boys' Apparel,25
+Girls' Apparel,26
+Accessories,27
+Top Brands,28
+Shop By Sport,29
+Men's Golf Clubs,30
+Women's Golf Clubs,31
+Golf Apparel,32
+Golf Shoes,33
+Golf Bags & Carts,34
+Golf Gloves,35
+Golf Balls,36
+Electronics,37
+Kids' Golf Clubs,38
+Team Shop,39
+Accessories,40
+Trade-In,41
+Bike & Skate Shop,42
+Camping & Hiking,43
+Hunting & Shooting,44
+Fishing,45
+Indoor/Outdoor Games,46
+Boating,47
+Water Sports,48
+MLB,49
+NFL,50
+NHL,51
+NBA,52
+NCAA,53
+MLS,54
+International Soccer,55
+World Cup Shop,56
+MLB Players,57
+NFL Players,58
+[paslechoix@gw03 ~]$
+
+
 
 sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
 	--username=retail_user \
@@ -235,10 +374,46 @@ NFL Players|58
 ALTER TABLE categories modify category_department_id int(11); 
 INSERT INTO categories values(60,null, ‘testing’); 
 
+mysql> use retail_export;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
 
-7. Importing data from catagories table (In categories_subset_17 directory) using 'l' delimiter and category_id between 1 and 61 and encode null values for both string and non string columns. 
+Database changed
+mysql> select max(category_id) from categories;
++------------------+
+| max(category_id) |
++------------------+
+|               60 |
++------------------+
+1 row in set (0.00 sec)
+
+mysql> select * from categories where category_id = 60;
++-------------+------------------------+---------------+
+| category_id | category_department_id | category_name |
++-------------+------------------------+---------------+
+|          60 |                   NULL | testing       |
++-------------+------------------------+---------------+
+1 row in set (0.00 sec)
+
+
+7. Importing data from catagories table (In categories_subset_17 directory) using '|' delimiter and category_id between 1 and 61 and encode null values for both string and non string columns. 
 
 As I know the category_id is 60 that contains NULL value for testing, so I I just use where "category_id = 60" as the where condition below:
+
+sqoop import -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=categories \
+--warehouse-dir=categories_subset_8 \
+--null-string '\\N' --null-non-string '\\N' \
+--where "category_id = 60" \
+--fields-terminated-by '|' 
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat categories_subset_8/categories/*
+60|\N|testing
+
+hdfs dfs -rm -R categories_subset8
 
 sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_export -m 1 \
 	--username=retail_user \
@@ -247,8 +422,16 @@ sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_export -m 1 \
 	--warehouse-dir=categories_subset8 \
 	--where "category_id = 60" \
 	--fields-terminated-by '|' \
-	--null-string=’N’ \
-	--null-non-string=’N’ 
+	--null-string='NA' \
+	--null-non-string='999' 
+[paslechoix@gw03 ~]$ hdfs dfs -cat categories_subset8/categories/*
+60|999|testing
+
+Attention:
+--null-string: if the fields with Null value is type of string, then the NULL will be replaced by the value indicated in this option (in this example it is 'NA')
+--null-non-string: if the fields with Null value is type of non-string, then the NULL will be replaced by the value indicated in this option (in this example it is 999)
+Because category_department_id is int and is NULL for category_id of 60, so it is replaced by 999.
+
 
 [paslechoix@gw01 java_output]$ hdfs dfs -cat categories_subset8/categories/part-m-00000
 60|’N’|testing
