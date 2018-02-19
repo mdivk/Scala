@@ -7,6 +7,21 @@ jdbc URL = jdbc:mysql://quickstart:3306/retail_db
 Please accomplish following activities. 
 1. List all the tables using sqoop command from retail_db 
 
+
+sqoop list-tables \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity 
+
+categories
+customers
+departments
+order_items
+order_items_nopk
+orders
+products
+[paslechoix@gw03 ~]$
+
 sqoop list-tables \
 --connect jdbc:mysql://ms.itversity.com/retail_db \
 --username=retail_user \
@@ -27,6 +42,18 @@ sqoop eval \
 --connect jdbc:mysql://ms.itversity.com/retail_db \
 --username=retail_user \
 --password=itversity \
+--query "select count(1) from products" 
+
+------------------------
+| count(1)             |
+------------------------
+| 1345                 |
+------------------------
+
+sqoop eval \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
 --query "select count(1) from customers"
 
 ------------------------
@@ -42,8 +69,44 @@ sqoop import-all-tables  \
 --connect jdbc:mysql://ms.itversity.com/retail_db \
 --username=retail_user \
 --password=itversity \
---warehouse-dir=/user/hive/warehouse/paslechoix \
+--warehouse-dir=/user/hive/warehouse/paslechoix1 \
 --as-avrodatafile
+
+sqoop import-all-tables -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--warehouse-dir=/user/hive/warehouse/paslechoix_avro \
+--as-avrodatafile
+
+
+sqoop import-all-tables -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--warehouse-dir=/user/hive/warehouse/paslechoix_txt \
+--as-textfile
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls /user/hive/warehouse/paslechoix_txt
+Found 7 items
+drwxr-xr-x   - paslechoix hadoopthoughtworks          0 2018-02-19 15:27 /user/hive/warehouse/paslechoix_txt/categories
+drwxr-xr-x   - paslechoix hadoopthoughtworks          0 2018-02-19 15:28 /user/hive/warehouse/paslechoix_txt/customers
+drwxr-xr-x   - paslechoix hadoopthoughtworks          0 2018-02-19 15:30 /user/hive/warehouse/paslechoix_txt/departments
+drwxr-xr-x   - paslechoix hadoopthoughtworks          0 2018-02-19 15:31 /user/hive/warehouse/paslechoix_txt/order_items
+drwxr-xr-x   - paslechoix hadoopthoughtworks          0 2018-02-19 15:32 /user/hive/warehouse/paslechoix_txt/order_items_nopk
+drwxr-xr-x   - paslechoix hadoopthoughtworks          0 2018-02-19 15:33 /user/hive/warehouse/paslechoix_txt/orders
+drwxr-xr-x   - paslechoix hadoopthoughtworks          0 2018-02-19 15:34 /user/hive/warehouse/paslechoix_txt/products
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat /user/hive/warehouse/paslechoix_txt/categories/*
+1,2,Football
+2,2,Soccer
+3,2,Baseball & Softball
+4,2,Basketball
+5,2,Lacrosse
+6,2,Tennis & Racquet
+7,2,Hockey
+8,2,More Sports
+9,3,Cardio Equipment
 
 hdfs dfs -ls /user/hive/warehouse/paslechoix
 [paslechoix@gw01 ~]$ hdfs dfs -ls /user/hive/warehouse/paslechoix
@@ -63,12 +126,18 @@ Found 5 items
 
 
 4. Import departments table as a text tile in /user/hive/warehouse/paslechoix/departments_as_txt.  
+
+sqoop import-all-tables -m 1 \
+--connect jdbc:mysql://ms.itversity.com \
+--username=retail_user \
+--password=itversity \
+
 sqoop import  \
---connect jdbc:mysql://ms.itversity.com/retail_db \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
 --username=retail_user \
 --password=itversity \
 --table=departments \
---warehouse-dir=/user/hive/warehouse/paslechoix/departments_as_txt \
+--warehouse-dir=/user/hive/warehouse/paslechoix/departments_as_txt2 \
 --as-textfile
 
 [paslechoix@gw01 ~]$ hdfs dfs -cat /user/hive/warehouse/paslechoix/departments_as_txt/departments/*
