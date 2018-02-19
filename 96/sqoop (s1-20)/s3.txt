@@ -437,6 +437,13 @@ Because category_department_id is int and is NULL for category_id of 60, so it i
 60|’N’|testing
 	
 8. Import entire schema retail_db in a directory categories_subset all tables 
+
+sqoop import-all-tables \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+	--username=retail_user \
+	--password=itversity \
+	--warehouse-dir=retail_db1
+
 sqoop import-all-tables \
 --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
 	--username=retail_user \
@@ -450,5 +457,21 @@ drwxr-xr-x   - paslechoix hdfs          0 2018-01-30 22:34 retail_db/departments
 drwxr-xr-x   - paslechoix hdfs          0 2018-01-16 00:21 retail_db/order_def
 drwxr-xr-x   - paslechoix hdfs          0 2018-01-15 16:58 retail_db/order_items
 
+hdfs dfs -rm -R retail_db
 
-Import data from 
+
+sqoop import-all-tables -m 1 \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+	--username=retail_user \
+	--password=itversity \
+	--warehouse-dir=retail_db
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls retail_db
+Found 7 items
+drwxr-xr-x   - paslechoix hdfs          0 2018-02-19 07:43 retail_db/categories
+drwxr-xr-x   - paslechoix hdfs          0 2018-02-19 07:44 retail_db/customers
+drwxr-xr-x   - paslechoix hdfs          0 2018-02-19 07:44 retail_db/departments
+drwxr-xr-x   - paslechoix hdfs          0 2018-02-19 07:45 retail_db/order_items
+drwxr-xr-x   - paslechoix hdfs          0 2018-02-19 07:46 retail_db/order_items_nopk
+drwxr-xr-x   - paslechoix hdfs          0 2018-02-19 07:47 retail_db/orders
+drwxr-xr-x   - paslechoix hdfs          0 2018-02-19 07:48 retail_db/products
