@@ -8,9 +8,45 @@ Please accomplish following.
 2. Also make sure each tables tile is partitioned in 2 tiles e.g. part-00001, part-00002 
 3. Also make sure you have imported only two columns from table, which are department_id,department_name 
 
+Raw data:
+
+mysql> select department_id, department_name from departments where department_id between 1 and 25;
++---------------+-----------------+
+| department_id | department_name |
++---------------+-----------------+
+|             2 | Fitness         |
+|             3 | Footwear        |
+|             4 | Apparel         |
+|             5 | Golf            |
+|             6 | Outdoors        |
+|             7 | Fan Shop        |
++---------------+-----------------+
+6 rows in set (0.00 sec)
+
+mysql>
+
+
 sqoop import -m 2 --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
 --username=retail_user \
 --password=itversity \
 --table=departments \
 --columns=department_id,department_name \
 --where="department_id between 1 and 25" 
+
+
+sqoop import -m 2 --connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--target-dir departments_columns \
+--columns department_id,department_name \
+--where="department_id between 1 and 25" 
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat departments_columns/*
+2,Fitness
+3,Footwear
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
+[paslechoix@gw03 ~]$

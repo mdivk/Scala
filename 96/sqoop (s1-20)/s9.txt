@@ -59,3 +59,60 @@ Found 7 items
 7|Fan Shop
 
 
+sqoop import --connect jdbc:mysql://ms.itversity.com/retail_db \
+--username retail_user \
+--password itversity \
+--table departments \
+--columns department_id,department_name \
+--target-dir departments \
+--append \
+--where "department_id between 1 and 25"  \
+--fields-terminated-by '&' \
+--lines-terminated-by '\n'
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat departments/*
+2&Fitness
+3&Footwear
+4&Apparel
+5&Golf
+6&Outdoors
+7&Fan Shop
+2&Fitness
+3&Footwear
+4&Apparel
+5&Golf
+6&Outdoors
+7&Fan Shop
+[paslechoix@gw03 ~]$
+
+
+sqoop import --connect jdbc:mysql://ms.itversity.com/retail_db \
+--username retail_user \
+--password itversity \
+--table departments \
+--columns department_id,department_name \
+--target-dir departments \
+--append \
+--where "department_id between 1 and 25"  \
+--fields-terminated-by '|' \
+--lines-terminated-by '\n'
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat departments/*
+2&Fitness
+3&Footwear
+4&Apparel
+5&Golf
+6&Outdoors
+7&Fan Shop
+2&Fitness
+3&Footwear
+4&Apparel
+5&Golf
+6&Outdoors
+7&Fan Shop
+2|Fitness
+3|Footwear
+4|Apparel
+5|Golf
+6|Outdoors
+7|Fan Shop
