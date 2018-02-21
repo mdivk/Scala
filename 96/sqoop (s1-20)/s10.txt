@@ -1,6 +1,6 @@
-10. Problem Scenario  : You have been given following mysql database details as well as other into. 
+10. Problem Scenario  : You have been given following mysql database details as well as other info. 
 
-User=retail=dba 
+User=retail_dba 
 password=cloudera 
 database=retail_db 
 jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
@@ -14,5 +14,26 @@ e.g. location should be hdfs://quickstart.cloudera:8020/user/hive/warehouse/hado
 
 
 create database hadoopexam;
-create table departments(department_id int, department_name string)
-with location= 
+create table departments(department_id int, department_name string) location "/user/hive/warehouse/paslechoix.db/departments"; 
+
+
+Create table on Hive:
+hive (default)> create table departments_hive2(department_id int, department_name string) location "/user/hive/warehouse/paslechoix.db/
+departments_hive";
+
+Import data from mysql to hive:
+
+
+hdfs dfs -rm -R /user/paslechoix/departments
+
+sqoop import --connect jdbc:mysql://ms.itversity.com/retail_db \
+--username retail_user \
+--password itversity \
+--hive-import \
+--hive-table departments_hive2 \
+--table departments \
+--columns department_id,department_name \
+--where "department_id between 1 and 25"  
+
+
+

@@ -3,7 +3,7 @@ user=retail_dba
 password=cloudera 
 database=retail_db 
 jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
-Compression Codec : org.apache.hadoop.io.compress.snappycodec 
+Compression Codec : org.apache.hadoop.io.compress.SnappyCodec 
 Please accomplish following. 
 1. Import entire database such that it can be used as a hive tables, it must be created in default schema. 
 2. Also make sure each tables file is partitioned in 3 files e.g. part-0000, part-00002, part-00003 
@@ -15,6 +15,27 @@ drop table ....
 drop database ....
 
 2. 
+
+sqoop import-all-tables -m 3 \
+--connect "jdbc:mysql://ms.itversity.com:3306/retail_db" \
+--username=retail_user \
+--password=itversity \
+--hive-import \
+--hive-database paslechoix1 \
+--create-hive-table \
+--compress \
+--compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+--outdir java_output
+
+hive (paslechoix1)> show tables;
+OK
+categories
+customers
+departments
+Time taken: 0.13 seconds, Fetched: 3 row(s)
+hive (paslechoix1)>
+
+
 sqoop import-all-tables -m 3 \
 --connect "jdbc:mysql://ms.itversity.com:3306/retail_db" \
 --username=retail_user \
