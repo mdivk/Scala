@@ -30,10 +30,49 @@ sqoop import --connect jdbc:mysql://ms.itversity.com/retail_db \
 --username retail_user \
 --password itversity \
 --hive-import \
---hive-table departments_hive2 \
---table departments \
+--hive-table departments_hive3 \
+--table=departments \
 --columns department_id,department_name \
 --where "department_id between 1 and 25"  
+
+Attention:
+
+Not only the data has been imported to hdfs, but a hive table is actually created with the location of /apps/hive/warehouse/departments_hive3 where is the default location for default database in hive and departments_hive3 is the specified table's name in the sqoop command.
+
+hive (default)> select * from departments_hive3;
+OK
+2       Fitness
+3       Footwear
+4       Apparel
+5       Golf
+6       Outdoors
+7       Fan Shop
+Time taken: 1.005 seconds, Fetched: 6 row(s)
+hive (default)>
+
+
+hive (default)> show create table departments_hive3;
+OK
+CREATE TABLE `departments_hive3`(
+  `department_id` int,
+  `department_name` string)
+COMMENT 'Imported by sqoop on 2018/02/20 22:29:13'
+ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY '\u0001'
+  LINES TERMINATED BY '\n'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.mapred.TextInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://nn01.itversity.com:8020/apps/hive/warehouse/departments_hive3'
+TBLPROPERTIES (
+  'numFiles'='4',
+  'numRows'='0',
+  'rawDataSize'='0',
+  'totalSize'='60',
+  'transient_lastDdlTime'='1519183766')
+Time taken: 0.14 seconds, Fetched: 19 row(s)
 
 
 
