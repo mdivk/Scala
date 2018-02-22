@@ -93,6 +93,19 @@ Step 4 : Convert RDD info key value as (order_id as a key and rest of the values
 (u'35466', u'35466,2014-02-28 00:00:00.0,10141,PENDING_PAYMENT')
 
 
+>>> ordersMap = orders.map(lambda line: (int(line.split(",")[0]), line))
+>>> for line in ordersMap.collect():print(line)
+(68876, u'68876,2014-07-06 00:00:00.0,4124,COMPLETE')
+(68877, u'68877,2014-07-07 00:00:00.0,9692,ON_HOLD')
+(68878, u'68878,2014-07-08 00:00:00.0,6753,COMPLETE')
+(68879, u'68879,2014-07-09 00:00:00.0,778,COMPLETE')
+(68880, u'68880,2014-07-13 00:00:00.0,1117,COMPLETE')
+(68881, u'68881,2014-07-19 00:00:00.0,2518,PENDING_PAYMENT')
+(68882, u'68882,2014-07-22 00:00:00.0,10000,ON_HOLD')
+(68883, u'68883,2014-07-23 00:00:00.0,5533,COMPLETE')
+
+
+
 #Second value as an Order id 
 >>> orderltemsMap = orderltems.map(lambda line: (int(line.split(",")[1]),line))
 >>> for line in orderltemsMap.collect():print(line)
@@ -108,28 +121,59 @@ Step 4 : Convert RDD info key value as (order_id as a key and rest of the values
 Step 5 : Join both the RDD using order_id 
 joinedData = orderltemsMap.join(ordersMap) 
 >>> for line in joinedData.collect():print(line)
+(40156, (u'100202,40156,1073,1,199.99,199.99', u'40156,2014-03-30 00:00:00.0,5573,PENDING_PAYMENT'))
+(40156, (u'100203,40156,926,5,79.95,15.99', u'40156,2014-03-30 00:00:00.0,5573,PENDING_PAYMENT'))
+(11564, (u'28917,11564,957,1,299.98,299.98', u'11564,2013-10-04 00:00:00.0,1542,COMPLETE'))
+(11564, (u'28918,11564,1014,1,49.98,49.98', u'11564,2013-10-04 00:00:00.0,1542,COMPLETE'))
+(11568, (u'28927,11568,502,2,100.0,50.0', u'11568,2013-10-04 00:00:00.0,10042,PENDING_PAYMENT'))
+(34696, (u'86653,34696,502,1,50.0,50.0', u'34696,2014-02-24 00:00:00.0,4666,ON_HOLD'))
+(34696, (u'86654,34696,403,1,129.99,129.99', u'34696,2014-02-24 00:00:00.0,4666,ON_HOLD'))
+
+>>> joinedData.count()
+172198
+
 
 joinedData1 = orderMap.join(orderItemsMap) 
 >>> for line in joinedData.collect():print(line)
 
 #print the joined data 
-for line in joinedData.collect(): 
-print(line) 
-Format of joinedData as below. 
-[Orderid, 'All columns from orderltemsKeyValue' , 'All columns from ordersKeyValue'] 
+joinedData = orderltemsMap.join(ordersMap) 
+>>> for line in joinedData.collect():print(line)
+(40156, (u'100202,40156,1073,1,199.99,199.99', u'40156,2014-03-30 00:00:00.0,5573,PENDING_PAYMENT'))
+(40156, (u'100203,40156,926,5,79.95,15.99', u'40156,2014-03-30 00:00:00.0,5573,PENDING_PAYMENT'))
+(11564, (u'28917,11564,957,1,299.98,299.98', u'11564,2013-10-04 00:00:00.0,1542,COMPLETE'))
+(11564, (u'28918,11564,1014,1,49.98,49.98', u'11564,2013-10-04 00:00:00.0,1542,COMPLETE'))
+(11568, (u'28927,11568,502,2,100.0,50.0', u'11568,2013-10-04 00:00:00.0,10042,PENDING_PAYMENT'))
+(34696, (u'86653,34696,502,1,50.0,50.0', u'34696,2014-02-24 00:00:00.0,4666,ON_HOLD'))
+(34696, (u'86654,34696,403,1,129.99,129.99', u'34696,2014-02-24 00:00:00.0,4666,ON_HOLD'))
 
 Step 6 : Now fetch selected values Orderld, Order date and amount collected on this order. 
-revenuePerOrderPerDay = joinedData.map(lambda row: (row[O],row[1][1].split(“,”)[1],float(row[1][0].split(“,”)[4]))) 
+revenuePerOrderPerDay = joinedData.map(lambda row: (row[0],row[1][1].split(",")[1],float(row[1][0].split(",")[4]))) 
 #print the result 
 for line in revenuePerOrderPerDay.collect(): 
 print(line) 
+(55388, u'2014-07-10 00:00:00.0', 199.99)
+(54352, u'2014-07-03 00:00:00.0', 299.98)
+(42668, u'2014-04-14 00:00:00.0', 149.94)
+(59404, u'2013-09-27 00:00:00.0', 199.98)
+(59404, u'2013-09-27 00:00:00.0', 399.98)
+(59404, u'2013-09-27 00:00:00.0', 299.95)
+(59404, u'2013-09-27 00:00:00.0', 199.92)
+
+>>> revenuePerOrderPerDay.count()
+172198
+
 
 Step 7 : Select distinct order ids for each date. 
 #distinct(date,order_id) 
-distinctOrdersDate = joinedData.map(lambda row:row[1][1].split(“,”)[1]+”,”+str(row[0])).distinct() 
-for line in distinctOrdersDate.collect(): 
-
-print(line) 
+distinctOrdersDate = joinedData.map(lambda row:row[1][1].split(",")[1]+","+str(row[0])).distinct() 
+for line in distinctOrdersDate.collect(): print(line) 
+2014-02-01 00:00:00.0,68088
+2014-05-17 00:00:00.0,65551
+2014-04-25 00:00:00.0,44248
+2013-10-25 00:00:00.0,60121
+2014-04-08 00:00:00.0,41754
+2013-10-25 00:00:00.0,60125
 
 Step 8 : Similar to word count , generate (date, 1) record for each row. 
 newLineTuple = distinctOrdersDate.map(lambda line: (line.split(",”)[0],1)) 
