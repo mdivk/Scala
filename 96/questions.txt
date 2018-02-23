@@ -1,4 +1,4 @@
-Problem Scenario 4: You have been given MySQL DB with following details. 
+﻿Problem Scenario 4: You have been given MySQL DB with following details. 
 user=retail_dba 
 password=cloudera 
 database=retail_db 
@@ -30,7 +30,7 @@ FAILED: IllegalStateException Unxpected Exception thrown: Unable to fetch table 
 
 Can anyone please help me? Thank you very much.
 
-
+    
 Answer:
 sqoop import --connect jdbc:mysql://ms.itversity.com:3306/retail_export \
 	--username=retail_user \
