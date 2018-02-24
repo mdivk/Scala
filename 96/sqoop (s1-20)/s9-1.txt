@@ -1,0 +1,183 @@
+Problem Scenario 9 : You have been given following mysql database details as well as other info. 
+user=retail_dba 
+password=cloudera 
+database=retail_db 
+jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
+Please accomplish following. 
+1. Import departments table in a directory. 
+2. Again import departments table same directory (However, directory already exist hence it should not overrride and append the results) 
+3. Also make sure your results fields are terminated by '|' and lines terminated by '\n'. 
+
+
+
+First time import:
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--target-dir=departments
+
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-02-24 15:12 departments/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs         21 2018-02-24 15:12 departments/part-m-00000
+-rw-r--r--   3 paslechoix hdfs         10 2018-02-24 15:12 departments/part-m-00001
+-rw-r--r--   3 paslechoix hdfs          7 2018-02-24 15:12 departments/part-m-00002
+-rw-r--r--   3 paslechoix hdfs         22 2018-02-24 15:12 departments/part-m-00003
+
+[paslechoix@gw01 ~]$ hdfs dfs -cat departments/*
+2,Fitness
+3,Footwear
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
+[paslechoix@gw01 ~]$
+
+Now to import with append option
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--target-dir=departments \
+--append
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments
+Found 9 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-02-24 15:12 departments/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs         21 2018-02-24 15:12 departments/part-m-00000
+-rw-r--r--   3 paslechoix hdfs         10 2018-02-24 15:12 departments/part-m-00001
+-rw-r--r--   3 paslechoix hdfs          7 2018-02-24 15:12 departments/part-m-00002
+-rw-r--r--   3 paslechoix hdfs         22 2018-02-24 15:12 departments/part-m-00003
+-rw-r--r--   3 paslechoix hdfs         21 2018-02-24 15:14 departments/part-m-00004
+-rw-r--r--   3 paslechoix hdfs         10 2018-02-24 15:14 departments/part-m-00005
+-rw-r--r--   3 paslechoix hdfs          7 2018-02-24 15:14 departments/part-m-00006
+-rw-r--r--   3 paslechoix hdfs         22 2018-02-24 15:14 departments/part-m-00007
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat departments/*
+2,Fitness
+3,Footwear
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
+2,Fitness
+3,Footwear
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
+
+remove the second parts:
+[paslechoix@gw03 ~]$ hdfs dfs -ls departments
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-02-24 15:12 departments/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs         21 2018-02-24 15:12 departments/part-m-00000
+-rw-r--r--   3 paslechoix hdfs         10 2018-02-24 15:12 departments/part-m-00001
+-rw-r--r--   3 paslechoix hdfs          7 2018-02-24 15:12 departments/part-m-00002
+-rw-r--r--   3 paslechoix hdfs         22 2018-02-24 15:12 departments/part-m-00003
+
+[paslechoix@gw01 ~]$ hdfs dfs -cat departments/*
+2,Fitness
+3,Footwear
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
+[paslechoix@gw01 ~]$
+
+add the two terminators
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--target-dir=departments \
+--append \
+--fields-terminated-by '\t' \
+--lines-terminated-by '\n'
+
+
+After import:
+[paslechoix@gw03 ~]$ hdfs dfs -ls departments
+Found 9 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-02-24 15:12 departments/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs         21 2018-02-24 15:12 departments/part-m-00000
+-rw-r--r--   3 paslechoix hdfs         10 2018-02-24 15:12 departments/part-m-00001
+-rw-r--r--   3 paslechoix hdfs          7 2018-02-24 15:12 departments/part-m-00002
+-rw-r--r--   3 paslechoix hdfs         22 2018-02-24 15:12 departments/part-m-00003
+-rw-r--r--   3 paslechoix hdfs         21 2018-02-24 15:19 departments/part-m-00004
+-rw-r--r--   3 paslechoix hdfs         10 2018-02-24 15:19 departments/part-m-00005
+-rw-r--r--   3 paslechoix hdfs          7 2018-02-24 15:19 departments/part-m-00006
+-rw-r--r--   3 paslechoix hdfs         22 2018-02-24 15:19 departments/part-m-00007
+
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat departments/*
+2,Fitness
+3,Footwear
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
+2       Fitness
+3       Footwear
+4       Apparel
+5       Golf
+6       Outdoors
+7       Fan Shop
+
+Append another time with | as the field delimiter
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--target-dir=departments \
+--append \
+--fields-terminated-by '|' \
+--lines-terminated-by '\n'
+
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls departments
+Found 13 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-02-24 15:12 departments/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs         21 2018-02-24 15:12 departments/part-m-00000
+-rw-r--r--   3 paslechoix hdfs         10 2018-02-24 15:12 departments/part-m-00001
+-rw-r--r--   3 paslechoix hdfs          7 2018-02-24 15:12 departments/part-m-00002
+-rw-r--r--   3 paslechoix hdfs         22 2018-02-24 15:12 departments/part-m-00003
+-rw-r--r--   3 paslechoix hdfs         21 2018-02-24 15:19 departments/part-m-00004
+-rw-r--r--   3 paslechoix hdfs         10 2018-02-24 15:19 departments/part-m-00005
+-rw-r--r--   3 paslechoix hdfs          7 2018-02-24 15:19 departments/part-m-00006
+-rw-r--r--   3 paslechoix hdfs         22 2018-02-24 15:19 departments/part-m-00007
+-rw-r--r--   3 paslechoix hdfs         21 2018-02-24 15:22 departments/part-m-00008
+-rw-r--r--   3 paslechoix hdfs         10 2018-02-24 15:22 departments/part-m-00009
+-rw-r--r--   3 paslechoix hdfs          7 2018-02-24 15:22 departments/part-m-00010
+-rw-r--r--   3 paslechoix hdfs         22 2018-02-24 15:22 departments/part-m-00011
+
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat departments/*
+2,Fitness
+3,Footwear
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
+2       Fitness
+3       Footwear
+4       Apparel
+5       Golf
+6       Outdoors
+7       Fan Shop
+2|Fitness
+3|Footwear
+4|Apparel
+5|Golf
+6|Outdoors
+7|Fan Shop
+
