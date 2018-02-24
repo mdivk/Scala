@@ -1,0 +1,56 @@
+Problem Scenario 7 : You have been given following mysql database details as well as other info. 
+User=retail_dba 
+password=cloudera 
+database=retail db 
+jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
+Please accomplish following. 
+1. Import department tables using your custome boundary query, which import departments between 1 to 25. 
+2. Also make sure each tables tile is partitioned in 2 tiles e.g. part-00001, part-00002 
+3. Also make sure you have imported only two columns from table, which are department_id,department_name 
+
+Raw data:
+
+mysql> select department_id, department_name from departments where department_id between 1 and 25;
++---------------+-----------------+
+| department_id | department_name |
++---------------+-----------------+
+|             2 | Fitness         |
+|             3 | Footwear        |
+|             4 | Apparel         |
+|             5 | Golf            |
+|             6 | Outdoors        |
+|             7 | Fan Shop        |
++---------------+-----------------+
+6 rows in set (0.00 sec)
+
+mysql>
+
+
+sqoop import -m 2 \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table departments \
+--columns department_id,department_name \
+--target-dir department_two_columns \
+--where "department_id between 1 and 25"
+
+Attention:
+1. for all the options, no leading space, i.e. --username = retail_user is not accepted
+2. in the columns option, no leading space is allowed except the first one
+
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls department_two_columns
+Found 3 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-02-24 14:17 department_two_columns/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs         31 2018-02-24 14:17 department_two_columns/part-m-00000
+-rw-r--r--   3 paslechoix hdfs         29 2018-02-24 14:17 department_two_columns/part-m-00001
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat department_two_columns/*
+2,Fitness
+3,Footwear
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
+
