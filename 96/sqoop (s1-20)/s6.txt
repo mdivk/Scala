@@ -9,6 +9,16 @@ Please accomplish following.
 2. Also make sure each tables file is partitioned in 3 files e.g. part-0000, part-00002, part-00003 
 3. Store all the java files in a directory called java_output to evaluate the further 
 
+
+
+Available codec can be found at /etc/hadoop/conf/coresite.xml
+
+    <property>
+      <name>io.compression.codecs</name>
+      <value>org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec</value>
+    </property>
+
+
 1. Clean up previous work
 
 drop table ....
