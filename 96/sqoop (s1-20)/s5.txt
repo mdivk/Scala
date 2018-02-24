@@ -69,7 +69,7 @@ sqoop import-all-tables  \
 --connect jdbc:mysql://ms.itversity.com/retail_db \
 --username=retail_user \
 --password=itversity \
---warehouse-dir=/user/hive/warehouse/paslechoix1 \
+--warehouse-dir=/user/hive/warehouse/paslechoix2 \
 --as-avrodatafile
 
 sqoop import-all-tables -m 1 \
@@ -79,6 +79,12 @@ sqoop import-all-tables -m 1 \
 --warehouse-dir=/user/hive/warehouse/paslechoix_avro \
 --as-avrodatafile
 
+sqoop import-all-tables  \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--warehouse-dir=/user/hive/warehouse/paslechoix2_text \
+--as-textfile
 
 sqoop import-all-tables -m 1 \
 --connect jdbc:mysql://ms.itversity.com/retail_db \

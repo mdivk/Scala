@@ -104,11 +104,13 @@ export the data from following hdfs directory into dep_export table in mysql dat
 
 
 
-sqoop export \
---connect jdbc:mysql://ms.itversity.com/retail_export \
+sqoop export -m 1 \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
 --username=retail_user \
 --password=itversity \
 --table dep_export \
---export-dir departments_new 
+--export-dir departments_new \
+--input-lines-terminated-by '\n' \
+--input-fields-terminated-by '|'
 
 
