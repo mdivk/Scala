@@ -57,3 +57,58 @@ mysql> select * from departments_export;
 +---------------+--------------------+---------------------+
 25 rows in set (0.00 sec)
 
+
+mysql> create table dep_export (dep_id int, dep_name varchar(20), createdon date);
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> desc dep_export;
++-----------+-------------+------+-----+---------+-------+
+| Field     | Type        | Null | Key | Default | Extra |
++-----------+-------------+------+-----+---------+-------+
+| dep_id    | int(11)     | YES  |     | NULL    |       |
+| dep_name  | varchar(20) | YES  |     | NULL    |       |
+| createdon | date        | YES  |     | NULL    |       |
++-----------+-------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+
+export the data from following hdfs directory into dep_export table in mysql database retail_export, newly created table dep_export
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat departments_new/*
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+110,Civil,2018-01-31 22:32:41.0
+111,Mechanical,2018-01-31 22:32:49.0
+112,Automobile,2018-01-31 22:32:49.0
+113,Pharma,2018-01-31 22:32:49.0
+114,social engineering,2018-01-31 22:32:52.0
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+110,Civil,2018-01-31 22:32:41.0
+111,Mechanical,2018-01-31 22:32:49.0
+112,Automobile,2018-01-31 22:32:49.0
+113,Pharma,2018-01-31 22:32:49.0
+114,social engineering,2018-01-31 22:32:52.0
+[paslechoix@gw03 ~]$
+
+
+
+sqoop export \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table dep_export \
+--export-dir departments_new 
+
+
