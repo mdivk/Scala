@@ -84,7 +84,7 @@ sqoop import-all-tables  \
 --username=retail_user \
 --password=itversity \
 --warehouse-dir=/user/hive/warehouse/paslechoix2_text \
---as-textfile
+--as-textfile   
 
 [paslechoix@gw03 ~]$ hdfs dfs -ls /user/hive/warehouse/paslechoix2_text
 Found 4 items
