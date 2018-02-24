@@ -423,7 +423,7 @@ sqoop import -m 1 \
 13,science,2018-01-31 22:24:18.0
 14,engineering,2018-01-31 22:24:18.0
 110,Civil,2018-01-31 22:32:41.0
-111,Mechanical,2018-01-31 22:32:49.0
+111,Mechanical,2018-01-31 22:32:49.0 
 112,Automobile,2018-01-31 22:32:49.0
 113,Pharma,2018-01-31 22:32:49.0
 114,social engineering,2018-01-31 22:32:52.0
@@ -450,3 +450,12 @@ sqoop import -m 1 \
 null,citi,2018-02-22 05:27:23.0
 null,ocean,2018-02-22 05:27:29.0
 null,bns,2018-02-22 05:27:36.0
+
+sqoop import -m 1 \
+--connect="jdbc:mysql://ms.itversity.com/retail_export" \
+--username=retail_user \
+--password=itversity \
+--sqoop.metastore.client.record.password=true \
+--table=departments_new \
+--warehouse-dir=dep_news \
+--append  
