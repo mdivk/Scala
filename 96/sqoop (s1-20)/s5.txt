@@ -86,6 +86,17 @@ sqoop import-all-tables  \
 --warehouse-dir=/user/hive/warehouse/paslechoix2_text \
 --as-textfile
 
+[paslechoix@gw03 ~]$ hdfs dfs -ls /user/hive/warehouse/paslechoix2_text
+Found 4 items
+drwxr-xr-x   - paslechoix hadoopthoughtworks          0 2018-02-24 09:49 /user/hive/warehouse/paslechoix2_text/categories
+drwxr-xr-x   - paslechoix hadoopthoughtworks          0 2018-02-24 09:49 /user/hive/warehouse/paslechoix2_text/customers
+drwxr-xr-x   - paslechoix hadoopthoughtworks          0 2018-02-24 09:50 /user/hive/warehouse/paslechoix2_text/departments
+drwxr-xr-x   - paslechoix hadoopthoughtworks          0 2018-02-24 09:51 /user/hive/warehouse/paslechoix2_text/order_items
+
+
+because some tables do not have int id for splitting to default 4 mappers, so -m 1 must be speficied in order to do the MapReduce in sqoop
+
+
 sqoop import-all-tables -m 1 \
 --connect jdbc:mysql://ms.itversity.com/retail_db \
 --username=retail_user \
