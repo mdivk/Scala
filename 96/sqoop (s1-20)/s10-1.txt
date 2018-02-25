@@ -1,0 +1,177 @@
+10. Problem Scenario  : You have been given following mysql database details as well as other info. 
+
+User=retail_dba 
+password=cloudera 
+database=retail_db 
+jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
+Please accomplish following. 
+
+1. Create a database named hadoopexam and then create a table named departments in it, with following fields. 
+department_id int, 
+department_name string 
+e.g. location should be hdfs://quickstart.cloudera:8020/user/hive/warehouse/hadoopexam.db/departments 
+
+
+hive (paslechoix1)> create table department_hive (dep_id int, dep_name string)
+                  > location "/apps/hive/warehouse/paslechoix1.db/department_hive";
+OK
+Time taken: 0.343 seconds
+hive (paslechoix1)> show tables;
+OK
+categories
+customers
+department_hive
+Time taken: 0.017 seconds, Fetched: 3 row(s)
+hive (paslechoix1)>
+
+
+2. Please import data in existing table created above from retail_db.departments into hive table hadoopexam.departments. 
+
+mysql> use retail_db;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+
+mysql> select * from departments;
++---------------+-----------------+
+| department_id | department_name |
++---------------+-----------------+
+|             2 | Fitness         |
+|             3 | Footwear        |
+|             4 | Apparel         |
+|             5 | Golf            |
+|             6 | Outdoors        |
+|             7 | Fan Shop        |
++---------------+-----------------+
+6 rows in set (0.00 sec)
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table departments \
+--columns department_id,department_name \
+--hive-import \
+--hive-table paslechoix1.department_hive \
+--target-dir="/apps/hive/warehouse/paslechoix1.db/department_hive"
+
+hive (paslechoix1)> show tables;
+OK
+categories
+customers
+department_hive
+Time taken: 0.018 seconds, Fetched: 3 row(s)
+
+hive (paslechoix1)> select * from department_hive;
+OK
+2       Fitness
+3       Footwear
+4       Apparel
+5       Golf
+6       Outdoors
+7       Fan Shop
+Time taken: 0.209 seconds, Fetched: 6 row(s)
+hive (paslechoix1)>
+
+Attention:
+    when indicating hive-table, database should be included, otherwise the hive table means for default database
+
+
+3. Please import data in a non-existing table, means while importing create hive table named hadoopexam.departments_new 
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table departments \
+--columns department_id,department_name \
+--hive-import \
+--hive-table paslechoix1.department_hive2 \
+--create-hive-table \
+--target-dir="/apps/hive/warehouse/paslechoix1.db/department_hive2"
+
+
+hive (paslechoix1)> show tables;
+OK
+categories
+customers
+department_hive
+department_hive2
+Time taken: 0.05 seconds, Fetched: 4 row(s)
+hive (paslechoix1)>
+
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls /apps/hive/warehouse/paslechoix1.db/department_hive2
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-02-24 23:01 /apps/hive/warehouse/paslechoix1.db/department_hive2/_SUCCESS
+-rwxr-xr-x   3 paslechoix hdfs         21 2018-02-24 23:01 /apps/hive/warehouse/paslechoix1.db/department_hive2/part-m-00000
+-rwxr-xr-x   3 paslechoix hdfs         10 2018-02-24 23:01 /apps/hive/warehouse/paslechoix1.db/department_hive2/part-m-00001
+-rwxr-xr-x   3 paslechoix hdfs          7 2018-02-24 23:01 /apps/hive/warehouse/paslechoix1.db/department_hive2/part-m-00002
+-rwxr-xr-x   3 paslechoix hdfs         22 2018-02-24 23:01 /apps/hive/warehouse/paslechoix1.db/department_hive2/part-m-00003
+[paslechoix@gw03 ~]$ hdfs dfs -cat /apps/hive/warehouse/paslechoix1.db/department_hive2/*
+2Fitness
+3Footwear
+4Apparel
+5Golf
+6Outdoors
+7Fan Shop
+[paslechoix@gw03 ~]$
+
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table departments \
+--columns department_id,department_name \
+--hive-import \
+--hive-table paslechoix1.department_hive3 \
+--target-dir="/apps/hive/warehouse/paslechoix1.db/department_hive3" \
+--fields-terminated-by ',' \
+--lines-terminated-by '\n'
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat /apps/hive/warehouse/paslechoix1.db/department_hive3/*                   
+2,Fitness
+3,Footwear
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
+[paslechoix@gw03 ~]$
+
+hive (paslechoix1)> select * from department_hive3;
+OK
+2       Fitness
+3       Footwear
+4       Apparel
+5       Golf
+6       Outdoors
+7       Fan Shop
+Time taken: 0.209 seconds, Fetched: 6 row(s)
+
+hive (paslechoix1)> show create table department_hive3;
+OK
+CREATE TABLE `department_hive3`(
+  `department_id` int,
+  `department_name` string)
+COMMENT 'Imported by sqoop on 2018/02/24 23:10:49'
+ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY ','
+  LINES TERMINATED BY '\n'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.mapred.TextInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://nn01.itversity.com:8020/apps/hive/warehouse/paslechoix1.db/department_hive3'
+TBLPROPERTIES (
+  'numFiles'='4',
+  'numRows'='0',
+  'rawDataSize'='0',
+  'totalSize'='60',
+  'transient_lastDdlTime'='1519531862')
+Time taken: 0.031 seconds, Fetched: 19 row(s)
+hive (paslechoix1)>
+

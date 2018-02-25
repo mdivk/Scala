@@ -26,8 +26,10 @@ sqoop import \
 --username=retail_user \
 --password=itversity \
 --table=departments \
---target-dir=departments_text \
---as-textfile 
+--target-dir=departments_text1 \
+--as-textfile
+
+
 
 [paslechoix@gw01 ~]$ hdfs dfs -ls departments_text
 Found 5 items

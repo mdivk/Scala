@@ -114,3 +114,7 @@ sqoop export -m 1 \
 --input-fields-terminated-by '|'
 
 
+Attention:
+
+
+
