@@ -33,6 +33,28 @@ Found 5 items
 
 
 2. Once import is done, please insert following 5 records in departments mysql table. 
+
+mysql> create table if not exists departments_1 (dep_id int, dep_name varchar(30));
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> insert into departments_1 select * from retail_db.departments;
+Query OK, 6 rows affected (0.01 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql> select * from departments_1;
++--------+----------+
+| dep_id | dep_name |
++--------+----------+
+|      2 | Fitness  |
+|      3 | Footwear |
+|      4 | Apparel  |
+|      5 | Golf     |
+|      6 | Outdoors |
+|      7 | Fan Shop |
++--------+----------+
+6 rows in set (0.00 sec)
+
+
 Use retail_export database 
 create table departments(department_id int, department_name varchar(20));
 
@@ -58,11 +80,45 @@ sqoop import \
 --username=retail_user \
 --password=itversity \
 --table=departments \
---target-dir=departments \
---append \
+--target-dir=department_hive3 \
+--hive-import \
+--hive-table=paslechoix1.department_hive3 \
+--incremental append \
+--check-column department_id \
 -m 1
 
-[paslechoix@gw01 ~]$ hdfs dfs -ls departments
+hive (paslechoix1)> select * from department_hive3;
+OK
+2       Fitness
+3       Footwear
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+NULL    NULL
+4       Apparel
+5       Golf
+6       Outdoors
+7       Fan Shop
+Time taken: 0.18 seconds, Fetched: 26 row(s)
+
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls department_hive3
 Found 6 items
 -rw-r--r--   3 paslechoix hdfs          0 2018-01-31 23:11 departments/_SUCCESS
 -rw-r--r--   3 paslechoix hdfs         21 2018-01-31 23:11 departments/part-m-00000
