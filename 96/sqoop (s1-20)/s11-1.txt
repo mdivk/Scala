@@ -1,0 +1,86 @@
+Problem Scenario 11 :  You have been given following mysql database details as well as other info.
+user=retail_dba 
+password=cloudera 
+database=retail_db 
+jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
+Please accomplish following. 
+1. Import departments table in a directory called departments. 
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--target-dir=departments 
+
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-01-31 23:11 departments/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs         21 2018-01-31 23:11 departments/part-m-00000
+-rw-r--r--   3 paslechoix hdfs         10 2018-01-31 23:11 departments/part-m-00001
+-rw-r--r--   3 paslechoix hdfs          7 2018-01-31 23:11 departments/part-m-00002
+-rw-r--r--   3 paslechoix hdfs         22 2018-01-31 23:11 departments/part-m-00003
+
+
+[paslechoix@gw01 ~]$ hdfs dfs -cat departments/*
+2,Fitness
+3,Footwear
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
+
+
+2. Once import is done, please insert following 5 records in departments mysql table. 
+Use retail_export database 
+create table departments(department_id int, department_name varchar(20));
+
+mysql> insert into departments values (10, 'physicss');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> insert into departments values (11, 'chemistry');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> insert into departments values (12, 'math');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> insert into departments values (13, 'science');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> insert into departments values (14, 'engineering');
+Query OK, 1 row affected (0.00 sec)
+
+
+3. Now import only new inserted records and append to existing directory , which has been created in first step. 
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--target-dir=departments \
+--append \
+-m 1
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments
+Found 6 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-01-31 23:11 departments/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs         21 2018-01-31 23:11 departments/part-m-00000
+-rw-r--r--   3 paslechoix hdfs         10 2018-01-31 23:11 departments/part-m-00001
+-rw-r--r--   3 paslechoix hdfs          7 2018-01-31 23:11 departments/part-m-00002
+-rw-r--r--   3 paslechoix hdfs         22 2018-01-31 23:11 departments/part-m-00003
+-rw-r--r--   3 paslechoix hdfs         59 2018-01-31 23:16 departments/part-m-00004
+
+[paslechoix@gw01 ~]$ hdfs dfs -cat departments/*
+2,Fitness
+3,Footwear
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
+10,physicss
+11,chemistry
+12,math
+13,science
+14,engineering
+

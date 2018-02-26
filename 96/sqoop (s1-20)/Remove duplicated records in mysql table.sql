@@ -1,0 +1,79 @@
+--Remove duplicated records in mysql table
+
+mysql> select database();
++---------------+
+| database()    |
++---------------+
+| retail_export |
++---------------+
+1 row in set (0.00 sec)
+
+
+mysql> select * from departments;
++---------------+-----------------+
+| department_id | department_name |
++---------------+-----------------+
+|            10 | gyshics         |
+|            11 | chemistry       |
+|            12 | math            |
+|            13 | science         |
+|            14 | engineering     |
+|             2 | Fitness         |
+|             3 | Footwear        |
+|             7 | Fan Shop        |
+|             4 | Apparel         |
+|             5 | Golf            |
+|             6 | Outdoors        |
+|            10 | gyshics         |
+|            10 | physicss        |
+|            11 | chemistry       |
+|            12 | math            |
+|            13 | science         |
+|            14 | engineering     |
++---------------+-----------------+
+17 rows in set (0.00 sec)
+
+mysql> select distinct * from departments order by department_id;
++---------------+-----------------+
+| department_id | department_name |
++---------------+-----------------+
+|             2 | Fitness         |
+|             3 | Footwear        |
+|             4 | Apparel         |
+|             5 | Golf            |
+|             6 | Outdoors        |
+|             7 | Fan Shop        |
+|            10 | gyshics         |
+|            11 | chemistry       |
+|            12 | math            |
+|            13 | science         |
+|            14 | engineering     |
++---------------+-----------------+
+11 rows in set (0.00 sec)
+
+mysql>
+
+
+
+mysql> insert into departments_new1(department_id, department_name) select distinct * from departments order by department_id;
+
+
+mysql> select * from departments_new1;
++---------------+-----------------+---------------------+
+| department_id | department_name | created_date        |
++---------------+-----------------+---------------------+
+|             2 | Fitness         | 2018-02-25 18:28:34 |
+|             3 | Footwear        | 2018-02-25 18:28:34 |
+|             4 | Apparel         | 2018-02-25 18:28:34 |
+|             5 | Golf            | 2018-02-25 18:28:34 |
+|             6 | Outdoors        | 2018-02-25 18:28:34 |
+|             7 | Fan Shop        | 2018-02-25 18:28:34 |
+|            10 | gyshics         | 2018-02-25 18:28:34 |
+|            11 | chemistry       | 2018-02-25 18:28:34 |
+|            12 | math            | 2018-02-25 18:28:34 |
+|            13 | science         | 2018-02-25 18:28:34 |
+|            14 | engineering     | 2018-02-25 18:28:34 |
++---------------+-----------------+---------------------+
+11 rows in set (0.00 sec)
+
+mysql>

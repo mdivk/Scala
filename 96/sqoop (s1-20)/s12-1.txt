@@ -1,0 +1,461 @@
+Problem Scenario 12 : You have been given following mysql database details as well as other info. 
+User=retail_dba 
+password=cloudera 
+database=retail_ db 
+jdbc URL = jdbc:mysql://quickstart:3306/retail_db 
+Please accomplish following. 
+1. Create a table in retail_export with following definition. 
+
+CREATE table departments_new (department_id int(11), department_name varchar(45), created_date  TIMESTAMP DEFAULT NOW());
+
+mysql> CREATE table departments_new (department_id int(11), department_name varchar(45), created_date  TIMESTAMP DEFAULT NOW());
+mysql> desc departments_new;
++-----------------+-------------+------+-----+-------------------+-------+
+| Field           | Type        | Null | Key | Default           | Extra |
++-----------------+-------------+------+-----+-------------------+-------+
+| department_id   | int(11)     | YES  |     | NULL              |       |
+| department_name | varchar(45) | YES  |     | NULL              |       |
+| created_date    | timestamp   | NO   |     | CURRENT_TIMESTAMP |       |
++-----------------+-------------+------+-----+-------------------+-------+
+3 rows in set (0.00 sec)
+
+
+mysql> create table dep_new(dep_id int, dep_name varchar(20), created_on timestamp default now());
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> desc dep_new;
++------------+-------------+------+-----+-------------------+-------+
+| Field      | Type        | Null | Key | Default           | Extra |
++------------+-------------+------+-----+-------------------+-------+
+| dep_id     | int(11)     | YES  |     | NULL              |       |
+| dep_name   | varchar(20) | YES  |     | NULL              |       |
+| created_on | timestamp   | NO   |     | CURRENT_TIMESTAMP |       |
++------------+-------------+------+-----+-------------------+-------+
+3 rows in set (0.00 sec)
+
+mysql>
+
+
+Note: why int is defaulted to int(11)?
+
+2. Now insert records from departments table to departments_new
+
+mysql> insert into departments_new (department_id, department_name) select department_id, department_name from departments;
+Query OK, 5 rows affected (0.00 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> select * from departments_new;
++---------------+-----------------+---------------------+
+| department_id | department_name | created_date        |
++---------------+-----------------+---------------------+
+|            10 | physicss        | 2018-01-31 22:24:18 |
+|            11 | chemistry       | 2018-01-31 22:24:18 |
+|            12 | math            | 2018-01-31 22:24:18 |
+|            13 | science         | 2018-01-31 22:24:18 |
+|            14 | engineering     | 2018-01-31 22:24:18 |
++---------------+-----------------+---------------------+
+5 rows in set (0.00 sec)
+
+
+insert dep_new select * from departments
+
+mysql> insert into dep_new (dep_id, dep_name) select * from departments;
+Query OK, 15 rows affected (0.00 sec)
+Records: 15  Duplicates: 0  Warnings: 0
+
+mysql> select * from dep_new;
++---------+-------------------+---------------------+
+| dep_id  | dep_name          | created_on          |
++---------+-------------------+---------------------+
+|      10 | gyshics           | 2018-02-21 21:22:12 |
+|      11 | chemistry         | 2018-02-21 21:22:12 |
+|      12 | math              | 2018-02-21 21:22:12 |
+|      13 | science           | 2018-02-21 21:22:12 |
+|      14 | engineering       | 2018-02-21 21:22:12 |
+|    9999 | Data Science      | 2018-02-21 21:22:12 |
+|    8888 | "Data Science"    | 2018-02-21 21:22:12 |
+|       2 | Fitness           | 2018-02-21 21:22:12 |
+|       3 | Footwear          | 2018-02-21 21:22:12 |
+|       7 | Fan Shop          | 2018-02-21 21:22:12 |
+|       4 | Apparel           | 2018-02-21 21:22:12 |
+|       5 | Golf              | 2018-02-21 21:22:12 |
+|       6 | Outdoors          | 2018-02-21 21:22:12 |
+| 9999999 | life sciencoo ama | 2018-02-21 21:22:12 |
+|      10 | gyshics           | 2018-02-21 21:22:12 |
++---------+-------------------+---------------------+
+15 rows in set (0.00 sec)
+
+ 
+3. Now import data from departments_new table to hdfs. 
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=dep_new \
+--warehouse-dir=dep_new 
+
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat dep_new/dep_new/*
+10,gyshics,2018-02-21 21:22:12.0
+11,chemistry,2018-02-21 21:22:12.0
+12,math,2018-02-21 21:22:12.0
+13,science,2018-02-21 21:22:12.0
+14,engineering,2018-02-21 21:22:12.0
+9999,Data Science,2018-02-21 21:22:12.0
+8888,"Data Science",2018-02-21 21:22:12.0
+2,Fitness,2018-02-21 21:22:12.0
+3,Footwear,2018-02-21 21:22:12.0
+7,Fan Shop,2018-02-21 21:22:12.0
+4,Apparel,2018-02-21 21:22:12.0
+5,Golf,2018-02-21 21:22:12.0
+6,Outdoors,2018-02-21 21:22:12.0
+9999999,life sciencoo ama,2018-02-21 21:22:12.0
+10,gyshics,2018-02-21 21:22:12.0
+
+
+
+
+
+sqoop import \
+--connect="jdbc:mysql://ms.itversity.com/retail_export" \
+--username=retail_user \
+--password=itversity \
+--table=departments_new \
+-m 1
+
+18/01/31 23:32:35 INFO mapreduce.ImportJobBase: Retrieved 5 records.
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments_new
+Found 2 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-01-31 23:32 departments_new/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs        169 2018-01-31 23:32 departments_new/part-m-00000
+
+[paslechoix@gw01 ~]$ hdfs dfs -cat departments_new/*
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+
+
+4. Insert following 5 records in departments_new table. 
+Insert into departments_new values(110, "Civil" , null); 
+Insert into departments_new values(111, "Mechanical" , null); 
+Insert into departments_new values(112, "Automobile" , null); 
+Insert into departments_new values(113, "Pharma" , null); 
+Insert into departments_new values(114, "social engineering" , null);
+
+mysql> select * from departments_new;
++---------------+--------------------+---------------------+
+| department_id | department_name    | created_date        |
++---------------+--------------------+---------------------+
+|            10 | physicss           | 2018-01-31 22:24:18 |
+|            11 | chemistry          | 2018-01-31 22:24:18 |
+|            12 | math               | 2018-01-31 22:24:18 |
+|            13 | science            | 2018-01-31 22:24:18 |
+|            14 | engineering        | 2018-01-31 22:24:18 |
+|           110 | Civil              | 2018-01-31 22:32:41 |
+|           111 | Mechanical         | 2018-01-31 22:32:49 |
+|           112 | Automobile         | 2018-01-31 22:32:49 |
+|           113 | Pharma             | 2018-01-31 22:32:49 |
+|           114 | social engineering | 2018-01-31 22:32:52 |
++---------------+--------------------+---------------------+
+
+Insert into departments_new values(110, "Civil" , null); 
+Insert into departments_new values(111, "Mechanical" , null); 
+Insert into departments_new values(112, "Automobile" , null); 
+Insert into departments_new values(113, "Pharma" , null); 
+Insert into departments_new values(114, "social engineering" , null);
+
+mysql> select * from departments_new;
++---------------+--------------------+---------------------+
+| department_id | department_name    | created_date        |
++---------------+--------------------+---------------------+
+|            10 | physicss           | 2018-01-31 22:24:18 |
+|            11 | chemistry          | 2018-01-31 22:24:18 |
+|            12 | math               | 2018-01-31 22:24:18 |
+|            13 | science            | 2018-01-31 22:24:18 |
+|            14 | engineering        | 2018-01-31 22:24:18 |
+|           110 | Civil              | 2018-01-31 22:32:41 |
+|           111 | Mechanical         | 2018-01-31 22:32:49 |
+|           112 | Automobile         | 2018-01-31 22:32:49 |
+|           113 | Pharma             | 2018-01-31 22:32:49 |
+|           114 | social engineering | 2018-01-31 22:32:52 |
+|           110 | Civil              | 2018-02-22 05:25:26 |
+|           111 | Mechanical         | 2018-02-22 05:25:26 |
+|           112 | Automobile         | 2018-02-22 05:25:26 |
+|           113 | Pharma             | 2018-02-22 05:25:26 |
+|           114 | social engineering | 2018-02-22 05:25:27 |
++---------------+--------------------+---------------------+
+
+mysql> insert into departments_new (department_name) values ('citi');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> insert into departments_new (department_name) values ('ocean');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> insert into departments_new (department_name) values ('bns');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from departments_new;
++---------------+--------------------+---------------------+
+| department_id | department_name    | created_date        |
++---------------+--------------------+---------------------+
+|            10 | physicss           | 2018-01-31 22:24:18 |
+|            11 | chemistry          | 2018-01-31 22:24:18 |
+|            12 | math               | 2018-01-31 22:24:18 |
+|            13 | science            | 2018-01-31 22:24:18 |
+|            14 | engineering        | 2018-01-31 22:24:18 |
+|           110 | Civil              | 2018-01-31 22:32:41 |
+|           111 | Mechanical         | 2018-01-31 22:32:49 |
+|           112 | Automobile         | 2018-01-31 22:32:49 |
+|           113 | Pharma             | 2018-01-31 22:32:49 |
+|           114 | social engineering | 2018-01-31 22:32:52 |
+|           110 | Civil              | 2018-02-22 05:25:26 |
+|           111 | Mechanical         | 2018-02-22 05:25:26 |
+|           112 | Automobile         | 2018-02-22 05:25:26 |
+|           113 | Pharma             | 2018-02-22 05:25:26 |
+|           114 | social engineering | 2018-02-22 05:25:27 |
+|          NULL | citi               | 2018-02-22 05:27:23 |
+|          NULL | ocean              | 2018-02-22 05:27:29 |
+|          NULL | bns                | 2018-02-22 05:27:36 |
++---------------+--------------------+---------------------+
+
+
+5. Now do the incremental import based on created_date column. 
+
+sqoop import -m 1 \
+--connect="jdbc:mysql://ms.itversity.com/retail_export" \
+--username=retail_user \
+--password=itversity \
+--table=departments_new \
+--check-column "department_id" \
+--incremental append 
+
+ following this import, supply the following arguments:
+18/01/31 23:40:44 INFO tool.ImportTool:  --incremental append
+18/01/31 23:40:44 INFO tool.ImportTool:   --check-column department_id
+18/01/31 23:40:44 INFO tool.ImportTool:   --last-value 114
+18/01/31 23:40:44 INFO tool.ImportTool: (Consider saving this with 'sqoop job --create')
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments_new
+Found 3 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-01-31 23:32 departments_new/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs        169 2018-01-31 23:32 departments_new/part-m-00000
+-rw-r--r--   3 paslechoix hdfs        353 2018-01-31 23:40 departments_new/part-m-00001
+[paslechoix@gw01 ~]$ hdfs dfs -cat departments_new/*
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+110,Civil,2018-01-31 22:32:41.0
+111,Mechanical,2018-01-31 22:32:49.0
+112,Automobile,2018-01-31 22:32:49.0
+113,Pharma,2018-01-31 22:32:49.0
+114,social engineering,2018-01-31 22:32:52.0
+
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=departments_new \
+--warehouse-dir=dep_news \
+--incremental append \
+--check-column department_id
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat dep_news/departments_new/*
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+110,Civil,2018-01-31 22:32:41.0
+111,Mechanical,2018-01-31 22:32:49.0
+112,Automobile,2018-01-31 22:32:49.0
+113,Pharma,2018-01-31 22:32:49.0
+114,social engineering,2018-01-31 22:32:52.0
+110,Civil,2018-02-22 05:25:26.0
+111,Mechanical,2018-02-22 05:25:26.0
+112,Automobile,2018-02-22 05:25:26.0
+113,Pharma,2018-02-22 05:25:26.0
+114,social engineering,2018-02-22 05:25:27.0
+
+Do the incremental import again, because the last three records have department_id of null, they will not be imported, however all the other records will be imported again:
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=departments_new \
+--warehouse-dir=dep_news \
+--incremental append \
+--check-column department_id
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat dep_news/departments_new/*
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+110,Civil,2018-01-31 22:32:41.0
+111,Mechanical,2018-01-31 22:32:49.0
+112,Automobile,2018-01-31 22:32:49.0
+113,Pharma,2018-01-31 22:32:49.0
+114,social engineering,2018-01-31 22:32:52.0
+110,Civil,2018-02-22 05:25:26.0
+111,Mechanical,2018-02-22 05:25:26.0
+112,Automobile,2018-02-22 05:25:26.0
+113,Pharma,2018-02-22 05:25:26.0
+114,social engineering,2018-02-22 05:25:27.0
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+110,Civil,2018-01-31 22:32:41.0
+111,Mechanical,2018-01-31 22:32:49.0
+112,Automobile,2018-01-31 22:32:49.0
+113,Pharma,2018-01-31 22:32:49.0
+114,social engineering,2018-01-31 22:32:52.0
+110,Civil,2018-02-22 05:25:26.0
+111,Mechanical,2018-02-22 05:25:26.0
+112,Automobile,2018-02-22 05:25:26.0
+113,Pharma,2018-02-22 05:25:26.0
+114,social engineering,2018-02-22 05:25:27.0
+
+
+Change the based column from id to name:
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=departments_new \
+--warehouse-dir=dep_news \
+--incremental append \
+--check-column department_name
+
+
+Error:
+18/02/22 06:40:59 INFO tool.ImportTool: Maximal id query for free form incremental import: SELECT MAX(`department_name`) FROM `departments_new`
+18/02/22 06:40:59 ERROR tool.ImportTool: Error during import: Character column (department_name) can not be used to determine which rows to incrementally import.
+
+Conclusion:
+for incremental import, the base column must be an int column so that MAX works on it to determine the rows to incrementally import.
+
+
+sqoop import -m 1 \
+--connect="jdbc:mysql://ms.itversity.com/retail_export" \
+--username=retail_user \
+--password=itversity \
+--table=departments_new \
+--append 
+
+[paslechoix@gw01 ~]$ hdfs dfs -ls departments_new
+Found 4 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-01-31 23:32 departments_new/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs        169 2018-01-31 23:32 departments_new/part-m-00000
+-rw-r--r--   3 paslechoix hdfs        353 2018-01-31 23:40 departments_new/part-m-00001
+-rw-r--r--   3 paslechoix hdfs        353 2018-01-31 23:43 departments_new/part-m-00002
+[paslechoix@gw01 ~]$ hdfs dfs -cat departments_new/*
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+110,Civil,2018-01-31 22:32:41.0
+111,Mechanical,2018-01-31 22:32:49.0
+112,Automobile,2018-01-31 22:32:49.0
+113,Pharma,2018-01-31 22:32:49.0
+114,social engineering,2018-01-31 22:32:52.0
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+110,Civil,2018-01-31 22:32:41.0
+111,Mechanical,2018-01-31 22:32:49.0
+112,Automobile,2018-01-31 22:32:49.0
+113,Pharma,2018-01-31 22:32:49.0
+114,social engineering,2018-01-31 22:32:52.0
+
+
+If simply use "append", all the records will be added including the null id records:
+
+sqoop import -m 1 \
+--connect="jdbc:mysql://ms.itversity.com/retail_export" \
+--username=retail_user \
+--password=itversity \
+--table=departments_new \
+--warehouse-dir=dep_news \
+--append 
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat dep_news/departments_new/*
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+110,Civil,2018-01-31 22:32:41.0
+111,Mechanical,2018-01-31 22:32:49.0
+112,Automobile,2018-01-31 22:32:49.0
+113,Pharma,2018-01-31 22:32:49.0
+114,social engineering,2018-01-31 22:32:52.0
+110,Civil,2018-02-22 05:25:26.0
+111,Mechanical,2018-02-22 05:25:26.0
+112,Automobile,2018-02-22 05:25:26.0
+113,Pharma,2018-02-22 05:25:26.0
+114,social engineering,2018-02-22 05:25:27.0
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+110,Civil,2018-01-31 22:32:41.0
+111,Mechanical,2018-01-31 22:32:49.0 
+112,Automobile,2018-01-31 22:32:49.0
+113,Pharma,2018-01-31 22:32:49.0
+114,social engineering,2018-01-31 22:32:52.0
+110,Civil,2018-02-22 05:25:26.0
+111,Mechanical,2018-02-22 05:25:26.0
+112,Automobile,2018-02-22 05:25:26.0
+113,Pharma,2018-02-22 05:25:26.0
+114,social engineering,2018-02-22 05:25:27.0
+10,physicss,2018-01-31 22:24:18.0
+11,chemistry,2018-01-31 22:24:18.0
+12,math,2018-01-31 22:24:18.0
+13,science,2018-01-31 22:24:18.0
+14,engineering,2018-01-31 22:24:18.0
+110,Civil,2018-01-31 22:32:41.0
+111,Mechanical,2018-01-31 22:32:49.0
+112,Automobile,2018-01-31 22:32:49.0
+113,Pharma,2018-01-31 22:32:49.0
+114,social engineering,2018-01-31 22:32:52.0
+110,Civil,2018-02-22 05:25:26.0
+111,Mechanical,2018-02-22 05:25:26.0
+112,Automobile,2018-02-22 05:25:26.0
+113,Pharma,2018-02-22 05:25:26.0
+114,social engineering,2018-02-22 05:25:27.0
+null,citi,2018-02-22 05:27:23.0
+null,ocean,2018-02-22 05:27:29.0
+null,bns,2018-02-22 05:27:36.0
+
+sqoop import -m 1 \
+--connect="jdbc:mysql://ms.itversity.com/retail_export" \
+--username=retail_user \
+--password=itversity \
+--sqoop.metastore.client.record.password=true \
+--table=departments_new \
+--warehouse-dir=dep_news \
+--append  
