@@ -43,6 +43,30 @@ sqoop export:
 	6       Outdoors
 	7       Fan Shop
 
+	hive (paslechoix)> show create table departments;
+	OK
+	CREATE TABLE `departments`(
+	  `department_id` int,
+	  `department_name` string)
+	COMMENT 'Imported by sqoop on 2018/01/31 14:53:33'
+	ROW FORMAT DELIMITED
+	  FIELDS TERMINATED BY '\u0001'
+	  LINES TERMINATED BY '\n'
+	STORED AS INPUTFORMAT
+	  'org.apache.hadoop.mapred.TextInputFormat'
+	OUTPUTFORMAT
+	  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+	LOCATION
+	  'hdfs://nn01.itversity.com:8020/apps/hive/warehouse/paslechoix.db/departments'
+	TBLPROPERTIES (
+	  'numFiles'='3',
+	  'numRows'='0',
+	  'rawDataSize'='0',
+	  'totalSize'='90',
+	  'transient_lastDdlTime'='1517428412')
+	Time taken: 0.134 seconds, Fetched: 19 row(s)
+
+
 	mysql> create table departments_from_hive (id int, name varchar(20));
 
 
@@ -51,26 +75,39 @@ sqoop export:
 	--username=retail_user \
 	--password=itversity \
 	--table departments_from_hive \
-	--export-dir departments
+	--export-dir /apps/hive/warehouse/paslechoix.db/departments
 
 	mysql> select * from departments_from_hive;
-	+------+----------------+
-	| id   | name           |
-	+------+----------------+
-	|   10 | gyshics        |
-	|   11 | chemistry      |
-	|   12 | math           |
-	|   13 | science        |
-	|   14 | engineering    |
-	| 9999 | Data Science   |
-	| 8888 | "Data Science" |
-	|    2 | Fitness        |
-	|    3 | Footwear       |
-	|    2 | Fitness        |
-	|    3 | Footwear       |
-	|    5 | Golf           |
-	+------+----------------+
-	12 rows in set (0.00 sec)
+
+	nothing exported!
+	Reason: format is wrong! in hive directory: data in snappy compressed format
+	[paslechoix@gw03 ~]$ hdfs dfs -ls /apps/hive/warehouse/paslechoix.db/departments
+	Found 3 items
+	-rwxrwxrwx   3 paslechoix hdfs         31 2018-01-31 14:53 /apps/hive/warehouse/paslechoix.db/departments/part-m-00000.snappy
+	-rwxrwxrwx   3 paslechoix hdfs         27 2018-01-31 14:53 /apps/hive/warehouse/paslechoix.db/departments/part-m-00001.snappy
+	-rwxrwxrwx   3 paslechoix hdfs         32 2018-01-31 14:53 /apps/hive/warehouse/paslechoix.db/departments/part-m-00002.snappy
+
+	[paslechoix@gw03 ~]$ hdfs dfs -ls /apps/hive/warehouse/paslechoix.db/departments_hive01                                                   Found 2 items
+	-rwxrwxrwx   3 paslechoix hdfs          0 2018-02-04 16:34 /apps/hive/warehouse/paslechoix.db/departments_hive01/_SUCCESS
+	-rwxrwxrwx   3 paslechoix hdfs         72 2018-02-04 16:34 /apps/hive/warehouse/paslechoix.db/departments_hive01/part-m-00000
+
+	[paslechoix@gw03 ~]$ hdfs dfs -cat /apps/hive/warehouse/paslechoix.db/departments_hive01/part-m-00000
+	2Fitness0
+	3Footwear0
+	4Apparel0
+	5Golf0
+	6Outdoors0
+	7Fan Shop0
+	[paslechoix@gw03 ~]$
+
+	sqoop export \
+	--connect jdbc:mysql://ms.itversity.com/retail_export \
+	--username=retail_user \
+	--password=itversity \
+	--table departments_from_hive \
+	--export-dir /apps/hive/warehouse/paslechoix.db/departments_hive01
+
+	mysql> select * from departments_from_hive;
 
 
 map example:
