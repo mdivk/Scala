@@ -1,0 +1,89 @@
+copy local to hdfs:
+	[paslechoix@gw03 ~]$ hdfs dfs -put mgr1.csv spark1/
+	[paslechoix@gw03 ~]$ hdfs dfs -ls spark1
+	-rw-r--r--   3 paslechoix hdfs         40 2018-02-26 21:17 spark1/mgr1.csv
+
+copy hdfs to local:
+	[paslechoix@gw03 data]$ hdfs dfs -ls spark2/sorted_peter.txt/ *
+	-rw-r--r--   3 paslechoix hdfs          0 2018-02-26 21:59 spark2/sorted_peter.txt/_SUCCESS
+	-rw-r--r--   3 paslechoix hdfs       3194 2018-02-26 21:59 spark2/sorted_peter.txt/part-00000
+	-rw-r--r--   3 paslechoix hdfs       9882 2018-02-26 21:59 spark2/sorted_peter.txt/part-00001
+	[paslechoix@gw03 data]$ hdfs dfs -copyToLocal spark2/sorted_peter.txt/part-*
+
+	[paslechoix@gw03 data]$ ls part*
+	part-00000  part-00001
+
+Concatenate text files in linux:
+	[paslechoix@gw03 data]$ cat part-00000 part-00001 > sorted.txt
+
+sqoop import:
+
+	sqoop import \
+	--connect jdbc:mysql://ms.itversity.com/retail_export \
+	--username=retail_user \
+	--password=itversity \
+	--table=departments \
+	--target-dir=department_hive3 \
+	--hive-import \
+	--hive-table=paslechoix1.department_hive3 \
+	--incremental append \
+	--check-column department_id \
+	-m 1
+
+sqoop export:
+	
+	export the hive table departments to mysql:
+
+	hive (paslechoix)> select * from departments;
+	OK
+	2       Fitness
+	3       Footwear
+	4       Apparel
+	5       Golf
+	6       Outdoors
+	7       Fan Shop
+
+	mysql> create table departments_from_hive (id int, name varchar(20));
+
+
+	sqoop export \
+	--connect jdbc:mysql://ms.itversity.com/retail_export \
+	--username=retail_user \
+	--password=itversity \
+	--table departments_from_hive \
+	--export-dir departments
+
+	mysql> select * from departments_from_hive;
+	+------+----------------+
+	| id   | name           |
+	+------+----------------+
+	|   10 | gyshics        |
+	|   11 | chemistry      |
+	|   12 | math           |
+	|   13 | science        |
+	|   14 | engineering    |
+	| 9999 | Data Science   |
+	| 8888 | "Data Science" |
+	|    2 | Fitness        |
+	|    3 | Footwear       |
+	|    2 | Fitness        |
+	|    3 | Footwear       |
+	|    5 | Golf           |
+	+------+----------------+
+	12 rows in set (0.00 sec)
+
+
+map example:
+	val mgrMap1 = mgr1.map(x => (x.split(",")(0).toInt, x.split(",")(1).trim))
+
+	scala> joined
+	res14: org.apache.spark.rdd.RDD[(Int, (String, Int))] = MapPartitionsRDD[8] at join at <console>:35
+
+	val joinedMap1 = joined1.map(x=>(x._1, x._2._1, x._2._2))
+
+flatMap example:
+
+
+
+sortBy example:
+
