@@ -17,6 +17,9 @@ Concatenate text files in linux:
 	[paslechoix@gw03 data]$ cat part-00000 part-00001 > sorted.txt
 
 sqoop import:
+import from mysql to hdfs:
+import from mysql to hive:
+
 
 	sqoop import \
 	--connect jdbc:mysql://ms.itversity.com/retail_export \
@@ -31,6 +34,8 @@ sqoop import:
 	-m 1
 
 sqoop export:
+export from hdfs to mysql:
+export from hive to mysql:
 	
 	export the hive table departments to mysql:
 
