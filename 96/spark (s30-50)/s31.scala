@@ -65,9 +65,33 @@ res32: Long = 2032
 Step 8 : Create a PairRDD, so we can have (word,1) tuple or PairRDD. 
 val result = exclude_stop.map(word => (word, 1)) 
 
+scala> result.take(10).foreach(println)
+(,1)
+(exceeding,1)
+(exceeding,1)
+(bring,1)
+(bring,1)
+(bring,1)
+(bring,1)
+(preached,1)
+(preached,1)
+(preached,1)
+
 
 Step 9 : Now do the word count on PairRDD. 
 val wordCount = result.reduceByKey(_ + _) 
+
+scala> wordCount.take(10).foreach(println)
+(God,25)
+(call,1)
+(offer,1)
+(light:,1)
+(Because,1)
+(joy.,1)
+(foreordained,1)
+(blemish,1)
+(themselves,,2)
+(ark,1)
 
 Step 9.1: Sort the result 
 val sorted = wordCount.sortBy(_._2, false)
