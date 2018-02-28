@@ -53,10 +53,12 @@ val mgr1 = sc.textFile("spark1/mgr1.csv")
 scala> mgr1.first
 res4: String = 1, Cliff
 
-val mgrMap1 = mgr1.map(x => (x.split(",")(0).toInt, x.split(",")(1).trim))
+scala> mgr1.collect
+res0: Array[String] = Array(1, Cliff, 2, Raj, 3, Alim, 4, Jose, 5, Jeff)
 
-scala> mgrMap1.first
-res11: (Int, String) = (1,Cliff)
+val mgr1Map = mgr1.map(x=> (x.split(",")(0).toInt, x.split(",")(1).trim))
+res2: Array[(Int, String)] = Array((1,Cliff), (2,Raj), (3,Alim), (4,Jose), (5,Jeff))
+
 
 scala> mgrMap1.take(5).foreach(println)
 (1,Cliff)
@@ -82,13 +84,12 @@ Create salary RDD:
 
 val sal1 = sc.textFile("spark1/sal1.csv")
 
-scala> sal1.first
-res2: String = 1, 100
+res3: Array[String] = Array(1,100, 2,200, 3,300, 4,400, 5,500)
 
-val salMap1 = sal1.map(x=>(x.split(",")(0).toInt, x.split(",")(1).trim.toInt))
 
-scala> salMap1.first
-res3: (Int, Int) = (1,100)
+val sal1Map = sal1.map(x=>(x.split(",")(0).toInt, x.split(",")(1).trim))
+res6: Array[(Int, String)] = Array((1,100), (2,200), (3,300), (4,400), (5,500))
+
 
 scala> salMap1.take(5).foreach(println)
 (1,100)
@@ -98,21 +99,40 @@ scala> salMap1.take(5).foreach(println)
 (5,500)
 
 
-val joined1 = mgrMap1.join(salMap1)
+val joined1 = mgr1Map.join(sal1Map)
 scala> joined
 res14: org.apache.spark.rdd.RDD[(Int, (String, Int))] = MapPartitionsRDD[8] at join at <console>:35
 
 val joinedMap1 = joined1.map(x=>(x._1, x._2._1, x._2._2))
+res12: Array[(Int, String, String)] = Array((4,Jose,400), (2,Raj,200), (1,Cliff,100), (3,Alim,300), (5,Jeff,500))
 
-step 4 : Join all pairRDDS 
-val joined = namePairRDD.join(salaryPairRDD).join(managerPairRDD) 
+Sort the joined results. 
+val sorted = joined1.sortByKey() 
+(1,(Cliff,100))
+(2,(Raj,200))
+(3,(Alim,300))
+(4,(Jose,400))
+(5,(Jeff,500))
 
-Step 5 : Now sort the joined results. 
-val joinedData = joined.sortByKey() 
+sorted by name which is _._2._1
+val sorted1 = joined1.sortBy(_._2._1)
+(3,(Alim,300))
+(1,(Cliff,100))
+(5,(Jeff,500))
+(4,(Jose,400))
+(2,(Raj,200))
 
-Step 6 : Now generate comma separated data. 
-val finalData = joinedData.map(v=> (v._1, v._2._1._1,v._2._1._2,v._2._2))
+
+Now generate comma separated data. 
+val finalData = sorted1.map(v=> (v._1, v._2._1,v._2._2))
 
 Step 7 : Save this output in hdfs as text file. 
-finalData.saveAsTextFile("spark1/result.txt") 
+finalData.saveAsTextFile("spark1/result.csv") 
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat spark1/result.csv/*
+(3,Alim,300)
+(1,Cliff,100)
+(5,Jeff,500)
+(4,Jose,400)
+(2,Raj,200)
 
