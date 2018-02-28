@@ -1,9 +1,9 @@
-copy local to hdfs:
+1. copy local to hdfs:
 	[paslechoix@gw03 ~]$ hdfs dfs -put mgr1.csv spark1/
 	[paslechoix@gw03 ~]$ hdfs dfs -ls spark1
 	-rw-r--r--   3 paslechoix hdfs         40 2018-02-26 21:17 spark1/mgr1.csv
 
-copy hdfs to local:
+2. copy hdfs to local:
 	[paslechoix@gw03 data]$ hdfs dfs -ls spark2/sorted_peter.txt/ *
 	-rw-r--r--   3 paslechoix hdfs          0 2018-02-26 21:59 spark2/sorted_peter.txt/_SUCCESS
 	-rw-r--r--   3 paslechoix hdfs       3194 2018-02-26 21:59 spark2/sorted_peter.txt/part-00000
@@ -13,12 +13,45 @@ copy hdfs to local:
 	[paslechoix@gw03 data]$ ls part*
 	part-00000  part-00001
 
-Concatenate text files in linux:
+3. Concatenate text files in linux:
 	[paslechoix@gw03 data]$ cat part-00000 part-00001 > sorted.txt
 
-sqoop import:
-import from mysql to hdfs:
-import from mysql to hive:
+
+4. Create external table on hive based on existing file on hdfs
+
+4.1 Create a new text file.
+	vim file_on_local.csv
+
+4.2 Create a new directory on HDFS.
+	hdfs dfs -mkdir /apps/hive/warehouse/paslechoix.db/file_on_local
+
+4.3 Place the file on HDFS.
+	hdfs dfs -put file_on_local.csv /apps/hive/warehouse/paslechoix.db/file_on_local/
+
+4.4 Execute below command on Hive terminal.
+	
+	hive (default)> 
+	create external table file_on_hive_tbl(id int, name string) 
+	row format delimited fields terminated by ',' 
+	stored as textfile 
+	location '/apps/hive/warehouse/paslechoix.db/file_on_local/';
+
+4.5 Check the table on hive
+	hive (default)> select * from file_on_hive_tbl;
+	OK
+	2       Fitness
+	3       Footwear
+	4       Apparel
+	5       Golf
+	6       Outdoors
+	7       Fan Shop
+	Time taken: 0.46 seconds, Fetched: 6 row(s)
+
+
+
+5. sqoop import:
+6. import from mysql to hdfs:
+7. import from mysql to hive:
 
 
 	sqoop import \
@@ -128,4 +161,12 @@ flatMap example:
 
 
 sortBy example:
+
+	val sorted = joined1.sortByKey() 
+	val sorted1 = joined1.sortBy(_._2._1)
+
+save RDD to hdfs:
+
+	scala> finalData.saveAsTextFile("spark1/result.csv") 
+	[paslechoix@gw03 ~]$ hdfs dfs -cat spark1/result.csv/*
 

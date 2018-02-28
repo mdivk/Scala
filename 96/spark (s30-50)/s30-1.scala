@@ -126,7 +126,7 @@ val sorted1 = joined1.sortBy(_._2._1)
 Now generate comma separated data. 
 val finalData = sorted1.map(v=> (v._1, v._2._1,v._2._2))
 
-Step 7 : Save this output in hdfs as text file. 
+Save this output in hdfs as text file. 
 finalData.saveAsTextFile("spark1/result.csv") 
 
 [paslechoix@gw03 ~]$ hdfs dfs -cat spark1/result.csv/*
