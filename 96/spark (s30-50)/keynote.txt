@@ -147,6 +147,13 @@ export from hive to mysql:
 
 	mysql> select * from departments_from_hive;
 
+From Array to RDD:
+	scala> keysWithValuesList
+	res0: Array[String] = Array(foo=A, foo=A, foo=A, foo=A, foo=B, bar=C, bar=D, bar=D)
+
+	scala> val data = sc.parallelize(keysWithValuesList)
+	data: org.apache.spark.rdd.RDD[String] = ParallelCollectionRDD[0] at parallelize at <console>:29
+
 
 map example:
 	val mgrMap1 = mgr1.map(x => (x.split(",")(0).toInt, x.split(",")(1).trim))
@@ -160,10 +167,52 @@ flatMap example:
 
 
 
-sortBy example:
+sorting example:
 
 	val sorted = joined1.sortByKey() 
 	val sorted1 = joined1.sortBy(_._2._1)
+
+	descending, second item
+	dailyRevenuePerProductId.sortBy(rec => rec._2, false).take(10).foreach(println)
+	((2014-03-04 00:00:00.0,1004),16399.182)
+	((2014-04-08 00:00:00.0,1004),15999.201)
+	((2013-12-06 00:00:00.0,1004),15999.201)
+
+
+	ascending, the second item in the first item pair
+	note: for demo purpose take 10 first, otherwise doesn't see the sorting effect
+	scala> dailyRevenuePerProductId.take(10).sortBy(_._1._2).foreach(println)
+	((2013-10-11 00:00:00.0,116),224.95)
+	((2014-07-15 00:00:00.0,135),110.0)
+	((2014-07-17 00:00:00.0,403),3379.7402)
+
+	dailyRevenuePerProductId.sortBy(_._1._2).take(10).foreach(println)
+	((2014-07-24 00:00:00.0,19),124.99)
+	((2013-12-30 00:00:00.0,19),124.99)
+	((2014-01-16 00:00:00.0,19),124.99)
+
+
+	descending, the second item in the first item pair
+	scala> dailyRevenuePerProductId.take(10).sortWith(_._1._2>_._1._2).foreach(println)
+	((2014-03-05 00:00:00.0,1073),2399.8801)
+	((2013-11-21 00:00:00.0,982),149.99)
+	((2013-11-06 00:00:00.0,885),74.97)
+
+	descending, the second item, using sortWith
+	scala> dailyRevenuePerProductId.take(10).sortWith(_._2 > _._2).foreach(println)
+	((2014-01-15,365),7558.7393)
+	((2014-07-14,957),4499.7)
+	((2014-04-22,627),1359.6599)
+
+	descending, sort by second item using sortBy
+	scala> dailyRevenuePerProductId.sortBy(rec => rec._2, false).take(10).foreach(println)
+	((2014-03-04 00:00:00.0,1004),16399.182)
+	((2014-04-08 00:00:00.0,1004),15999.201)
+	((2013-12-06 00:00:00.0,1004),15999.201)
+	((2013-11-30 00:00:00.0,1004),15599.223)
+	((2013-11-03 00:00:00.0,1004),15599.221)
+
+
 
 save RDD to hdfs:
 

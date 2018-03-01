@@ -5,30 +5,30 @@ val data = sc.parallelize(keysWithValuesList)
 
 //Create key value pairs 
 val kv = data.map(_.split("=")).map(v => (v(0), v(1))).cache() 
-val initialCount = 0; 
-val countByKey = kv.aggregateByKey(initialCount)(addToCounts, sumPartitionCounts) 
+val initialCount = 0
 
-Now define two functions (addToCounts, sumPartitionCounts) such, which will produce following results. 
-Output 1 
-
-countByKey.collect 
-res3: Array[(String, Int)] = Array((foo,5), (bar,3)) 
-
-import scala.collection. _
-val initialSet = scala.collection.mutable.HashSet.empty[String] 
-val uniqueByKey = kv.aggregateByKey(initialSet)(addToSet, mergePartitionSets) 
-
-Now define two functions (addToSet, mergePartitionSets) such, which will produce following results. 
-Output 2 : 
-
-uniqueByKey.collect 
-res4: Array[(String, scala.collection.mutable.HashSet[String])] = Array(( foo,set(B,A)),(bar,Set(C,D)))
-
-==================================================================================
-Solution : 
+Define two functions (addToCounts, sumPartitionCounts) such, which will produce following results. 
 
 val addToCounts = (n: Int, v: String)=> n + 1 
-val sumPartitionCounts = (P1: Int, p2: Int) => p1 + p2 
+val sumPartitionCounts = (p1: Int, p2: Int) => p1 + p2 
+
+
+Define two functions (addToSet, mergePartitionSets) such, which will produce following results. 
+
+import scala.collection. _
+
 val addToSet = (s: mutable.HashSet[String], v: String) => s+= v 
-val mergePartitionSets = (P1: mutable.HashSet[String], p2: mutable.HashSet[String]) => p1 ++= p2 
-==================================================================================
+val mergePartitionSets = (p1: mutable.HashSet[String], p2: mutable.HashSet[String]) => p1 ++= p2 
+
+val initialSet = scala.collection.mutable.HashSet.empty[String] 
+
+val countByKey = kv.aggregateByKey(initialCount)(addToCounts, sumPartitionCounts) 
+
+countByKey.collect 
+
+res3: Array[(String, Int)] = Array((foo,5), (bar,3)) 
+
+val uniqueByKey = kv.aggregateByKey(initialSet)(addToSet, mergePartitionSets) 
+
+uniqueByKey.collect 
+res4: Array[(String, scala.collection.mutable.HashSet[String])] = Array((bar,Set(C, D)), (foo,Set(B, A)))
