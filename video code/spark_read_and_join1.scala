@@ -7,7 +7,8 @@ val orders = sc.textFile("/public/retail_db/orders")
 val orderItems = sc.textFile("/public/retail_db/order_items")
 
 orders.first
-res0: String = 1,2013-07-25 00:00:00.0,11599,CLOSED
+res1: String = 1,2013-07-25 00:00:00.0,11599,CLOSED
+
 
 mysql> desc orders;
 +-------------------+-------------+------+-----+---------+----------------+
