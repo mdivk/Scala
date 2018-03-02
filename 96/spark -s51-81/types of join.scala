@@ -62,4 +62,18 @@ res16: Array[(Int, (Option[String], String))] =
 		(8,(None,elephant))
 		)
 
+union
+simply put two RDDs together
 
+val union = b.union(d)
+res17: Array[(Int, String)] = 
+	Array(
+		(3,dog), (6,salmon), (3,rat), (8,elephant), (3,dog), (3,cat), (6,salmon), (6,rabbit), (4,wolf), (7,penguin)
+		)
+
+distinct
+val distinct = union.distinct
+res18: Array[(Int, String)] = 
+	Array(
+		(7,penguin), (6,salmon), (4,wolf), (8,elephant), (3,dog), (3,cat), (3,rat), (6,rabbit)
+		)
