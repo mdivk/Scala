@@ -77,3 +77,76 @@ res18: Array[(Int, String)] =
 	Array(
 		(7,penguin), (6,salmon), (4,wolf), (8,elephant), (3,dog), (3,cat), (3,rat), (6,rabbit)
 		)
+
+substract
+val sub1 = b.subtract(d)
+res19: Array[(Int, String)] = Array((8,elephant), (3,rat))
+
+
+val sub2 = d.subtract(b)
+res20: Array[(Int, String)] = Array((3,cat), (4,wolf), (7,penguin), (6,rabbit))
+
+
+b: Array((3,dog), (6,salmon), (3,rat), (8,elephant))
+d: Array((3,dog), (3,cat), (6,salmon), (6,rabbit), (4,wolf), (7,penguin))
+
+cartesian
+val cartesian1 = b.cartesian(d)
+res25: Long = 24
+res21: Array[((Int, String), (Int, String))] = 
+	Array(
+		((3,dog),(3,dog)), ((3,dog),(3,cat)), ((3,dog),(6,salmon)), ((3,dog),(6,rabbit)), ((3,dog),(4,wolf)), ((3,dog),(7,penguin)), 
+		((6,salmon),(3,dog)), ((6,salmon),(3,cat)), ((6,salmon),(6,salmon)), ((6,salmon),(6,rabbit)), ((6,salmon),(4,wolf)), ((6,salmon),(7,penguin)), 
+		((3,rat),(3,dog)), ((3,rat),(3,cat)), 
+		((8,elephant),(3,dog)), ((8,elephant),(3,cat)), 
+		((3,rat),(6,salmon)), ((3,rat),(6,rabbit)), 
+		((8,elephant),(6,salmon)), ((8,elephant),(6,rabbit)), 
+		((3,rat),(4,wolf)), 
+		((3,rat),(7,penguin)), 
+		((8,elephant),(4,wolf)), ((8,elephant),(7,penguin))
+		)
+
+val cartesian2 = d.cartesian(b)
+res26: Long = 24
+res22: Array[((Int, String), (Int, String))] = 
+	Array(
+		((3,dog),(3,dog)), ((3,cat),(3,dog)), ((3,dog),(6,salmon)), ((3,cat),(6,salmon)), ((3,dog),(3,rat)), ((3,dog),(8,elephant)), 
+		((3,cat),(3,rat)), ((3,cat),(8,elephant)), ((6,salmon),(3,dog)), ((6,rabbit),(3,dog)), ((6,salmon),(6,salmon)), 
+		((6,rabbit),(6,salmon)), ((6,salmon),(3,rat)), ((6,salmon),(8,elephant)), ((6,rabbit),(3,rat)), ((6,rabbit),(8,elephant)), 
+		((4,wolf),(3,dog)), ((7,penguin),(3,dog)), ((4,wolf),(6,salmon)), ((7,penguin),(6,salmon)), ((4,wolf),(3,rat)), 
+		((4,wolf),(8,elephant)), ((7,penguin),(3,rat)), ((7,penguin),(8,elephant)))
+
+count is the same but order is reverse
+
+
+
+Start the spark-shell with only one executor to see if there is any difference of cartesian result between bd and db:
+[paslechoix@gw03 ~]$ spark-shell --executor-cores 1
+
+val cartesian1 = b.cartesian(d)
+res0: Array[((Int, String), (Int, String))] = 
+	Array(
+		((3,dog),(3,dog)), ((3,dog),(3,cat)), ((3,dog),(6,salmon)), ((3,dog),(6,rabbit)), ((3,dog),(4,wolf)), ((3,dog),(7,penguin)), 
+		((6,salmon),(3,dog)), ((6,salmon),(3,cat)), ((6,salmon),(6,salmon)), ((6,salmon),(6,rabbit)), ((6,salmon),(4,wolf)), ((6,salmon),(7,penguin)), 
+		((3,rat),(3,dog)), ((3,rat),(3,cat)), ((8,elephant),(3,dog)), ((8,elephant),(3,cat)), ((3,rat),(6,salmon)), ((3,rat),(6,rabbit)), 
+		((8,elephant),(6,salmon)), ((8,elephant),(6,rabbit)), 
+		((3,rat),(4,wolf)), ((3,rat),(7,penguin)), 
+		((8,elephant),(4,wolf)), ((8,elephant),(7,penguin))
+		)
+
+val cartesian2 = d.cartesian(b)
+res1: Array[((Int, String), (Int, String))] = 
+	Array(
+		((3,dog),(3,dog)), ((3,cat),(3,dog)), ((3,dog),(6,salmon)), ((3,cat),(6,salmon)), ((3,dog),(3,rat)), ((3,dog),(8,elephant)), ((3,cat),(3,rat)), ((3,cat),(8,elephant)), 
+		((6,salmon),(3,dog)), ((6,rabbit),(3,dog)), ((6,salmon),(6,salmon)), ((6,rabbit),(6,salmon)), ((6,salmon),(3,rat)), ((6,salmon),(8,elephant)), ((6,rabbit),(3,rat)), ((6,rabbit),(8,elephant)), 
+		((4,wolf),(3,dog)), 
+		((7,penguin),(3,dog)), 
+		((4,wolf),(6,salmon)), 
+		((7,penguin),(6,salmon)), 
+		((4,wolf),(3,rat)), ((4,wolf),(8,elephant)), 
+		((7,penguin),(3,rat)), ((7,penguin),(8,elephant))
+		)
+
+Conclusion: bd and db still show different order in the result, number of executors does not have impact on the result.
+
+
