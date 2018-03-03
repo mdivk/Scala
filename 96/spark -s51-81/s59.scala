@@ -24,3 +24,4 @@ val z = x.intersection(y)
 res24: Array[Int] = Array(16, 17, 18, 19, 20, 10, 11, 12, 13, 14, 15)
 
 intersection : Retürns the elements in the two RDDS which are the same. 
+

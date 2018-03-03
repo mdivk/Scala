@@ -147,6 +147,21 @@ export from hive to mysql:
 
 	mysql> select * from departments_from_hive;
 
+Scala
+
+scalas-pattern-matching
+https://kerflyn.wordpress.com/2011/02/14/playing-with-scalas-pattern-matching/
+
+mapValues: update the value in the <K, V>
+
+	scala> b.collect
+	res2: Array[(Int, String)] = Array((3,dog), (5,tiger), (4,lion), (3,cat), (7,panther), (5,eagle))
+
+	b.mapValues("x" + _ + “X”).collect
+	res1: Array[(Int, String)] = Array((3,xdogX), (5,xtigerX), (4,xlionX), (3,xcatX), (7,xpantherX), (5,xeagleX))
+
+
+
 From Array to RDD:
 	scala> keysWithValuesList
 	res0: Array[String] = Array(foo=A, foo=A, foo=A, foo=A, foo=B, bar=C, bar=D, bar=D)
