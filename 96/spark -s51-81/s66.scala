@@ -1,16 +1,20 @@
 Problem Scenario 66 : You have been given below code snippet. 
+
 val a = sc.parallelize(List("dog", "tiger", "lion", "cat", "spider", "eagle"), 2) 
 val b = a.keyBy(_.length) 
+
 res4: Array[(Int, String)] = Array((3,dog), (5,tiger), (4,lion), (3,cat), (6,spider), (5,eagle))
 
 val c = sc.parallelize(List("ant", "falcon", "squid"), 2)  
 val d = c.keyBy(_.length) 
+
 res5: Array[(Int, String)] = Array((3,ant), (6,falcon), (5,squid))
 
 operation 1 
 
 Write a correct code snippet for operationl which will produce desired output, shown below. 
 Array((4,lion))
+
 ======================================================================== 
 
 Solution : 
