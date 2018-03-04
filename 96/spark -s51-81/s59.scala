@@ -25,3 +25,13 @@ res24: Array[Int] = Array(16, 17, 18, 19, 20, 10, 11, 12, 13, 14, 15)
 
 intersection : Retürns the elements in the two RDDS which are the same. 
 
+
+scala> val xmap = x.map(x=>(x,1))
+scala> val count = xmap.reduceByKey((a,b)=>a+b)
+
+scala> count.collect
+res25: Array[(Int, Int)] = Array((16,1), (1,1), (17,1), (18,1), (2,1), (19,1), (3,1), (4,1), (20,1), (5,1), (6,1), (7,1), (8,1), (9,1), (10,1), (11,1), (12,1), (13,1), (14,1), (15,1))
+
+scala> count.sortByKey().collect
+res29: Array[(Int, Int)] = Array((1,1), (2,1), (3,1), (4,1), (5,1), (6,1), (7,1), (8,1), (9,1), (10,1), (11,1), (12,1), (13,1), (14,1), (15,1), (16,1), (17,1), (18,1), (19,1), (20,1))
+
