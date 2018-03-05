@@ -43,3 +43,18 @@ val result2 = sqlContext.sql( "SELECT * FROM products WHERE price < 100")
 result2.show() 
 
 Note: the data source has some issue and needs to be sanitized before it stops throwing error.
+
+Troublehooting:
+1. find out the source data on hdfs, load it into a new hive table
+2. check the hive table to find out if there are extra malformed records like null in any columns
+
+To create hive table:
+hdfs dfs -cp /public/retail_db/products/part-00000 .
+
+create external table products_hive (product_id int, product_category_id int, product_name string, product_description string, product_price decimal(8,2), product_image string)
+row format delimited fields terminated by ','
+location '/user/paslechoix/products/';
+
+1345
+Time taken: 50.443 seconds, Fetched: 1 row(s)
+hive (paslechoix)>
