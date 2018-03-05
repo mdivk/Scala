@@ -1,3 +1,6 @@
+copy file from local laptop to lab local with scp
+scp paslechoix@gw03.itversity.com /home/paslechoix/part-00000 /cygdrive/c/rxie/175scala/data
+/public/retail_db/orders
 1. copy local to hdfs:
 	[paslechoix@gw03 ~]$ hdfs dfs -put mgr1.csv spark1/
 	[paslechoix@gw03 ~]$ hdfs dfs -ls spark1
