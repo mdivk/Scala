@@ -7,7 +7,7 @@ Problem Scenario 83 : In Continuation of previous question, please accomplish fo
 
 Solution : 
 
-
+ 
 1. There are 1345 records in products in mysql, export them to hdfs:
 
 mysql> show create table products;
