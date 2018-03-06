@@ -252,3 +252,8 @@ save RDD to hdfs:
 	scala> finalData.saveAsTextFile("spark1/result.csv") 
 	[paslechoix@gw03 ~]$ hdfs dfs -cat spark1/result.csv/*
 
+SCP: copy remote file to local
+$ scp paslechoix@gw03.itversity.com:/home/paslechoix/course.txt /cygdrive/c/rxie/learning/scala/175scala/data
+
+$ scp /cygdrive/c/rxie/learning/scala/175scala/data/course1.txt paslechoix@gw03.itversity.com:/home/paslechoix 
+

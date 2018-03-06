@@ -66,7 +66,7 @@ scala> prdRDD
 res12: org.apache.spark.rdd.RDD[(Int, String, String, String, Float, String)] = MapPartitionsRDD[40] at map at <console>:29
 
 
-scala> val prdDF = prdRDD.toDF("productlD","productCode","name","quantity","price", "image")
+scala> val prdDF = prdRDD.toDF("productID","productCode","name","quantity","price", "image")
 prdDF.registerTempTable("products")
 
 val result = sqlContext.sql("select * from products")
@@ -102,6 +102,7 @@ only showing top 20 rows
 Step 1 : Select all the records with name starts with 'Per' 
 
 val result1 = sqlContext.sql("select * from products where name like 'Per%'")
+
 result1.show
 
 18/03/05 20:35:16 INFO HadoopRDD: Input split: hdfs://nn01.itversity.com:8020/user/paslechoix/products/part-m-00000:0+86996
@@ -111,12 +112,12 @@ java.lang.NumberFormatException: empty String
         at sun.misc.FloatingDecimal.parseFloat(FloatingDecimal.java:122)
         at java.lang.Float.parseFloat(Float.java:451)
 
-But if restrain the result1 to show less, then it works:
+But if restrain the result1 to show 7 or less, then it works:
 
 scala> result1.show(7)
 
 +---------+-----------+--------------------+--------+-----+--------------------+
-|productlD|productCode|                name|quantity|price|               image|
+|productID|productCode|                name|quantity|price|               image|
 +---------+-----------+--------------------+--------+-----+--------------------+
 |      362|         17|Perfect Fitness P...|        |29.99|http://images.acm...|
 |      365|         17|Perfect Fitness P...|        |59.99|http://images.acm...|
@@ -130,7 +131,7 @@ only showing top 7 rows
 
 check in mysql, there are 12 records:
 
-mysql> mysql> select * from products where product_name like 'Per%';
+mysql> select * from products where product_name like 'Per%' and NOT (product_category_id = 17 and product_id = 379);
 +------------+---------------------+--------------------------------------------+---------------------+---------------+----------------------------------------------------------------------------+
 | product_id | product_category_id | product_name                               | product_description | product_price | product_image                                                              |
 +------------+---------------------+--------------------------------------------+---------------------+---------------+----------------------------------------------------------------------------+
@@ -148,7 +149,24 @@ mysql> mysql> select * from products where product_name like 'Per%';
 |       1093 |                  49 | Perception Sport Swifty Deluxe 9.5 Kayak   |                     |        349.99 | http://images.acmesports.sports/Perception+Sport+Swifty+Deluxe+9.5+Kayak   |
 +------------+---------------------+--------------------------------------------+---------------------+---------------+----------------------------------------------------------------------------+
 
+val result2 = sqlContext.sql("select * from products where productID = 379")
 
+result2.show(1)
+
+
+val result2 = sqlContext.sql("select * from products where productID = 377")
+
+result2.show(1)
+
+java.lang.NumberFormatException: empty String
+
+
+Now, skip the record:
+val result3 = sqlContext.sql("select * from products where name like 'Per%' and (NOT (productCode = 17 and productlD = 379)"))
+result3.show
+
+val result4 = sqlContext.sql("select * from products where productID != 379 and productID !=377")
+result4.show(1)
 
 Step 2 : Select all the records with quantity >=5000 , price is less than 100 and name starts with 'Per' 
 
