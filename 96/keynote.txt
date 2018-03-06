@@ -257,3 +257,7 @@ $ scp paslechoix@gw03.itversity.com:/home/paslechoix/course.txt /cygdrive/c/rxie
 
 $ scp /cygdrive/c/rxie/learning/scala/175scala/data/course1.txt paslechoix@gw03.itversity.com:/home/paslechoix 
 
+Concatenate text files in linux:
+	[paslechoix@gw03 data]$ cat part-00000 part-00001 > sorted.txt
+
+
