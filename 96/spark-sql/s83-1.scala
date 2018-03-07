@@ -61,12 +61,31 @@ hdfs dfs -tail products/part-m-00000
 scala> val prd = sc.textFile("products")
 res0: Long = 1345
 
-
 scala> val prdRDD = prd.map(p=>(p.split(",")(0).toInt, p.split(",")(1), p.split(",")(2), p.split(",")(3), p.split(",")(4).toFloat,p.split(",")(5)))
 
-check in mysql and found there are some records with price is empty, this will cause .toFloat error out.
+Note: the above prdRDD will fail later, check in mysql and found there are some records with price is empty, this will cause .toFloat error out.
 
-scala> val prdRDD = prd.map(p=>p.split(",")).map(p=>(p(0).toInt, p(1), p(2), p(3), { if( p(4)==null ||  p(4)=="" ) p(4)=0 else p(4).toFloat }  ,p(5)))
+It should be re-written as either of below:
+
+scala> val prdMap = prd.map(p=>(p.split(",")(0).toInt,p.split(",")(1).toInt, p.split(",")(2), p.split(",")(3), { if( p.split(",")(4)==null ||  p.split(",")(4)=="" ) 0 else p.split(",")(4).toFloat }, p.split(",")(5)))
+res9: (Int, Int, String, String, Float, String) = (1,2,Quest Q64 10 FT. x 10 FT. Slant Leg Instant U,"",59.98,http://images.acmesports.sports/Quest+Q64+10+FT.+x+10+FT.+Slant+Leg+Instant+Up+Canopy)
+
+
+val stage = prd.map(p=>p.split(","))
+res5: Array[Array[String]] = Array(
+  Array(1, 2, Quest Q64 10 FT. x 10 FT. Slant Leg Instant U, "", 59.98, http://images.acmesports.sports/Quest+Q64+10+FT.+x+10+FT.+Slant+Leg+Instant+Up+Canopy), 
+  Array(2, 2, Under Armour Men's Highlight MC Football Clea, "", 129.99, http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat), 
+  Array(3, 2, Under Armour Men's Renegade D Mid Football Cl, "", 89.99, http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat), 
+  Array(4, 2, Under Armour Men's Renegade D Mid Football Cl, "", 89.99, http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat), 
+  Array(5, 2, Riddell Youth Revolution Speed Custom Footbal, "", 199.99, http://images.acmesports.sports/Riddell+Youth+Revolution+Speed+Custom...
+continue with a second map, this way saves some repetitive split
+scala> val prdRDD = stage.map(p=>(p(0).toInt, p(1).toInt, p(2), p(3), { if( p(4)==null ||  p(4)=="" ) 0 else p(4).toFloat },p(5)))
+res11: (Int, Int, String, String, Float, String) = (1,2,Quest Q64 10 FT. x 10 FT. Slant Leg Instant U,"",59.98,http://images.acmesports.sports/Quest+Q64+10+FT.+x+10+FT.+Slant+Leg+Instant+Up+Canopy)
+
+It is the same as the previous RDD 
+
+
+
 
 scala> prdRDD
 res12: org.apache.spark.rdd.RDD[(Int, String, String, String, Float, String)] = MapPartitionsRDD[40] at map at <console>:29\
