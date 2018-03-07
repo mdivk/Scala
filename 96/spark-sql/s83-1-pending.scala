@@ -61,9 +61,15 @@ hdfs dfs -tail products/part-m-00000
 scala> val prd = sc.textFile("products")
 res0: Long = 1345
 
+
 scala> val prdRDD = prd.map(p=>(p.split(",")(0).toInt, p.split(",")(1), p.split(",")(2), p.split(",")(3), p.split(",")(4).toFloat,p.split(",")(5)))
+
+check in mysql and found there are some records with price is empty, this will cause .toFloat error out.
+
+scala> val prdRDD = prd.map(p=>p.split(",")).map(p=>(p(0).toInt, p(1), p(2), p(3), { if( p(4)==null ||  p(4)=="" ) p(4)=0 else p(4).toFloat }  ,p(5)))
+
 scala> prdRDD
-res12: org.apache.spark.rdd.RDD[(Int, String, String, String, Float, String)] = MapPartitionsRDD[40] at map at <console>:29
+res12: org.apache.spark.rdd.RDD[(Int, String, String, String, Float, String)] = MapPartitionsRDD[40] at map at <console>:29\
 
 
 scala> val prdDF = prdRDD.toDF("productID","productCode","name","quantity","price", "image")
@@ -167,6 +173,38 @@ result3.show
 
 val result4 = sqlContext.sql("select * from products where productID != 379 and productID !=377")
 result4.show(1)
+
+
+Troubleshooting:
+
+When there is no query in the sql, show won't produce error; 
+When there is any where clause in the sql, because show will cause the action and the original toFloat will fail due to some records have price column value being empty or null(in this case just empty)
+
+This causes the show crashes.
+
+to validate the suspect, check in mysql with query below:
+
+mysql> select * from products where product_price is null  or product_price = '';
+
++------------+---------------------+-----------------------------------------------+---------------------+---------------+-----------------------------------------------------------------------------------------+
+| product_id | product_category_id | product_name                                  | product_description | product_price | product_image                                                                           |
++------------+---------------------+-----------------------------------------------+---------------------+---------------+-----------------------------------------------------------------------------------------+
+|         38 |                   3 | Nike Men's Hypervenom Phantom Premium FG Socc |                     |             0 | http://images.acmesports.sports/Nike+Men%27s+Hypervenom+Phantom+Premium+FG+Soccer+Cleat |
+|        388 |                  18 | Nike Men's Hypervenom Phantom Premium FG Socc |                     |             0 | http://images.acmesports.sports/Nike+Men%27s+Hypervenom+Phantom+Premium+FG+Soccer+Cleat |
+|        414 |                  19 | Nike Men's Hypervenom Phantom Premium FG Socc |                     |             0 | http://images.acmesports.sports/Nike+Men%27s+Hypervenom+Phantom+Premium+FG+Soccer+Cleat |
+|        517 |                  24 | Nike Men's Hypervenom Phantom Premium FG Socc |                     |             0 | http://images.acmesports.sports/Nike+Men%27s+Hypervenom+Phantom+Premium+FG+Soccer+Cleat |
+|        547 |                  25 | Nike Men's Hypervenom Phantom Premium FG Socc |                     |             0 | http://images.acmesports.sports/Nike+Men%27s+Hypervenom+Phantom+Premium+FG+Soccer+Cleat |
+|        934 |                  42 | Callaway X Hot Driver                         |                     |             0 | http://images.acmesports.sports/Callaway+X+Hot+Driver                                   |
+|       1284 |                  57 | Nike Men's Hypervenom Phantom Premium FG Socc |                     |             0 | http://images.acmesports.sports/Nike+Men%27s+Hypervenom+Phantom+Premium+FG+Soccer+Cleat |
++------------+---------------------+-----------------------------------------------+---------------------+---------------+-----------------------------------------------------------------------------------------+
+7 rows in set (0.00 sec)
+
+mysql>
+
+
+In mysql, the columns are filled with value of 0 so that they will get output instead of crashes.
+
+
 
 Step 2 : Select all the records with quantity >=5000 , price is less than 100 and name starts with 'Per' 
 
