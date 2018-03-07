@@ -7,7 +7,7 @@ Problem Scenario 83 : In Continuation of previous question, please accomplish fo
 
 Solution : 
 
-
+ 
 1. There are 1345 records in products in mysql, export them to hdfs:
 
 mysql> show create table products;
@@ -61,12 +61,18 @@ hdfs dfs -tail products/part-m-00000
 scala> val prd = sc.textFile("products")
 res0: Long = 1345
 
+
 scala> val prdRDD = prd.map(p=>(p.split(",")(0).toInt, p.split(",")(1), p.split(",")(2), p.split(",")(3), p.split(",")(4).toFloat,p.split(",")(5)))
+
+check in mysql and found there are some records with price is empty, this will cause .toFloat error out.
+
+scala> val prdRDD = prd.map(p=>p.split(",")).map(p=>(p(0).toInt, p(1), p(2), p(3), { if( p(4)==null ||  p(4)=="" ) p(4)=0 else p(4).toFloat }  ,p(5)))
+
 scala> prdRDD
-res12: org.apache.spark.rdd.RDD[(Int, String, String, String, Float, String)] = MapPartitionsRDD[40] at map at <console>:29
+res12: org.apache.spark.rdd.RDD[(Int, String, String, String, Float, String)] = MapPartitionsRDD[40] at map at <console>:29\
 
 
-scala> val prdDF = prdRDD.toDF("productlD","productCode","name","quantity","price", "image")
+scala> val prdDF = prdRDD.toDF("productID","productCode","name","quantity","price", "image")
 prdDF.registerTempTable("products")
 
 val result = sqlContext.sql("select * from products")
@@ -102,6 +108,7 @@ only showing top 20 rows
 Step 1 : Select all the records with name starts with 'Per' 
 
 val result1 = sqlContext.sql("select * from products where name like 'Per%'")
+
 result1.show
 
 18/03/05 20:35:16 INFO HadoopRDD: Input split: hdfs://nn01.itversity.com:8020/user/paslechoix/products/part-m-00000:0+86996
@@ -111,12 +118,12 @@ java.lang.NumberFormatException: empty String
         at sun.misc.FloatingDecimal.parseFloat(FloatingDecimal.java:122)
         at java.lang.Float.parseFloat(Float.java:451)
 
-But if restrain the result1 to show less, then it works:
+But if restrain the result1 to show 7 or less, then it works:
 
 scala> result1.show(7)
 
 +---------+-----------+--------------------+--------+-----+--------------------+
-|productlD|productCode|                name|quantity|price|               image|
+|productID|productCode|                name|quantity|price|               image|
 +---------+-----------+--------------------+--------+-----+--------------------+
 |      362|         17|Perfect Fitness P...|        |29.99|http://images.acm...|
 |      365|         17|Perfect Fitness P...|        |59.99|http://images.acm...|
@@ -130,7 +137,7 @@ only showing top 7 rows
 
 check in mysql, there are 12 records:
 
-mysql> mysql> select * from products where product_name like 'Per%';
+mysql> select * from products where product_name like 'Per%' and NOT (product_category_id = 17 and product_id = 379);
 +------------+---------------------+--------------------------------------------+---------------------+---------------+----------------------------------------------------------------------------+
 | product_id | product_category_id | product_name                               | product_description | product_price | product_image                                                              |
 +------------+---------------------+--------------------------------------------+---------------------+---------------+----------------------------------------------------------------------------+
@@ -147,6 +154,55 @@ mysql> mysql> select * from products where product_name like 'Per%';
 |       1065 |                  48 | Perception Sport Swifty Deluxe 9.5 Kayak   |                     |        349.99 | http://images.acmesports.sports/Perception+Sport+Swifty+Deluxe+9.5+Kayak   |
 |       1093 |                  49 | Perception Sport Swifty Deluxe 9.5 Kayak   |                     |        349.99 | http://images.acmesports.sports/Perception+Sport+Swifty+Deluxe+9.5+Kayak   |
 +------------+---------------------+--------------------------------------------+---------------------+---------------+----------------------------------------------------------------------------+
+
+val result2 = sqlContext.sql("select * from products where productID = 379")
+
+result2.show(1)
+
+
+val result2 = sqlContext.sql("select * from products where productID = 377")
+
+result2.show(1)
+
+java.lang.NumberFormatException: empty String
+
+
+Now, skip the record:
+val result3 = sqlContext.sql("select * from products where name like 'Per%' and (NOT (productCode = 17 and productlD = 379)"))
+result3.show
+
+val result4 = sqlContext.sql("select * from products where productID != 379 and productID !=377")
+result4.show(1)
+
+
+Troubleshooting:
+
+When there is no query in the sql, show won't produce error; 
+When there is any where clause in the sql, because show will cause the action and the original toFloat will fail due to some records have price column value being empty or null(in this case just empty)
+
+This causes the show crashes.
+
+to validate the suspect, check in mysql with query below:
+
+mysql> select * from products where product_price is null  or product_price = '';
+
++------------+---------------------+-----------------------------------------------+---------------------+---------------+-----------------------------------------------------------------------------------------+
+| product_id | product_category_id | product_name                                  | product_description | product_price | product_image                                                                           |
++------------+---------------------+-----------------------------------------------+---------------------+---------------+-----------------------------------------------------------------------------------------+
+|         38 |                   3 | Nike Men's Hypervenom Phantom Premium FG Socc |                     |             0 | http://images.acmesports.sports/Nike+Men%27s+Hypervenom+Phantom+Premium+FG+Soccer+Cleat |
+|        388 |                  18 | Nike Men's Hypervenom Phantom Premium FG Socc |                     |             0 | http://images.acmesports.sports/Nike+Men%27s+Hypervenom+Phantom+Premium+FG+Soccer+Cleat |
+|        414 |                  19 | Nike Men's Hypervenom Phantom Premium FG Socc |                     |             0 | http://images.acmesports.sports/Nike+Men%27s+Hypervenom+Phantom+Premium+FG+Soccer+Cleat |
+|        517 |                  24 | Nike Men's Hypervenom Phantom Premium FG Socc |                     |             0 | http://images.acmesports.sports/Nike+Men%27s+Hypervenom+Phantom+Premium+FG+Soccer+Cleat |
+|        547 |                  25 | Nike Men's Hypervenom Phantom Premium FG Socc |                     |             0 | http://images.acmesports.sports/Nike+Men%27s+Hypervenom+Phantom+Premium+FG+Soccer+Cleat |
+|        934 |                  42 | Callaway X Hot Driver                         |                     |             0 | http://images.acmesports.sports/Callaway+X+Hot+Driver                                   |
+|       1284 |                  57 | Nike Men's Hypervenom Phantom Premium FG Socc |                     |             0 | http://images.acmesports.sports/Nike+Men%27s+Hypervenom+Phantom+Premium+FG+Soccer+Cleat |
++------------+---------------------+-----------------------------------------------+---------------------+---------------+-----------------------------------------------------------------------------------------+
+7 rows in set (0.00 sec)
+
+mysql>
+
+
+In mysql, the columns are filled with value of 0 so that they will get output instead of crashes.
 
 
 
