@@ -293,24 +293,7 @@ empty string causing error
 s81:
 error when creating external table on the generated parquet format data
 
-scala> val prd = sc.textFile("products")
-scala> val prdRDD = prd.map(p=>(p.split(",")(0).toInt, p.split(",")(1), p.split(",")(2), p.split(",")(3), p.split(",")(4).toFloat,p.split(",")(5)))
-scala> val prdDF = prdRDD.toDF("productID","productCode","name","quantity","price", "image")
-prdDF.registerTempTable("products")
-
-val results = sqlContext.sql("SELECT productID AS ID, productCode AS code, name AS Description, price AS unit_price FROM products ORDER BY ID") 
-results.show() 
-
-This fails with:
-18/03/06 07:19:30 ERROR Executor: Exception in task 0.0 in stage 11.0 (TID 16)
-java.lang.NumberFormatException: empty String
-
-val results = sqlContext.sql("SELECT * FROM products") 
-results.show()
-
-This works.
-
-val results = sqlContext.sql("SELECT * FROM products order by productID") 
-results.show()
-18/03/06 07:19:30 ERROR Executor: Exception in task 0.0 in stage 11.0 (TID 16)
-java.lang.NumberFormatException: empty String
+s84-1:
+scala> val filtered = results12.filter(row => !row.anyNull)
+<console>:27: error: missing parameter type
+         val filtered = results12.filter(row => !row.anyNull)
