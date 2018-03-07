@@ -10,7 +10,7 @@ patientlD,name,dateOtBirth,lastVisitDate
 
 Accomplish following activities. 
 
-1. Find all the patients whose lastVisitDate between current time and '2012-09-15' 
+1. Find all the patients whose lastVisitDate between current time and '2012-09-15'
 2. Find all the patients who born in 2011 
 3. Find all the patients age 
 4. List patients whose last visited more than 60 days ago 
