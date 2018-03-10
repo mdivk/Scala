@@ -36,7 +36,9 @@ val fee = sc.textFile("sparksql4/fee.txt")
 
 //define the schema using a case class 
 case class Course(id: Integer, name: String) 
-scala> case class Fee(id: Int, amount: Float)
+case class Fee(id: Int, amount: Float)
+
+
 
 
 //create an RDD ot Product objects 
@@ -93,6 +95,13 @@ val result = sqlContext.sql("""
     course c left outer join fee f on f.id = c.id
 """)
 
+
+val res = sqlContext.sql("""
+	select c.id, c.name as Course,
+	case when f.amount is null or f.amount = '' then 'N/A' else f.amount end as amount
+	from course c left outer join fee f on f.id = c.id
+""")
+
 +---+------+------+
 | id|course|amount|
 +---+------+------+
@@ -143,7 +152,31 @@ sqlContext.sql("select * from course c left outer join fee f on f.id = c.id").sh
 
 
 //2. Select all the available fees and respective course. If course does not exists still list the fee 
-sqlContext.sql("").show
+sqlContext.sql("""
+	select f.id, f.amount as Amount,
+	case when c.name is null or c.name = '' then 'N/A' else c.name end as Course
+	from fee f left outer join course c on f.id = c.id
+""").show
++---+------+------+
+| id|Amount|Course|
++---+------+------+
+|  2|3900.0| Spark|
+|  3|4200.0| HBase|
+|  4|2900.0|   N/A|
++---+------+------+
 
-//3. Select all the courses and their fees , whether fee is listed or not. However, ignore records having tee as null. 
-sqlContext.sql("").show
+
+//3. Select all the courses and their fees , whether fee is listed or not. However, ignore records having fee as null. 
+sqlContext.sql("""
+	select c.id, c.name as Course, f.amount as Amount 
+	from course c join fee f on c.id = f.id
+	where f.amount is not null OR f.amount <> ''
+""").show
+
++---+------+------+
+| id|Course|Amount|
++---+------+------+
+|  2| Spark|3900.0|
+|  3| HBase|4200.0|
++---+------+------+
+
