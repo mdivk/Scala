@@ -85,6 +85,25 @@ sqlContext.sql("select c.id, c.course, f.amount from course c left outer join fe
 +---+------+------+
 
 
+val result = sqlContext.sql("""
+  select
+    c.id, c.name as course,
+    case when f.amount is null then 'N/A' else f.amount end as amount
+  from
+    course c left outer join fee f on f.id = c.id
+""")
+
++---+------+------+
+| id|course|amount|
++---+------+------+
+|  1|Hadoop|   N/A|
+|  2| Spark|3900.0|
+|  3| HBase|4200.0|
+|  5|Impala|   N/A|
++---+------+------+
+
+
+
 sqlContext.sql("select c.id, c.course, f.amount from course c join fee f on c.id = f.id").show
 +---+------+------+
 | id|course|amount|
