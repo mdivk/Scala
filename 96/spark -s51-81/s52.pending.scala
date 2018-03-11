@@ -41,9 +41,3 @@ scala> anRDDMap2.take(10).foreach(println)
 (4,2)
 
 
-Returns a map that contains all unique values of the RDD and their respective occurrence counts. 
-(Warning: This operation will finally aggregate the information in a single reducer.)
-
-Listing Variants 
-
-def countByValue(): Map[T, Long]
