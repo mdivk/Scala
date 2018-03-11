@@ -194,7 +194,36 @@ drwxr-xr-x   - paslechoix hdfs          0 2018-01-15 13:40 /user/paslechoix/sqoo
 :"customer_id","sqlType":"4"},{"name":"customer_fname","type":["null","string"],"default":null,"columnName":"customer_fname","sqlType":"12"},{"name":"customer_lname","type":["null","string"],"default":null,"columnName":"customer_lname","sqlType":"12"},{"name":"customer_email","type":["null","string"],"default":null,"columnName":"customer_email","sqlType":"12"},{"name":"customer_password","type":["null","string"],"default":null,"columnName":"customer_password","sqlType":"12"},{"name":"customer_street","type":["null","string"],"default":null,"columnName":"customer_street","sqlType":"12"},{"name":"customer_city","type":["null","string"],"default":null,"columnName":"customer_city","sqlType":"12"},{"name":"customer_state","type":["null","string"],"default":null,"columnName":"customer_state","sqlType":"12"},{"name":"customer_zipcode","type":["null","string"],"default":null,"columnName":"customer_zipcode","sqlType":"12"}],"tableName":"customers"}?;parquet-mr (build 27f71a18579ebac6db2b0e9ac758d64288b6dbff)4PAR1[in scala, read the external
 
 text format:
-sqlContext.load("/user/paslechoix/sqoop_import/retail_db/orders").show
+sqlContext.load("/user/paslechoix/sqoop_import/retail_db", "text").show
+
++----------------------------------------------------------------+
+|value                                                           |
++----------------------------------------------------------------+
+|1,2013-07-25 00:00:00.0,11599,CLOSED,299.9800109863281          |
+|2,2013-07-25 00:00:00.0,256,PENDING_PAYMENT,579.9800109863281   |
+|4,2013-07-25 00:00:00.0,8827,CLOSED,699.8500099182129           |
+|5,2013-07-25 00:00:00.0,11318,COMPLETE,1129.8600387573242       |
+|7,2013-07-25 00:00:00.0,4530,COMPLETE,579.9200134277344         |
+|8,2013-07-25 00:00:00.0,2911,PROCESSING,729.8400115966797       |
+|9,2013-07-25 00:00:00.0,5657,PENDING_PAYMENT,599.9600067138672  |
+|10,2013-07-25 00:00:00.0,5648,PENDING_PAYMENT,651.920015335083  |
+|11,2013-07-25 00:00:00.0,918,PAYMENT_REVIEW,919.7899932861328   |
+|12,2013-07-25 00:00:00.0,1837,CLOSED,1299.8700256347656         |
+|13,2013-07-25 00:00:00.0,9149,PENDING_PAYMENT,127.95999908447266|
+|14,2013-07-25 00:00:00.0,9842,PROCESSING,549.9400100708008      |
+|15,2013-07-25 00:00:00.0,2568,COMPLETE,925.9100189208984        |
+|16,2013-07-25 00:00:00.0,7276,PENDING_PAYMENT,419.93001556396484|
+|17,2013-07-25 00:00:00.0,2667,COMPLETE,694.8400115966797        |
+|18,2013-07-25 00:00:00.0,1205,CLOSED,449.9600143432617          |
+|19,2013-07-25 00:00:00.0,9488,PENDING_PAYMENT,699.9600219726562 |
+|20,2013-07-25 00:00:00.0,9198,PROCESSING,879.8600158691406      |
+|21,2013-07-25 00:00:00.0,2711,PENDING,372.9100036621094         |
+|23,2013-07-25 00:00:00.0,4367,PENDING_PAYMENT,299.9800109863281 |
++----------------------------------------------------------------+
+only showing top 20 rows
+
+
+val df = sqlContext.load("/user/paslechoix/sqoop_import/retail_db", "text")
 
 parquet format:
 sqlContext.load("/user/paslechoix/sqoop_import/retail_db/customers", "parquet").show
