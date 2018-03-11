@@ -261,3 +261,9 @@ Concatenate text files in linux:
 	[paslechoix@gw03 data]$ cat part-00000 part-00001 > sorted.txt
 
 
+Handling date, time in sqlContext.sql
+//FROM patients, find all the patients whose lastVisitDate between current time and '2012-09-15' 
+val results1 = sqlContext.sql("select * from patients where to_date(lastVisit)  between to_date('2012-09-15') and current_date()")
+
+Handling date format in Scala
+scala> val format = new java.text.SimpleDateFormat("yyyy-MM-dd")
