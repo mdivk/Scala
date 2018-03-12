@@ -9,7 +9,7 @@ val d = c.keyBy(_.length)
 res5: Array[(Int, String)] = Array((3,dog), (3,cat), (6,salmon), (6,rabbit), (4,wolf), (7,penguin))
 
 
-Join: note: same key will be put together, for example, in b, dog and rat have key of 3, in d: dog and cat have key of 3, they will be put togetehr and generate:
+//Join: note: same key will be put together, for example, in b, dog and rat have key of 3, in d: dog and cat have key of 3, they will be put togetehr and generate:
 (3,(dog,dog)), (3,(dog,cat)), (3,(rat,dog)), (3,(rat,cat)
 
 val joined = b.join(d)
@@ -18,12 +18,13 @@ res10: Array[(Int, (String, String))] =
 		(6,(salmon,salmon)), (6,(salmon,rabbit)), (3,(dog,dog)), (3,(dog,cat)), (3,(rat,dog)), (3,(rat,cat))
 	)
 
-Inner join: there is no inner join in RDD, use intersection indeed, which generates the common <K, V> from the two RDD
+//Inner join: there is no inner join in RDD, use intersection indeed, which generates the common <K, V> from the two RDD
 
-val innerjoin = b.Innerjoin(d)
-res11: Array[(Int, String)] = Array((6,salmon), (3,dog))
+val innerjoin = b.intersection(d)
+res5: Array[(Int, String)] = Array((6,salmon), (3,dog))
 
-Left Outer Join 
+
+//Left Outer Join 
 
 val leftouterjoin1 = b.leftOuterJoin(d)
 res12: Array[(Int, (String, Option[String]))] = 
@@ -32,6 +33,9 @@ res12: Array[(Int, (String, Option[String]))] =
 		(3,(dog,Some(dog))), (3,(dog,Some(cat))), (3,(rat,Some(dog))), (3,(rat,Some(cat))), 
 		(8,(elephant,None))
 		)
+
+Note: leftOuterJoin will ensure the result contains with the left RDD, that is b, so all the keys in b will be included, and the common keys in d will be joined
+
 
 
 val leftouterjoin2 = d.leftOuterJoin(b)
@@ -42,8 +46,9 @@ res13: Array[(Int, (String, Option[String]))] =
 		(4,(wolf,None)), 
 		(7,(penguin,None))
 		)
+Note: leftOuterJoin will ensure the result contains with the left RDD, that is d, so all the keys in d will be included, and the common keys in b will be joined
 
-Right Outer Join
+//Right Outer Join
 
 val rightouterjoin1 = b.rightOuterJoin(d)
 res15: Array[(Int, (Option[String], String))] = 
@@ -62,8 +67,8 @@ res16: Array[(Int, (Option[String], String))] =
 		(8,(None,elephant))
 		)
 
-union
-simply put two RDDs together
+//union
+//simply put two RDDs together
 
 val union = b.union(d)
 res17: Array[(Int, String)] = 
@@ -71,14 +76,14 @@ res17: Array[(Int, String)] =
 		(3,dog), (6,salmon), (3,rat), (8,elephant), (3,dog), (3,cat), (6,salmon), (6,rabbit), (4,wolf), (7,penguin)
 		)
 
-distinct
+//distinct
 val distinct = union.distinct
 res18: Array[(Int, String)] = 
 	Array(
 		(7,penguin), (6,salmon), (4,wolf), (8,elephant), (3,dog), (3,cat), (3,rat), (6,rabbit)
 		)
 
-substract
+//substract
 val sub1 = b.subtract(d)
 res19: Array[(Int, String)] = Array((8,elephant), (3,rat))
 
@@ -90,7 +95,7 @@ res20: Array[(Int, String)] = Array((3,cat), (4,wolf), (7,penguin), (6,rabbit))
 b: Array((3,dog), (6,salmon), (3,rat), (8,elephant))
 d: Array((3,dog), (3,cat), (6,salmon), (6,rabbit), (4,wolf), (7,penguin))
 
-cartesian
+//cartesian
 val cartesian1 = b.cartesian(d)
 res25: Long = 24
 res21: Array[((Int, String), (Int, String))] = 
@@ -116,11 +121,11 @@ res22: Array[((Int, String), (Int, String))] =
 		((4,wolf),(3,dog)), ((7,penguin),(3,dog)), ((4,wolf),(6,salmon)), ((7,penguin),(6,salmon)), ((4,wolf),(3,rat)), 
 		((4,wolf),(8,elephant)), ((7,penguin),(3,rat)), ((7,penguin),(8,elephant)))
 
-count is the same but order is reverse
+//count is the same but order is reverse
 
 
 
-Start the spark-shell with only one executor to see if there is any difference of cartesian result between bd and db:
+//Start the spark-shell with only one executor to see if there is any difference of cartesian result between bd and db:
 [paslechoix@gw03 ~]$ spark-shell --executor-cores 1
 
 val cartesian1 = b.cartesian(d)
@@ -147,6 +152,6 @@ res1: Array[((Int, String), (Int, String))] =
 		((7,penguin),(3,rat)), ((7,penguin),(8,elephant))
 		)
 
-Conclusion: bd and db still show different order in the result, number of executors does not have impact on the result.
+//Conclusion: bd and db still show different order in the result, number of executors does not have impact on the result.
 
 
