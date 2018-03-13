@@ -1,10 +1,70 @@
 Reading and writing into various file formats in hdfs. 
 
 RAW data:
+orders table in mysql
+
+Sqoop import:
+TextFile (default format):
+
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=orders \
+--target-dir=orders03131
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls orders03131
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-03-13 12:04 orders03131/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs     741614 2018-03-13 12:04 orders03131/part-m-00000
+-rw-r--r--   3 paslechoix hdfs     753022 2018-03-13 12:04 orders03131/part-m-00001
+-rw-r--r--   3 paslechoix hdfs     752368 2018-03-13 12:04 orders03131/part-m-00002
+-rw-r--r--   3 paslechoix hdfs     752940 2018-03-13 12:04 orders03131/part-m-00003
+
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=orders \
+--target-dir=orders03132_seq \
+--as-sequencefile
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls orders03132_seq
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-03-13 16:54 orders03132_seq/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs     880159 2018-03-13 16:54 orders03132_seq/part-m-00000
+-rw-r--r--   3 paslechoix hdfs     880420 2018-03-13 16:54 orders03132_seq/part-m-00001
+-rw-r--r--   3 paslechoix hdfs     879621 2018-03-13 16:54 orders03132_seq/part-m-00002
+-rw-r--r--   3 paslechoix hdfs     880255 2018-03-13 16:54 orders03132_seq/part-m-00003
 
 
+[paslechoix@gw03 ~]$ hdfs dfs -cat orders03132_seq/part-m-00000 | head
+SEQ!org.apache.hadoop.io.LongWritableordeG�Y���&���]E�@��-OCLOSED@��PENDING_PAYMENT@��/COMPLETE@��"{CLOSED@��,COMPLETE@�COMPLETE@��COMPLET@��
+                                                                                                                                                _
+PROCESSING0     @��PENDING_PAYMENT0
+@��PENDING_PAYMENT/
+sc.sequenceFile("orders03132_seq/part-m-00000", classOf[Int], classOf[String]).first
 
-TextFile:
+
+With Compress option
+
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=orders \
+--target-dir=orders03131_compressed \
+--compress \
+--compression-codec org.apache.hadoop.io.compress.SnappyCodec
+
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls orders03131_compressed
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-03-13 12:27 orders03131_compressed/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs     215683 2018-03-13 12:27 orders03131_compressed/part-m-00000.snappy
+-rw-r--r--   3 paslechoix hdfs     215734 2018-03-13 12:27 orders03131_compressed/part-m-00001.snappy
+-rw-r--r--   3 paslechoix hdfs     217472 2018-03-13 12:27 orders03131_compressed/part-m-00002.snappy
+-rw-r--r--   3 paslechoix hdfs     229833 2018-03-13 12:27 orders03131_compressed/part-m-00003.snappy
 
 
 
