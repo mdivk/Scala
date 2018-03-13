@@ -75,6 +75,13 @@ Found 5 items
 -rw-r--r--   3 paslechoix hdfs     879621 2018-03-12 22:24 orders0312seq/part-m-00002
 -rw-r--r--   3 paslechoix hdfs     880255 2018-03-12 22:24 orders0312seq/part-m-00003
 
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat orders0312seq/part-m-00000 | head
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat orders0312seq/part-m-00000 | head
+SEQ!org.apache.hadoop.io.LongWritableordersE▒Ӗ▒LҐ▒▒@▒▒-OCLOSED@▒▒PENDING_PAYMENT@▒▒/COMPLETE@▒▒"{CLOSED@▒▒,COMPLETE@▒COMPLETE@▒▒COMPLET@▒▒
+
+
 sc.sequenceFile()
 org.apache.hadoop.io.LongWritable
 
