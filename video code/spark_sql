@@ -85,3 +85,8 @@ Found 2 items
 [2014-01,7,4139.68]
 [2014-06,12284,4139.33]
 [2014-04,2564,4069.84]
+
+How to write the result to local file system?
+
+
+result.coalesce(1).rdd.saveAsTextFile("top5_customers_per_month1")
