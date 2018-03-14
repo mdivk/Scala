@@ -84,12 +84,12 @@ limit 5;
 
 
 verification:
+
 select substring(replace(substring(order_date, 1,10), '-',''),1, 6) as OrderMonth, c.customer_id, oi.order_item_subtotal
 from orders o join order_items oi on oi.order_item_order_id = o.order_id
 join customers c on c.customer_id = o.order_customer_id
 where cast(order_date as char) like '%2014-01-%' and c.customer_id = 7
 group by substring(replace(substring(order_date, 1,10), '-',''),1, 6), customer_id, oi.order_item_subtotal;
-
 +------------+-------------+---------------------+
 | OrderMonth | customer_id | order_item_subtotal |
 +------------+-------------+---------------------+
@@ -102,6 +102,32 @@ group by substring(replace(substring(order_date, 1,10), '-',''),1, 6), customer_
 | 201401     |           7 |              399.98 |
 | 201401     |           7 |              499.95 |
 +------------+-------------+---------------------+
+
+
+select substring(replace(substring(order_date, 1,10), '-',''),1, 6) as OrderMonth, c.customer_id, oi.order_item_subtotal
+from orders o join order_items oi on oi.order_item_order_id = o.order_id
+join customers c on c.customer_id = o.order_customer_id
+where cast(order_date as char) like '%2014-01-%' and c.customer_id = 7
+group by order_date, customer_id, oi.order_item_subtotal;
++------------+-------------+---------------------+
+| OrderMonth | customer_id | order_item_subtotal |
++------------+-------------+---------------------+
+| 201401     |           7 |              129.99 |
+| 201401     |           7 |              199.92 |
+| 201401     |           7 |              399.98 |
+| 201401     |           7 |                 150 |
+| 201401     |           7 |              199.98 |
+| 201401     |           7 |              399.98 |
+| 201401     |           7 |              499.95 |
+| 201401     |           7 |                 100 |
+| 201401     |           7 |              129.99 |
+| 201401     |           7 |              299.98 |
+| 201401     |           7 |              399.98 |
+| 201401     |           7 |              129.99 |
+| 201401     |           7 |              399.98 |
++------------+-------------+---------------------+
+
+
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!DOESN'T MATCH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
