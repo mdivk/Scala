@@ -1,0 +1,31 @@
+//Get details of top 5 customers by revenue for each month
+
+sqlContext.sql(“create database paslechoix_exercise1”)
+
+sqlContext.sql(“use paslechoix_exercise1”)
+
+sqlContext.sql(“create table orders (order_id int, order_date varchar(40), order_cust_id int, order_status varchar(40)) row format delimited fields terminated by ‘,’ stored as textfile”)
+
+sqlContext.sql(“create table order_items(order_item_id int, order_item_order_id int, product_id int,product_qty int, order_item_subtotal float,order_item_price float) row format delimited fields terminated by ‘,’ stored as textfile”)
+
+sqlContext.sql(“create table customer (cust_id int, cust_fname varchar(40), cust_lname varchar(40), cust_email varchar(40),cust_password varchar(40),cust_street varchar(40),cust_city varchar(40),cust_state varchar(40),cust_zip varchar(40)) row format delimited fields terminated by ‘,’ stored as textfile”)
+
+sqlContext.sql(“show tables”)
+
+sqlContext.sql(“load data local inpath ‘/data/retail_db/orders/part-00000’ into table orders”)
+
+sqlContext.sql(“load data local inpath ‘/data/retail_db/order_items’ into table order_items”)
+
+sqlContext.sql(“load data local inpath ‘/data/retail_db/customers’ into table customer”)
+
+sqlContext.sql(“select * from customer limit 10”).show
+
+val final_output = sqlContext.sql("select c.*,order_date,revenue from(select order_cust_id, revenue, order_date, (dense_rank() over(partition by order_date order by revenue desc)) as rank from (select round(sum(order_item_subtotal),2) revenue, substr(order_date,1,7) as order_date, order_cust_id from orders inner join order_items on order_id = order_item_order_id group by substr(order_date,1,7) , order_cust_id)a)b inner join customer c on order_cust_id = cust_id where rank <= 5 order by order_date,revenue desc ")
+
+final_output.saveAsTable(“top5_customers_per_month”)
+
+sqlContext.setConf(“spark.sql.shuffle.partitions”,“2”)
+
+sqlContext.sql(“select * from top5_customers_per_month”).show(10)
+
+final_output.coalesce(4).saveAsTable(“top5_customers_per_month”)
