@@ -33,7 +33,7 @@ val order_req1 = orderRDD.map(x=>(x.split(",")(0).toInt, x.split(",")(1).substri
 val order_itemRDD = sc.textFile("/public/retail_db/order_items")
 res11: String = 1,1,957,1,299.98,299.98
 
-val order_item_req = order_itemRDD.map(a => (a.split(",")(1).toInt,a.split(",")(4).toFloat))
+val order_item_req = order_itemRDD.map(a => (a.split(",")(0).toInt, a.split(",")(1).toInt,a.split(",")(2).toInt,a.split(",")(3).toInt,a.split(",")(4).toFloat,a.split(",")(5).toFloat))
 val order_item_reqDF = order_item_req.toDF("order_item_id","order_item_order_id","order_item_product_id","order_item_quantity", "order_item_subtotal", "order_item_product_price")
 order_item_reqDF.registerTempTable("order_items")
 
@@ -130,6 +130,53 @@ group by order_date, customer_id, oi.order_item_subtotal;
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!DOESN'T MATCH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+//Continue with the first query which generates the right result, the result will be saved locally
+
+val sql_query = """select substring(replace(substring(order_date, 1,10), '-',''),1, 6) as OrderMonth, c.customer_id, round(sum(oi.order_item_subtotal),2) as MonthlyTotal
+from orders o join order_items oi on oi.order_item_order_id = o.order_id
+join customers c on c.customer_id = o.order_customer_id
+group by substring(replace(substring(order_date, 1,10), '-',''),1, 6), customer_id 
+order by sum(oi.order_item_subtotal) desc 
+limit 5"""
+val final_result = sqlContext.sql(sql_query)
+
+18/03/14 14:03:58 INFO ParseDriver: Parse Completed
+org.apache.spark.sql.AnalysisException: undefined function replace; line 4 pos 60
+
+
+val sql_query2 = """select substring(regexp_replace(substring(order_date, 1,10), '-',''),1, 6) as OrderMonth, c.customer_id, round(sum(oi.order_item_subtotal),2) as MonthlyTotal
+from orders o join order_items oi on oi.order_item_order_id = o.order_id
+join customers c on c.customer_id = o.order_customer_id
+group by substring(regexp_replace(substring(order_date, 1,10), '-',''),1, 6), customer_id 
+order by sum(oi.order_item_subtotal) desc 
+limit 5"""
+
+val final_result = sqlContext.sql(sql_query2)
+final_result.show
++----------+-----------+------------+
+|OrderMonth|customer_id|MonthlyTotal|
++----------+-----------+------------+
+|    201403|      10351|     4489.65|
+|    201308|       9515|     4229.84|
+|    201401|          7|     4139.68|
+|    201406|      12284|     4139.33|
+|    201404|       2564|     4069.84|
++----------+-----------+------------+
+
+
+final_result.rdd.saveAsTextFile("final_result")
+[paslechoix@gw03 ~]$ hdfs dfs -cat final_result/*
+[201403,10351,4489.65]
+[201308,9515,4229.84]
+[201401,7,4139.68]
+[201406,12284,4139.33]
+[201404,2564,4069.84]
+[paslechoix@gw03 ~]$
+
+
+
+
 
 
 mysql> select substring(replace(substring("2014-03-02 00:00:00", 1,10), '-',''),1, 6);
