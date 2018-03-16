@@ -32,4 +32,24 @@ keyBy : Constructs two-component tuples (key-value pairs) by applying a function
 data item becomes the value of the newly created tuples.
 
 
-Currently looking for Big Data/Spark/Scala/Hortonworks/Cloudera/ETL related con/perm jobs
+
+val c =sc.parallelize(List("dog", "cat", "gnu", "salmon", "rabbit", "python", "turkey", "wolf", "bear", "bee"),3)
+val d = c.keyBy(_.length)
+
+scala> val z = b.leftOuterJoin(d)
+
+z: Array[(Int, (String, Option[String]))] = 
+Array(
+(6,(salmon,Some(salmon))), (6,(salmon,Some(rabbit))), (6,(salmon,Some(python))), (6,(salmon,Some(turkey))), (6,(salmon,Some(salmon))), (6,(salmon,Some(rabbit))), (6,(salmon,Some(python))), (6,(salmon,Some(turkey))), 
+(3,(dog,Some(dog))), (3,(dog,Some(cat))), (3,(dog,Some(gnu))), (3,(dog,Some(bee))), (3,(rat,Some(dog))), (3,(rat,Some(cat))), (3,(rat,Some(gnu))), (3,(rat,Some(bee))), 
+(8,(elephant,None))
+)
+
+scala> val z = b.leftOuterJoin(d).map(x => (x._1, (x._2._1, x._2._2.getOrElse("")))).collect
+
+z: Array[(Int, (String, String))] = 
+Array(
+(6,(salmon,salmon)), (6,(salmon,rabbit)), (6,(salmon,python)), (6,(salmon,turkey)), (6,(salmon,salmon)), (6,(salmon,rabbit)), (6,(salmon,python)), (6,(salmon,turkey)), 
+(3,(dog,dog)), (3,(dog,cat)), (3,(dog,gnu)), (3,(dog,bee)), (3,(rat,dog)), (3,(rat,cat)), (3,(rat,gnu)), (3,(rat,bee)), 
+(8,(elephant,""))
+)
