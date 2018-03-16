@@ -165,6 +165,13 @@ mapValues: update the value in the <K, V>
 
 
 
+sbt console
+//if sc is not generated as SparkContext, needs to generate that manually as below
+import org.apache.spark.{SparkContext, SparkConf}
+val conf = new SparkConf().setAppName("Daily Revenue").setMaster("local")
+val sc = new SparkContext(conf)
+
+
 From Array to RDD:
 	scala> keysWithValuesList
 	res0: Array[String] = Array(foo=A, foo=A, foo=A, foo=A, foo=B, bar=C, bar=D, bar=D)
