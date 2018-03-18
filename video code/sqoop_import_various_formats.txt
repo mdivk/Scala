@@ -1,0 +1,160 @@
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=products \
+--target-dir="products0317_text"
+
+text file location: "products0317_text"
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls products0317_text
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-03-17 11:27 products0317_text/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs      41419 2018-03-17 11:27 products0317_text/part-m-00000
+-rw-r--r--   3 paslechoix hdfs      43660 2018-03-17 11:27 products0317_text/part-m-00001
+-rw-r--r--   3 paslechoix hdfs      42195 2018-03-17 11:27 products0317_text/part-m-00002
+-rw-r--r--   3 paslechoix hdfs      46719 2018-03-17 11:27 products0317_text/part-m-00003
+
+
+compressed text file: products0317_gzip
+
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=products \ 
+--target-dir="products0317_gzip" \
+--as-textfile \
+--compress \
+--compression-codec org.apache.hadoop.io.compress.GzipCodec
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls products0317_gzip
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-03-17 11:37 products0317_gzip/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs       6903 2018-03-17 11:36 products0317_gzip/part-m-00000.gz
+-rw-r--r--   3 paslechoix hdfs       6718 2018-03-17 11:37 products0317_gzip/part-m-00001.gz
+-rw-r--r--   3 paslechoix hdfs       8018 2018-03-17 11:36 products0317_gzip/part-m-00002.gz
+-rw-r--r--   3 paslechoix hdfs       8332 2018-03-17 11:36 products0317_gzip/part-m-00003.gz
+
+
+parquet file:
+
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=products \
+--as-parquetfile \
+--target-dir=products0317_parquet
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls products0317_parquet
+Found 5 items
+drwxr-xr-x   - paslechoix hdfs          0 2018-03-17 11:40 products0317_parquet/.metadata
+-rw-r--r--   3 paslechoix hdfs      13274 2018-03-17 11:41 products0317_parquet/73232b16-b4ff-4485-b1c5-c45e01d461bf.parquet
+-rw-r--r--   3 paslechoix hdfs      16258 2018-03-17 11:41 products0317_parquet/adb04f2e-1d55-43a1-adb9-a49b8c58fa34.parquet
+-rw-r--r--   3 paslechoix hdfs      16354 2018-03-17 11:41 products0317_parquet/b1b41892-df96-40d1-8d2f-36d0da5b5858.parquet
+-rw-r--r--   3 paslechoix hdfs      13093 2018-03-17 11:41 products0317_parquet/df05f3c9-9671-443c-a074-ab1550d20b59.parquet
+
+
+sequence file:
+
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=products \
+--as-sequencefile \
+--target-dir=products0317_sequence
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls products0317_sequence
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-03-17 11:44 products0317_sequence/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs      49239 2018-03-17 11:44 products0317_sequence/part-m-00000
+-rw-r--r--   3 paslechoix hdfs      51254 2018-03-17 11:44 products0317_sequence/part-m-00001
+-rw-r--r--   3 paslechoix hdfs      49667 2018-03-17 11:44 products0317_sequence/part-m-00002
+-rw-r--r--   3 paslechoix hdfs      54055 2018-03-17 11:44 products0317_sequence/part-m-00003
+
+
+avro file:
+
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=products \
+--as-avrodatafile \
+--target-dir=products0317_avro
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls products0317_avro
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-03-17 11:46 products0317_avro/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs      42658 2018-03-17 11:46 products0317_avro/part-m-00000.avro
+-rw-r--r--   3 paslechoix hdfs      44748 2018-03-17 11:46 products0317_avro/part-m-00001.avro
+-rw-r--r--   3 paslechoix hdfs      43151 2018-03-17 11:46 products0317_avro/part-m-00002.avro
+-rw-r--r--   3 paslechoix hdfs      47535 2018-03-17 11:46 products0317_avro/part-m-00003.avro
+
+
+sqoop import \
+--connect "jdbc:mysql://ms.itversity.com:3306/retail_db" \
+--username=retail_user \
+--password=itversity \
+--table=products \
+--target-dir=products0317_gzip \
+--compress \
+--compression-codec org.apache.hadoop.io.compress.GzipCodec 
+
+
+gzip compressed file location: "products_gzip"
+
+parquest file location: "products_par"
+
+sequence file: "products_seq"
+
+arvo file: "products_avro"
+
+Read them into SparkContext
+
+Write them back to original formats with locations ending with  "<origin>_writeback"
+
+sc.textFile("products0317_gzip").first
+res1: String = 1,2,Quest Q64 10 FT. x 10 FT. Slant Leg Instant U,,59.98,http://images.acmesports.sports/Quest+Q64+10+FT.+x+10+FT.+Slant+Leg+Instant+Up+Canopy
+
+sc.textFile("products0317_gzip").count
+res2: Long = 1345
+
+val newDataDF = sqlContext.read.parquet("products0317_parquet").show(5)
++----------+-------------------+--------------------+-------------------+-------------+--------------------+
+|product_id|product_category_id|        product_name|product_description|product_price|       product_image|
++----------+-------------------+--------------------+-------------------+-------------+--------------------+
+|         1|                  2|Quest Q64 10 FT. ...|                   |        59.98|http://images.acm...|
+|         2|                  2|Under Armour Men'...|                   |       129.99|http://images.acm...|
+|         3|                  2|Under Armour Men'...|                   |        89.99|http://images.acm...|
+|         4|                  2|Under Armour Men'...|                   |        89.99|http://images.acm...|
+|         5|                  2|Riddell Youth Rev...|                   |       199.99|http://images.acm...|
++----------+-------------------+--------------------+-------------------+-------------+--------------------+
+only showing top 5 rows
+
+
+sc.sequenceFile("products0317_sequence").first
+sc.textfile("products0317_sequence").first
+sc.textfile("products0317_sequence").count
+
+sc.read.avro("products0317_avro").first
+sc.textfile("products0317_avro").count
+
+
+  For gz file
+
+Sqlcontxt(sc)
+val newDataDF = sqlContext.read.parquet("products0317_parquet")  for parquet file
+dataDF.write.parquet("data.parquet")  parquet write
+Val result=sc.sequencefile(pathofsequencefile)
+Result.saveasSequencefiel(path)
+Spark.read.avro(path) read avro file
+Spark.write.avro(path)
+
+
+val pDF = sqlContext.read("products0317")
+sc.sequenceFile("products0317_sequence",classOf[intWritable], classOf[longWritable])
+
+spark-shell --packages com.databricks:spark-avro_2.10:2.0.1

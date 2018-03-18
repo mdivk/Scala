@@ -1,3 +1,4 @@
+find . -name "*.scala" | xargs grep jdbc
 copy file from local laptop to lab local with scp
 scp paslechoix@gw03.itversity.com /home/paslechoix/part-00000 /cygdrive/c/rxie/175scala/data
 /public/retail_db/orders
@@ -34,9 +35,9 @@ scp paslechoix@gw03.itversity.com /home/paslechoix/part-00000 /cygdrive/c/rxie/1
 4.4 Execute below command on Hive terminal.
 	
 	hive (default)> 
-	create external table file_on_hive_tbl(id int, name string) 
-	row format delimited fields terminated by ',' 
-	stored as textfile 
+	create external table file_on_hive_tbl(id int, name string)
+	row format delimited fields terminated by ','
+	stored as textfile
 	location '/apps/hive/warehouse/paslechoix.db/file_on_local/';
 
 4.5 Check the table on hive
@@ -50,11 +51,8 @@ scp paslechoix@gw03.itversity.com /home/paslechoix/part-00000 /cygdrive/c/rxie/1
 	7       Fan Shop
 	Time taken: 0.46 seconds, Fetched: 6 row(s)
 
-
-
-5. sqoop import:
-6. import from mysql to hdfs:
-7. import from mysql to hive:
+5. sqoop:
+5.1 import from mysql to HDFS:
 
 
 	sqoop import \
@@ -69,54 +67,120 @@ scp paslechoix@gw03.itversity.com /home/paslechoix/part-00000 /cygdrive/c/rxie/1
 	--check-column department_id \
 	-m 1
 
-sqoop export:
-export from hdfs to mysql:
-export from hive to mysql:
-	
-	export the hive table departments to mysql:
-
-	hive (paslechoix)> select * from departments;
-	OK
-	2       Fitness
-	3       Footwear
-	4       Apparel
-	5       Golf
-	6       Outdoors
-	7       Fan Shop
-
-	hive (paslechoix)> show create table departments;
-	OK
-	CREATE TABLE `departments`(
-	  `department_id` int,
-	  `department_name` string)
-	COMMENT 'Imported by sqoop on 2018/01/31 14:53:33'
-	ROW FORMAT DELIMITED
-	  FIELDS TERMINATED BY '\u0001'
-	  LINES TERMINATED BY '\n'
-	STORED AS INPUTFORMAT
-	  'org.apache.hadoop.mapred.TextInputFormat'
-	OUTPUTFORMAT
-	  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-	LOCATION
-	  'hdfs://nn01.itversity.com:8020/apps/hive/warehouse/paslechoix.db/departments'
-	TBLPROPERTIES (
-	  'numFiles'='3',
-	  'numRows'='0',
-	  'rawDataSize'='0',
-	  'totalSize'='90',
-	  'transient_lastDdlTime'='1517428412')
-	Time taken: 0.134 seconds, Fetched: 19 row(s)
-
-
-	mysql> create table departments_from_hive (id int, name varchar(20));
-
-
+5.2 export from HDFS to hive:
 	sqoop export \
 	--connect jdbc:mysql://ms.itversity.com/retail_export \
 	--username=retail_user \
 	--password=itversity \
-	--table departments_from_hive \
-	--export-dir /apps/hive/warehouse/paslechoix.db/departments
+	--table departments_from_hive1 \
+	--export-dir /apps/hive/warehouse/paslechoix.db/file_on_local
+
+	mysql> select * from departments_from_hive;
+
+
+
+6. import from mysql to hdfs:
+
+sqoop export:
+export from hive table on hdfs to mysql:
+	
+1. find out the hive table's location on HDFS
+
+hive table: paslechoix.customers
+
+hdfs location: /apps/hive/warehouse/paslechoix.db/departments
+
+hive (paslechoix)> select * from customers;
+12427   Mary    Smith   XXXXXXXXX       XXXXXXXXX       3662 Round Barn Gate    Plano   TX      75093
+12428   Jeffrey Travis  XXXXXXXXX       XXXXXXXXX       1552 Burning Dale Highlands     Caguas  PR      00725
+12429   Mary    Smith   XXXXXXXXX       XXXXXXXXX       92 Sunny Bear Villas    Gardena CA      90247
+12430   Hannah  Brown   XXXXXXXXX       XXXXXXXXX       8316 Pleasant Bend      Caguas  PR      00725
+12431   Mary    Rios    XXXXXXXXX       XXXXXXXXX       1221 Cinder Pines       Kaneohe HI      96744
+12432   Angela  Smith   XXXXXXXXX       XXXXXXXXX       1525 Jagged Barn Highlands      Caguas  PR      00725
+12433   Benjamin        Garcia  XXXXXXXXX       XXXXXXXXX       5459 Noble Brook Landing        Levittown       NY      11756
+12434   Mary    Mills   XXXXXXXXX       XXXXXXXXX       9720 Colonial Parade    Caguas  PR      00725
+12435   Laura   Horton  XXXXXXXXX       XXXXXXXXX       5736 Honey Downs        Summerville     SC      29483
+Time taken: 0.227 seconds, Fetched: 12435 row(s)
+
+hive (paslechoix)>  show create table customers;
+OK
+CREATE TABLE `customers`(
+  `customer_id` int,
+  `customer_fname` string,
+  `customer_lname` string,
+  `customer_email` string,
+  `customer_password` string,
+  `customer_street` string,
+  `customer_city` string,
+  `customer_state` string,
+  `customer_zipcode` string)
+COMMENT 'Imported by sqoop on 2018/01/31 14:53:01'
+ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY '\u0001'
+  LINES TERMINATED BY '\n'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.mapred.TextInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://nn01.itversity.com:8020/apps/hive/warehouse/paslechoix.db/customers'
+TBLPROPERTIES (
+  'numFiles'='3',
+  'numRows'='0',
+  'rawDataSize'='0',
+  'totalSize'='412227',
+  'transient_lastDdlTime'='1517428380')
+Time taken: 0.205 seconds, Fetched: 26 row(s)
+
+1.1 to determine the size of each field:
+
+select 
+max(length(customer_fname)), 
+max(length(customer_lname)), 
+max(length(customer_email)), 
+max(length(customer_password)), 
+max(length(customer_street)), 
+max(length(customer_city)), 
+max(length(customer_state)), 
+max(length(customer_zipcode))
+from customers;
+
+11      11      9       9       33      20      2       5
+Time taken: 51.241 seconds, Fetched: 1 row(s)
+hive (paslechoix)>
+
+
+That means varchar(50) is enough for all the string fields
+
+
+
+2. create an empty table on mysql:
+
+	mysql> create table customers_from_hive 
+	(
+		 customer_id int,
+		 customer_fname varchar(50),
+		 customer_lname varchar(50),
+		 customer_email varchar(50),
+		 customer_password varchar(50),
+		 customer_street varchar(50),
+		 customer_city varchar(50),
+		 customer_state varchar(50),
+		 customer_zipcode varchar(50)
+	);
+
+
+3. sqoop export
+	sqoop export \
+	--connect jdbc:mysql://ms.itversity.com/retail_export \
+	--username=retail_user \
+	--password=itversity \
+	--table customers_from_hive \
+	--input-fields-terminated-by "\u0001" \
+	--export-dir /apps/hive/warehouse/paslechoix.db/customers
+
+	http://rm01.itversity.com:8088/proxy/application_1520592249193_15214/
+	Caused by: java.lang.RuntimeException: Can't parse input data: '8291MaryRomanXXXXXXXXXXXXXXXXXX3761 Foggy Autumn CrossingCaguasPR00725'
 
 	mysql> select * from departments_from_hive;
 
