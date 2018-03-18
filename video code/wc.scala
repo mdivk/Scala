@@ -22,3 +22,4 @@ object wc{
 
 
 }
+s.flatMap(_.split(" ")).map(a=>(a,1)).reduceByKey((a,b)=>(a+b)).sortWith(_.2, false).take(10).collect
