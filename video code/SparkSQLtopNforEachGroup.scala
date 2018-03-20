@@ -23,21 +23,15 @@ only showing top 3 rows
 productsRDDmapDF.registerTempTable("products")
 
 val query = """
-select product_id, product_category_id, product_price
-from 
-(
-   select product_id, product_category_id, product_price,
-      (@num:=if(@group = product_category_id, @num +1, if(@group := product_category_id, 1, 1))) row_number 
-  from products t
-  CROSS JOIN (select @num:=0, @group:=null) c
-  order by product_category_id, product_price desc, product_id
-) as x 
-where x.row_number <= 3
-"""
+select  product_id , product_category_id, product_price,  row_number() over(partition by product_category_id  order by product_price  desc) as p_order from products  """
 
 val result = sqlContext.sql(query)
 
-scala> sqlContext.sql("select  product_id ,  row_number() over(partition by product_category_id  order by product_price  desc) as  p_order ,product_price  , product_category_id from   products  ").select("product_id","product_category_id","product_price","p_order").where("p_order<=3").show(200)
+result.where("p_order<=3").show(200)
+
+or in one line as below:
+
+scala> sqlContext.sql("select  product_id ,  row_number() over(partition by product_category_id  order by product_price  desc) as  p_order ,product_price, product_category_id from products").where("p_order<=3").show(200)
 
 +----------+-------------------+-------------+-------+
 |product_id|product_category_id|product_price|p_order|
