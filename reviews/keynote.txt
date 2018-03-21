@@ -1,0 +1,340 @@
+find . -name "*.scala" | xargs grep jdbc
+copy file from local laptop to lab local with scp
+scp paslechoix@gw03.itversity.com /home/paslechoix/part-00000 /cygdrive/c/rxie/175scala/data
+/public/retail_db/orders
+1. copy local to hdfs:
+	[paslechoix@gw03 ~]$ hdfs dfs -put mgr1.csv spark1/
+	[paslechoix@gw03 ~]$ hdfs dfs -ls spark1
+	-rw-r--r--   3 paslechoix hdfs         40 2018-02-26 21:17 spark1/mgr1.csv
+
+2. copy hdfs to local:
+	[paslechoix@gw03 data]$ hdfs dfs -ls spark2/sorted_peter.txt/ *
+	-rw-r--r--   3 paslechoix hdfs          0 2018-02-26 21:59 spark2/sorted_peter.txt/_SUCCESS
+	-rw-r--r--   3 paslechoix hdfs       3194 2018-02-26 21:59 spark2/sorted_peter.txt/part-00000
+	-rw-r--r--   3 paslechoix hdfs       9882 2018-02-26 21:59 spark2/sorted_peter.txt/part-00001
+	[paslechoix@gw03 data]$ hdfs dfs -copyToLocal spark2/sorted_peter.txt/part-*
+
+	[paslechoix@gw03 data]$ ls part*
+	part-00000  part-00001
+
+3. Concatenate text files in linux:
+	[paslechoix@gw03 data]$ cat part-00000 part-00001 > sorted.txt
+
+
+4. Create external table on hive based on existing file on hdfs
+
+4.1 Create a new text file.
+	vim file_on_local.csv
+
+4.2 Create a new directory on HDFS.
+	hdfs dfs -mkdir /apps/hive/warehouse/paslechoix.db/file_on_local
+
+4.3 Place the file on HDFS.
+	hdfs dfs -put file_on_local.csv /apps/hive/warehouse/paslechoix.db/file_on_local/
+
+4.4 Execute below command on Hive terminal.
+	
+	hive (default)> 
+	create external table file_on_hive_tbl(id int, name string)
+	row format delimited fields terminated by ','
+	stored as textfile
+	location '/apps/hive/warehouse/paslechoix.db/file_on_local/';
+
+4.5 Check the table on hive
+	hive (default)> select * from file_on_hive_tbl;
+	OK
+	2       Fitness
+	3       Footwear
+	4       Apparel
+	5       Golf
+	6       Outdoors
+	7       Fan Shop
+	Time taken: 0.46 seconds, Fetched: 6 row(s)
+
+5. sqoop:
+5.1 import from mysql to HDFS:
+
+
+	sqoop import \
+	--connect jdbc:mysql://ms.itversity.com/retail_export \
+	--username=retail_user \
+	--password=itversity \
+	--table=departments \
+	--target-dir=department_hive3 \
+	--hive-import \
+	--hive-table=paslechoix1.department_hive3 \
+	--incremental append \
+	--check-column department_id \
+	-m 1
+
+5.2 export from HDFS to hive:
+	sqoop export \
+	--connect jdbc:mysql://ms.itversity.com/retail_export \
+	--username=retail_user \
+	--password=itversity \
+	--table departments_from_hive1 \
+	--export-dir /apps/hive/warehouse/paslechoix.db/file_on_local
+
+	mysql> select * from departments_from_hive;
+
+
+
+6. import from mysql to hdfs:
+
+sqoop export:
+export from hive table on hdfs to mysql:
+	
+1. find out the hive table's location on HDFS
+
+hive table: paslechoix.customers
+
+hdfs location: /apps/hive/warehouse/paslechoix.db/departments
+
+hive (paslechoix)> select * from customers;
+12427   Mary    Smith   XXXXXXXXX       XXXXXXXXX       3662 Round Barn Gate    Plano   TX      75093
+12428   Jeffrey Travis  XXXXXXXXX       XXXXXXXXX       1552 Burning Dale Highlands     Caguas  PR      00725
+12429   Mary    Smith   XXXXXXXXX       XXXXXXXXX       92 Sunny Bear Villas    Gardena CA      90247
+12430   Hannah  Brown   XXXXXXXXX       XXXXXXXXX       8316 Pleasant Bend      Caguas  PR      00725
+12431   Mary    Rios    XXXXXXXXX       XXXXXXXXX       1221 Cinder Pines       Kaneohe HI      96744
+12432   Angela  Smith   XXXXXXXXX       XXXXXXXXX       1525 Jagged Barn Highlands      Caguas  PR      00725
+12433   Benjamin        Garcia  XXXXXXXXX       XXXXXXXXX       5459 Noble Brook Landing        Levittown       NY      11756
+12434   Mary    Mills   XXXXXXXXX       XXXXXXXXX       9720 Colonial Parade    Caguas  PR      00725
+12435   Laura   Horton  XXXXXXXXX       XXXXXXXXX       5736 Honey Downs        Summerville     SC      29483
+Time taken: 0.227 seconds, Fetched: 12435 row(s)
+
+hive (paslechoix)>  show create table customers;
+OK
+CREATE TABLE `customers`(
+  `customer_id` int,
+  `customer_fname` string,
+  `customer_lname` string,
+  `customer_email` string,
+  `customer_password` string,
+  `customer_street` string,
+  `customer_city` string,
+  `customer_state` string,
+  `customer_zipcode` string)
+COMMENT 'Imported by sqoop on 2018/01/31 14:53:01'
+ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY '\u0001'
+  LINES TERMINATED BY '\n'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.mapred.TextInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://nn01.itversity.com:8020/apps/hive/warehouse/paslechoix.db/customers'
+TBLPROPERTIES (
+  'numFiles'='3',
+  'numRows'='0',
+  'rawDataSize'='0',
+  'totalSize'='412227',
+  'transient_lastDdlTime'='1517428380')
+Time taken: 0.205 seconds, Fetched: 26 row(s)
+
+1.1 to determine the size of each field:
+
+select 
+max(length(customer_fname)), 
+max(length(customer_lname)), 
+max(length(customer_email)), 
+max(length(customer_password)), 
+max(length(customer_street)), 
+max(length(customer_city)), 
+max(length(customer_state)), 
+max(length(customer_zipcode))
+from customers;
+
+11      11      9       9       33      20      2       5
+Time taken: 51.241 seconds, Fetched: 1 row(s)
+hive (paslechoix)>
+
+
+That means varchar(50) is enough for all the string fields
+
+
+
+2. create an empty table on mysql:
+
+	mysql> create table customers_from_hive 
+	(
+		 customer_id int,
+		 customer_fname varchar(50),
+		 customer_lname varchar(50),
+		 customer_email varchar(50),
+		 customer_password varchar(50),
+		 customer_street varchar(50),
+		 customer_city varchar(50),
+		 customer_state varchar(50),
+		 customer_zipcode varchar(50)
+	);
+
+
+3. sqoop export
+	sqoop export \
+	--connect jdbc:mysql://ms.itversity.com/retail_export \
+	--username=retail_user \
+	--password=itversity \
+	--table customers_from_hive \
+	--input-fields-terminated-by "\u0001" \
+	--export-dir /apps/hive/warehouse/paslechoix.db/customers
+
+	http://rm01.itversity.com:8088/proxy/application_1520592249193_15214/
+	Caused by: java.lang.RuntimeException: Can't parse input data: '8291MaryRomanXXXXXXXXXXXXXXXXXX3761 Foggy Autumn CrossingCaguasPR00725'
+
+	mysql> select * from departments_from_hive;
+
+	nothing exported!
+	Reason: format is wrong! in hive directory: data in snappy compressed format
+	[paslechoix@gw03 ~]$ hdfs dfs -ls /apps/hive/warehouse/paslechoix.db/departments
+	Found 3 items
+	-rwxrwxrwx   3 paslechoix hdfs         31 2018-01-31 14:53 /apps/hive/warehouse/paslechoix.db/departments/part-m-00000.snappy
+	-rwxrwxrwx   3 paslechoix hdfs         27 2018-01-31 14:53 /apps/hive/warehouse/paslechoix.db/departments/part-m-00001.snappy
+	-rwxrwxrwx   3 paslechoix hdfs         32 2018-01-31 14:53 /apps/hive/warehouse/paslechoix.db/departments/part-m-00002.snappy
+
+	[paslechoix@gw03 ~]$ hdfs dfs -ls /apps/hive/warehouse/paslechoix.db/departments_hive01                                                   Found 2 items
+	-rwxrwxrwx   3 paslechoix hdfs          0 2018-02-04 16:34 /apps/hive/warehouse/paslechoix.db/departments_hive01/_SUCCESS
+	-rwxrwxrwx   3 paslechoix hdfs         72 2018-02-04 16:34 /apps/hive/warehouse/paslechoix.db/departments_hive01/part-m-00000
+
+	[paslechoix@gw03 ~]$ hdfs dfs -cat /apps/hive/warehouse/paslechoix.db/departments_hive01/part-m-00000
+	2Fitness0
+	3Footwear0
+	4Apparel0
+	5Golf0
+	6Outdoors0
+	7Fan Shop0
+	[paslechoix@gw03 ~]$
+
+	sqoop export \
+	--connect jdbc:mysql://ms.itversity.com/retail_export \
+	--username=retail_user \
+	--password=itversity \
+	--table departments_from_hive \
+	--export-dir /apps/hive/warehouse/paslechoix.db/departments_hive01
+
+	mysql> select * from departments_from_hive;
+
+Scala
+
+scalas-pattern-matching
+https://kerflyn.wordpress.com/2011/02/14/playing-with-scalas-pattern-matching/
+
+mapValues: update the value in the <K, V>
+
+	scala> b.collect
+	res2: Array[(Int, String)] = Array((3,dog), (5,tiger), (4,lion), (3,cat), (7,panther), (5,eagle))
+
+	b.mapValues("x" + _ + “X”).collect
+	res1: Array[(Int, String)] = Array((3,xdogX), (5,xtigerX), (4,xlionX), (3,xcatX), (7,xpantherX), (5,xeagleX))
+
+
+
+sbt console
+//if sc is not generated as SparkContext, needs to generate that manually as below
+import org.apache.spark.{SparkContext, SparkConf}
+val conf = new SparkConf().setAppName("Daily Revenue").setMaster("local")
+val sc = new SparkContext(conf)
+
+
+From Array to RDD:
+	scala> keysWithValuesList
+	res0: Array[String] = Array(foo=A, foo=A, foo=A, foo=A, foo=B, bar=C, bar=D, bar=D)
+
+	scala> val data = sc.parallelize(keysWithValuesList)
+	data: org.apache.spark.rdd.RDD[String] = ParallelCollectionRDD[0] at parallelize at <console>:29
+
+
+map example:
+	val mgrMap1 = mgr1.map(x => (x.split(",")(0).toInt, x.split(",")(1).trim))
+
+	scala> joined
+	res14: org.apache.spark.rdd.RDD[(Int, (String, Int))] = MapPartitionsRDD[8] at join at <console>:35
+
+	val joinedMap1 = joined1.map(x=>(x._1, x._2._1, x._2._2))
+
+flatMap example:
+
+
+filter:
+	val contentRDDM = contentRDD.filter(x=>x.length>0)
+	val productsMap = products.filter(product => product.split(",")(4) != "")
+
+	
+	val word_len5 = word_list.filter(_._2==5)
+	res12: Array[(String, Int)] = Array((Hello,5), (doing,5), (count,5), (count,5), (times,5))
+
+
+groupByKey:
+	val p = sc.parallelize(List(("cat", 2), ("cat", 3), ("cat", 4), ("root",4)))
+	val q = p.groupByKey
+	res3: Array[(String, Iterable[Int])] = Array((root,CompactBuffer(4)), (cat,CompactBuffer(2, 3, 4)))
+
+
+
+sorting example:
+
+	val sorted = joined1.sortByKey() 
+	val sorted1 = joined1.sortBy(_._2._1)
+
+	descending, second item
+	dailyRevenuePerProductId.sortBy(rec => rec._2, false).take(10).foreach(println)
+	((2014-03-04 00:00:00.0,1004),16399.182)
+	((2014-04-08 00:00:00.0,1004),15999.201)
+	((2013-12-06 00:00:00.0,1004),15999.201)
+
+
+	ascending, the second item in the first item pair
+	note: for demo purpose take 10 first, otherwise doesn't see the sorting effect
+	scala> dailyRevenuePerProductId.take(10).sortBy(_._1._2).foreach(println)
+	((2013-10-11 00:00:00.0,116),224.95)
+	((2014-07-15 00:00:00.0,135),110.0)
+	((2014-07-17 00:00:00.0,403),3379.7402)
+
+	dailyRevenuePerProductId.sortBy(_._1._2).take(10).foreach(println)
+	((2014-07-24 00:00:00.0,19),124.99)
+	((2013-12-30 00:00:00.0,19),124.99)
+	((2014-01-16 00:00:00.0,19),124.99)
+
+
+	descending, the second item in the first item pair
+	scala> dailyRevenuePerProductId.take(10).sortWith(_._1._2>_._1._2).foreach(println)
+	((2014-03-05 00:00:00.0,1073),2399.8801)
+	((2013-11-21 00:00:00.0,982),149.99)
+	((2013-11-06 00:00:00.0,885),74.97)
+
+	descending, the second item, using sortWith
+	scala> dailyRevenuePerProductId.take(10).sortWith(_._2 > _._2).foreach(println)
+	((2014-01-15,365),7558.7393)
+	((2014-07-14,957),4499.7)
+	((2014-04-22,627),1359.6599)
+
+	descending, sort by second item using sortBy
+	scala> dailyRevenuePerProductId.sortBy(rec => rec._2, false).take(10).foreach(println)
+	((2014-03-04 00:00:00.0,1004),16399.182)
+	((2014-04-08 00:00:00.0,1004),15999.201)
+	((2013-12-06 00:00:00.0,1004),15999.201)
+	((2013-11-30 00:00:00.0,1004),15599.223)
+	((2013-11-03 00:00:00.0,1004),15599.221)
+
+
+
+save RDD to hdfs:
+
+	scala> finalData.saveAsTextFile("spark1/result.csv") 
+	[paslechoix@gw03 ~]$ hdfs dfs -cat spark1/result.csv/*
+
+SCP: copy remote file to local
+$ scp paslechoix@gw03.itversity.com:/home/paslechoix/course.txt /cygdrive/c/rxie/learning/scala/175scala/data
+
+$ scp /cygdrive/c/rxie/learning/scala/175scala/data/course1.txt paslechoix@gw03.itversity.com:/home/paslechoix 
+
+Concatenate text files in linux:
+	[paslechoix@gw03 data]$ cat part-00000 part-00001 > sorted.txt
+
+
+Handling date, time in sqlContext.sql
+//FROM patients, find all the patients whose lastVisitDate between current time and '2012-09-15' 
+val results1 = sqlContext.sql("select * from patients where to_date(lastVisit)  between to_date('2012-09-15') and current_date()")
+
+Handling date format in Scala
+scala> val format = new java.text.SimpleDateFormat("yyyy-MM-dd")

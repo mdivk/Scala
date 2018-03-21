@@ -1,5 +1,3 @@
-hiveContext.sql("select * form orders limit 10").write.orc("orders0320_orc")
-
 import org.apache.hadoop.io.LongWritable
 val data = sc.sequenceFile[LongWritable,orders]("orders03132_seq")
 data.map(tup => (tup._1.get(), tup._2.toString())).collect.foreach(println)

@@ -1,16 +1,4 @@
-hiveContext.sql("select * form orders limit 10").write.orc("orders0320_orc")
-
-import org.apache.hadoop.io.LongWritable
-val data = sc.sequenceFile[LongWritable,orders]("orders03132_seq")
-data.map(tup => (tup._1.get(), tup._2.toString())).collect.foreach(println)
-
-case class Orders(order_id: Int, order_date: String, order_customer_id: Int, order_status: String)
-
-val seqRDD=sc.sequenceFile("orders03132_seq",classOf[org.apache.hadoop.io.Text],classOf[org.apache.hadoop.io.Text])
-
-val rdd = sc.textFile("")
-
-val df = sqlContext.read.parquet("orders03132_seq")
+val df = sqlContext.read.parquet("orders0314_par")
 +--------+-------------+-----------------+---------------+
 |order_id|   order_date|order_customer_id|   order_status|
 +--------+-------------+-----------------+---------------+
@@ -77,3 +65,37 @@ sqlContext.read.parquet("orders0314_par_output").show
 |   34462|1393045200000|              392|       COMPLETE|
 +--------+-------------+-----------------+---------------+
 only showing top 20 rows
+
+
+with compress - gzip: 
+sqlContext.setConf("spark.sql.parquet.compression.codec","gzip")
+df.write.parquet("orders0314_par_gzip_output")
+
+hdfs dfs -ls orders0314_par_gzip_output
+
+[paslechoix@gw03 data]$ hdfs dfs -ls orders0314_par_output
+Found 7 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-03-20 07:10 orders0314_par_output/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs        497 2018-03-20 07:10 orders0314_par_output/_common_metadata
+-rw-r--r--   3 paslechoix hdfs       2603 2018-03-20 07:10 orders0314_par_output/_metadata
+-rw-r--r--   3 paslechoix hdfs      85098 2018-03-20 07:10 orders0314_par_output/part-r-00000-31813a69-1659-4bab-9941-44192a95e475.gz.parquet
+-rw-r--r--   3 paslechoix hdfs      85076 2018-03-20 07:10 orders0314_par_output/part-r-00001-31813a69-1659-4bab-9941-44192a95e475.gz.parquet
+-rw-r--r--   3 paslechoix hdfs      84964 2018-03-20 07:10 orders0314_par_output/part-r-00002-31813a69-1659-4bab-9941-44192a95e475.gz.parquet
+-rw-r--r--   3 paslechoix hdfs      88275 2018-03-20 07:10 orders0314_par_output/part-r-00003-31813a69-1659-4bab-9941-44192a95e475.gz.parquet
+
+with compress - snappy: 
+
+sqlContext.setConf("spark.sql.parquet.compression.codec", "snappy")
+df.write.parquet("orders0314_par_snappy_output")
+
+hdfs dfs -ls orders0314_par_snappy_output
+
+[paslechoix@gw03 data]$ hdfs dfs -ls orders0314_par_snappy_output
+Found 7 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-03-20 07:17 orders0314_par_snappy_output/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs        497 2018-03-20 07:17 orders0314_par_snappy_output/_common_metadata
+-rw-r--r--   3 paslechoix hdfs       2671 2018-03-20 07:17 orders0314_par_snappy_output/_metadata
+-rw-r--r--   3 paslechoix hdfs     147257 2018-03-20 07:17 orders0314_par_snappy_output/part-r-00000-ec8617d2-86b7-4c2d-9664-5039b77093cc.snappy.parquet
+-rw-r--r--   3 paslechoix hdfs     147097 2018-03-20 07:17 orders0314_par_snappy_output/part-r-00001-ec8617d2-86b7-4c2d-9664-5039b77093cc.snappy.parquet
+-rw-r--r--   3 paslechoix hdfs     147055 2018-03-20 07:17 orders0314_par_snappy_output/part-r-00002-ec8617d2-86b7-4c2d-9664-5039b77093cc.snappy.parquet
+-rw-r--r--   3 paslechoix hdfs     151532 2018-03-20 07:17 orders0314_par_snappy_output/part-r-00003-ec8617d2-86b7-4c2d-9664-5039b77093cc.snappy.parquet
