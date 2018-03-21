@@ -17,7 +17,7 @@ val products = sc.textFile("products").map(line => line.split(",")(4)!="")
 val productsf = sc.textFile("products").filter(line => line.split(",")(4)!="")
 res49: String = 1,2,Quest Q64 10 FT. x 10 FT. Slant Leg Instant U,,59.98,http://images.acmesports.sports/Quest+Q64+10+FT.+x+10+FT.+Slant+Leg+Instant+Up+Canopy
 
-/* I don't know how to use the class which seems to be very helpful, can you help rewrite the code with the class? Thank you so much.
+I don't know how to use the class which seems to be very helpful, can you help rewrite the code with the class? Thank you so much.
 val infos = productsf.map { split =>
     Info(
         product_category_id = split(1).toInt,
@@ -36,7 +36,7 @@ scala> val infos = productsf.map { split =>
 <console>:30: error: not found: value Info
            Info(
            ^
-*/
+
 
 val prd = productsf.map(rec => (rec.split(","))).map(line=>(line(0).toInt, line(1).toInt, line(2), line(4).toFloat))
 res48: (Int, Int, String, Float) = (1,2,Quest Q64 10 FT. x 10 FT. Slant Leg Instant U,59.98)
