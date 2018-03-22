@@ -22,4 +22,7 @@ object wc{
 
 
 }
-s.flatMap(_.split(" ")).map(a=>(a,1)).reduceByKey((a,b)=>(a+b)).sortWith(_.2, false).take(10).collect
+
+val s = sc.textFile("data/article.txt")
+scala> s.flatMap(_.split(" ")).map(a=>(a,1)).reduceByKey((a,b)=>(a+b)).map(r=>(r._2, r._1)).sortByKey(false).take(10).foreach(println)
+

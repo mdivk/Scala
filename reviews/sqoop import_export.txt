@@ -1,0 +1,68 @@
+Import
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=orders \
+--target-dir="orders0322-gzipped" \
+--compress \
+--compression-codec org.apache.hadoop.io.compress.GzipCodec
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls orders0322-gzipped
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-03-22 09:09 orders0322-gzipped/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs     116403 2018-03-22 09:09 orders0322-gzipped/part-m-00000.gz
+-rw-r--r--   3 paslechoix hdfs     116338 2018-03-22 09:09 orders0322-gzipped/part-m-00001.gz
+-rw-r--r--   3 paslechoix hdfs     116612 2018-03-22 09:09 orders0322-gzipped/part-m-00002.gz
+-rw-r--r--   3 paslechoix hdfs     122334 2018-03-22 09:09 orders0322-gzipped/part-m-00003.gz
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=orders \
+--target-dir="orders0322-text" 
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls orders0322-text
+Found 5 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-03-22 09:16 orders0322-text/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs     741614 2018-03-22 09:16 orders0322-text/part-m-00000
+-rw-r--r--   3 paslechoix hdfs     753022 2018-03-22 09:16 orders0322-text/part-m-00001
+-rw-r--r--   3 paslechoix hdfs     752368 2018-03-22 09:16 orders0322-text/part-m-00002
+-rw-r--r--   3 paslechoix hdfs     752940 2018-03-22 09:16 orders0322-text/part-m-00003
+
+Export
+
+
+CREATE TABLE orders0322 (
+  order_id int(11) NOT NULL AUTO_INCREMENT,
+  order_date datetime NOT NULL,
+  order_customer_id int(11) NOT NULL,
+  order_status varchar(45) NOT NULL,
+  PRIMARY KEY (order_id)
+) 
+
+
+CREATE TABLE orders03221 (
+  order_id int(11) NOT NULL AUTO_INCREMENT,
+  order_date datetime NOT NULL,
+  order_customer_id int(11) NOT NULL,
+  order_status varchar(45) NOT NULL,
+  PRIMARY KEY (order_id)
+) 
+
+sqoop export \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=orders0322 \
+--export-dir="orders0322-text" 
+
+
+sqoop export \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table orders_export \
+--export-dir orders0322-gzipped

@@ -103,6 +103,13 @@ export the data from following hdfs directory into dep_export table in mysql dat
 [paslechoix@gw03 ~]$
 
 
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--target-dir="departments_new" \
+--append
 
 sqoop export -m 1 \
 --connect jdbc:mysql://ms.itversity.com:3306/retail_export \
@@ -114,7 +121,22 @@ sqoop export -m 1 \
 --input-fields-terminated-by '|'
 
 
-Attention:
+----20180322
+create table dep_export0322 (dep_id int, dep_name varchar(20), createdon date);
 
 
+sqoop export -m 1 \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username=retail_user \
+--password=itversity \
+--table dep_export0322 \
+--export-dir departments_new \
+--input-lines-terminated-by '\n' \
+--input-fields-terminated-by ','
 
+
+CREATE TABLE departments_0322 (
+  department_id int(11) NOT NULL AUTO_INCREMENT,
+  department_name varchar(45) NOT NULL,
+  PRIMARY KEY (department_id)
+) 
