@@ -1,0 +1,7 @@
+Comparison two directories on HDFS:
+
+scala> sc.textFile("products0317_text").saveAsTextFile("products0321_text")
+
+diff <(hadoop fs -cat products0317_text/*) <(hadoop fs -cat products0321_text/*)
+
+If no difference, returns nothing
