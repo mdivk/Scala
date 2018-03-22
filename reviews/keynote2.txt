@@ -1,0 +1,212 @@
+Sqoop Import
+
+sqoop import -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=products \
+--target-dir="paslechoix/products03102"
+
+Import to different formats:
+1. text: by default, nothing to change above
+2. Parquet: 
+
+sqoop import -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=products \
+--target-dir="paslechoix/products0311" \
+--as-parquetfile
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls paslechoix/products0311
+Found 2 items
+drwxr-xr-x   - paslechoix hdfs          0 2018-03-11 16:35 paslechoix/products0311/.metadata
+-rw-r--r--   3 paslechoix hdfs      43583 2018-03-11 16:36 paslechoix/products0311/d70d8251-14bc-41ec-a8ee-ca4b7e343c78.parquet
+
+
+verification:
+scala> sqlContext.load("paslechoix/products0311").show()
++----------+-------------------+--------------------+-------------------+-------------+--------------------+
+|product_id|product_category_id|        product_name|product_description|product_price|       product_image|
++----------+-------------------+--------------------+-------------------+-------------+--------------------+
+|         1|                  2|Quest Q64 10 FT. ...|                   |        59.98|http://images.acm...|
+|         2|                  2|Under Armour Men'...|                   |       129.99|http://images.acm...|
+|         3|                  2|Under Armour Men'...|                   |        89.99|http://images.acm...|
+|         4|                  2|Under Armour Men'...|                   |        89.99|http://images.acm...|
+|         5|                  2|Riddell Youth Rev...|                   |       199.99|http://images.acm...|
+|         6|                  2|Jordan Men's VI R...|                   |       134.99|http://images.acm...|
+|         7|                  2|Schutt Youth Recr...|                   |        99.99|http://images.acm...|
+|         8|                  2|Nike Men's Vapor ...|                   |       129.99|http://images.acm...|
+|         9|                  2|Nike Adult Vapor ...|                   |         50.0|http://images.acm...|
+|        10|                  2|Under Armour Men'...|                   |       129.99|http://images.acm...|
+|        11|                  2|Fitness Gear 300 ...|                   |       209.99|http://images.acm...|
+|        12|                  2|Under Armour Men'...|                   |       139.99|http://images.acm...|
+|        13|                  2|Under Armour Men'...|                   |        89.99|http://images.acm...|
+|        14|                  2|Quik Shade Summit...|                   |       199.99|http://images.acm...|
+|        15|                  2|Under Armour Kids...|                   |        59.99|http://images.acm...|
+|        16|                  2|Riddell Youth 360...|                   |       299.99|http://images.acm...|
+|        17|                  2|Under Armour Men'...|                   |       129.99|http://images.acm...|
+|        18|                  2|Reebok Men's Full...|                   |        29.97|http://images.acm...|
+|        19|                  2|Nike Men's Finger...|                   |       124.99|http://images.acm...|
+|        20|                  2|Under Armour Men'...|                   |       129.99|http://images.acm...|
++----------+-------------------+--------------------+-------------------+-------------+--------------------+
+only showing top 20 rows
+
+3. Avro format:
+
+sqoop import -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=products \
+--target-dir="paslechoix/products0311-avro" \
+--as-avrodatafile
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls paslechoix/products0311-avro
+Found 2 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-03-11 16:40 paslechoix/products0311-avro/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs     175677 2018-03-11 16:40 paslechoix/products0311-avro/part-m-00000.avro
+
+verification
+
+Only way to validate avro file is by copying the avro file to local file system and use avro-tools to convert to json and review it.
+
+Avro provides a set of tools for working with Avro data files and schemas. The tools are not (currently) packaged with CDH, but you can download the tools JAR from an Apache mirror, and run it as follows to get a list of commands:
+
+java -jar avro-tools-1.7.3.jar
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat paslechoix/products03102/* | head
+1,2,Quest Q64 10 FT. x 10 FT. Slant Leg Instant U,,59.98,http://images.acmesports.sports/Quest+Q64+10+FT.+x+10+FT.+Slant+Leg+Instant+Up+Canopy
+2,2,Under Armour Men's Highlight MC Football Clea,,129.99,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat
+3,2,Under Armour Men's Renegade D Mid Football Cl,,89.99,http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat
+4,2,Under Armour Men's Renegade D Mid Football Cl,,89.99,http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat
+5,2,Riddell Youth Revolution Speed Custom Footbal,,199.99,http://images.acmesports.sports/Riddell+Youth+Revolution+Speed+Custom+Football+Helmet
+6,2,Jordan Men's VI Retro TD Football Cleat,,134.99,http://images.acmesports.sports/Jordan+Men%27s+VI+Retro+TD+Football+Cleat
+7,2,Schutt Youth Recruit Hybrid Custom Football H,,99.99,http://images.acmesports.sports/Schutt+Youth+Recruit+Hybrid+Custom+Football+Helmet+2014
+8,2,Nike Men's Vapor Carbon Elite TD Football Cle,,129.99,http://images.acmesports.sports/Nike+Men%27s+Vapor+Carbon+Elite+TD+Football+Cleat
+9,2,Nike Adult Vapor Jet 3.0 Receiver Gloves,,50.0,http://images.acmesports.sports/Nike+Adult+Vapor+Jet+3.0+Receiver+Gloves
+10,2,Under Armour Men's Highlight MC Football Clea,,129.99,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat
+
+
+Sqoop Export
+
+1. create table on mysql
+create table product03102 
+(product_id int, product_category_id int, product_name varchar(45), product_description varchar(255), product_price float, product_image varchar(255));
+
+create table products-parquet 
+(product_id int, product_category_id int, product_name varchar(45), product_description varchar(255), product_price float, product_image varchar(255));
+
+
+Note: table name cannot contain dash, underscore is accepted
+create table products_parquet 
+(product_id int, product_category_id int, product_name varchar(45), product_description varchar(255), product_price float, product_image varchar(255));
+
+mysql> select * from products_parquet;
+Empty set (0.00 sec)
+
+2. export
+
+sqoop export -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=products_parquet \
+--export-dir="paslechoix/products0311"
+
+after export:
+
+mysql> select * from products_parquet limit 10;
++------------+---------------------+-----------------------------------------------+---------------------+---------------+-----------------------------------------------------------------------------------------+
+| product_id | product_category_id | product_name                                  | product_description | product_price | product_image                                                                           |
++------------+---------------------+-----------------------------------------------+---------------------+---------------+-----------------------------------------------------------------------------------------+
+|          1 |                   2 | Quest Q64 10 FT. x 10 FT. Slant Leg Instant U |                     |         59.98 | http://images.acmesports.sports/Quest+Q64+10+FT.+x+10+FT.+Slant+Leg+Instant+Up+Canopy   |
+|          2 |                   2 | Under Armour Men's Highlight MC Football Clea |                     |        129.99 | http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat        |
+|          3 |                   2 | Under Armour Men's Renegade D Mid Football Cl |                     |         89.99 | http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat      |
+|          4 |                   2 | Under Armour Men's Renegade D Mid Football Cl |                     |         89.99 | http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat      |
+|          5 |                   2 | Riddell Youth Revolution Speed Custom Footbal |                     |        199.99 | http://images.acmesports.sports/Riddell+Youth+Revolution+Speed+Custom+Football+Helmet   |
+|          6 |                   2 | Jordan Men's VI Retro TD Football Cleat       |                     |        134.99 | http://images.acmesports.sports/Jordan+Men%27s+VI+Retro+TD+Football+Cleat               |
+|          7 |                   2 | Schutt Youth Recruit Hybrid Custom Football H |                     |         99.99 | http://images.acmesports.sports/Schutt+Youth+Recruit+Hybrid+Custom+Football+Helmet+2014 |
+|          8 |                   2 | Nike Men's Vapor Carbon Elite TD Football Cle |                     |        129.99 | http://images.acmesports.sports/Nike+Men%27s+Vapor+Carbon+Elite+TD+Football+Cleat       |
+|          9 |                   2 | Nike Adult Vapor Jet 3.0 Receiver Gloves      |                     |            50 | http://images.acmesports.sports/Nike+Adult+Vapor+Jet+3.0+Receiver+Gloves                |
+|         10 |                   2 | Under Armour Men's Highlight MC Football Clea |                     |        129.99 | http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat        |
++------------+---------------------+-----------------------------------------------+---------------------+---------------+-----------------------------------------------------------------------------------------+
+10 rows in set (0.00 sec)
+
+
+
+
+sqoop export -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=product03102 \
+--export-dir paslechoix/products03102 \
+--input-fields-terminated-by "," \
+--input-lines-terminated-by '\n'
+
+mysql> select count(1) from product03102;
++----------+
+| count(1) |
++----------+
+|     1345 |
++----------+
+1 row in set (0.00 sec)
+
+
+Second time:
+
+sqoop import -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=products \
+--target-dir="paslechoix/products03103"
+
+1. create table on mysql
+create table product03103
+(product_id int, product_category_id int, product_name varchar(45), product_description varchar(255), product_price float, product_image varchar(255));
+
+sqoop export -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=product03103 \
+--export-dir paslechoix/products03103 \
+--input-fields-terminated-by ","
+
+mysql> select count(1) from product03103;
++----------+
+| count(1) |
++----------+
+|     1345 |
++----------+
+1 row in set (0.00 sec)
+
+
+The test shows no need to add: --input-lines-terminated-by '\n'
+
+1. create table on mysql
+create table product03104
+(product_id int, product_category_id int, product_name varchar(45), product_description varchar(255), product_price float, product_image varchar(255));
+
+
+sqoop export -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=product03104 \
+--export-dir paslechoix/products03103 
+
+mysql> select count(1) from product03104;
++----------+
+| count(1) |
++----------+
+|     1345 |
++----------+
+1 row in set (0.00 sec)
+
+The test shows no need to add --input-fields-terminated-by "," because default is ','
+
+Format:

@@ -1,0 +1,124 @@
+//Get details of top 5 customers by revenue for each month
+
+sqlContext.sql("create database paslechoix_exercise1")
+res16: org.apache.spark.sql.DataFrame = [result: string]
+
+sqlContext.sql("use paslechoix_exercise1")
+
+sqlContext.sql("create table orders (order_id int, order_date varchar(40), order_cust_id int, order_status varchar(40)) row format delimited fields terminated by ',' stored as textfile")
+
+sqlContext.sql("create table order_items(order_item_id int, order_item_order_id int, product_id int,product_qty int, order_item_subtotal float,order_item_price float) row format delimited fields terminated by ',' stored as textfile")
+
+sqlContext.sql("create table customer (cust_id int, cust_fname varchar(40), cust_lname varchar(40), cust_email varchar(40),cust_password varchar(40),cust_street varchar(40),cust_city varchar(40),cust_state varchar(40),cust_zip varchar(40)) row format delimited fields terminated by ',' stored as textfile")
+
+sqlContext.sql("show tables")
+
+sqlContext.sql("load data local inpath '/data/retail_db/orders/part-00000' into table orders")
+
+sqlContext.sql("load data local inpath '/data/retail_db/order_items' into table order_items")
+
+sqlContext.sql("load data local inpath '/data/retail_db/customers' into table customer")
+
+sqlContext.sql("select * from orders limit 10").show
++--------+--------------------+-------------+---------------+
+|order_id|          order_date|order_cust_id|   order_status|
++--------+--------------------+-------------+---------------+
+|       1|2013-07-25 00:00:...|        11599|         CLOSED|
+|       2|2013-07-25 00:00:...|          256|PENDING_PAYMENT|
+|       3|2013-07-25 00:00:...|        12111|       COMPLETE|
+|       4|2013-07-25 00:00:...|         8827|         CLOSED|
+|       5|2013-07-25 00:00:...|        11318|       COMPLETE|
+|       6|2013-07-25 00:00:...|         7130|       COMPLETE|
+|       7|2013-07-25 00:00:...|         4530|       COMPLETE|
+|       8|2013-07-25 00:00:...|         2911|     PROCESSING|
+|       9|2013-07-25 00:00:...|         5657|PENDING_PAYMENT|
+|      10|2013-07-25 00:00:...|         5648|PENDING_PAYMENT|
++--------+--------------------+-------------+---------------+
+
+sqlContext.sql("select * from order_items limit 10").show
++-------------+-------------------+----------+-----------+-------------------+----------------+
+|order_item_id|order_item_order_id|product_id|product_qty|order_item_subtotal|order_item_price|
++-------------+-------------------+----------+-----------+-------------------+----------------+
+|            1|                  1|       957|          1|             299.98|          299.98|
+|            2|                  2|      1073|          1|             199.99|          199.99|
+|            3|                  2|       502|          5|              250.0|            50.0|
+|            4|                  2|       403|          1|             129.99|          129.99|
+|            5|                  4|       897|          2|              49.98|           24.99|
+|            6|                  4|       365|          5|             299.95|           59.99|
+|            7|                  4|       502|          3|              150.0|            50.0|
+|            8|                  4|      1014|          4|             199.92|           49.98|
+|            9|                  5|       957|          1|             299.98|          299.98|
+|           10|                  5|       365|          5|             299.95|           59.99|
++-------------+-------------------+----------+-----------+-------------------+----------------+
+
+sqlContext.sql("select * from customer limit 10").show
++-------+----------+----------+----------+-------------+--------------------+-----------+----------+--------+
+|cust_id|cust_fname|cust_lname|cust_email|cust_password|         cust_street|  cust_city|cust_state|cust_zip|
++-------+----------+----------+----------+-------------+--------------------+-----------+----------+--------+
+|      1|   Richard| Hernandez| XXXXXXXXX|    XXXXXXXXX|  6303 Heather Plaza|Brownsville|        TX|   78521|
+|      2|      Mary|   Barrett| XXXXXXXXX|    XXXXXXXXX|9526 Noble Embers...|  Littleton|        CO|   80126|
+|      3|       Ann|     Smith| XXXXXXXXX|    XXXXXXXXX|3422 Blue Pioneer...|     Caguas|        PR|   00725|
+|      4|      Mary|     Jones| XXXXXXXXX|    XXXXXXXXX|  8324 Little Common| San Marcos|        CA|   92069|
+|      5|    Robert|    Hudson| XXXXXXXXX|    XXXXXXXXX|"10 Crystal River...|     Caguas|        PR|   00725|
+|      6|      Mary|     Smith| XXXXXXXXX|    XXXXXXXXX|3151 Sleepy Quail...|    Passaic|        NJ|   07055|
+|      7|   Melissa|    Wilcox| XXXXXXXXX|    XXXXXXXXX|9453 High Concession|     Caguas|        PR|   00725|
+|      8|     Megan|     Smith| XXXXXXXXX|    XXXXXXXXX|3047 Foggy Forest...|   Lawrence|        MA|   01841|
+|      9|      Mary|     Perez| XXXXXXXXX|    XXXXXXXXX| 3616 Quaking Street|     Caguas|        PR|   00725|
+|     10|   Melissa|     Smith| XXXXXXXXX|    XXXXXXXXX|8598 Harvest Beac...|   Stafford|        VA|   22554|
++-------+----------+----------+----------+-------------+--------------------+-----------+----------+--------+
+
+
+
+val final_output = sqlContext.sql("select c.*,order_date,revenue from(select order_cust_id, revenue, order_date, (dense_rank() over(partition by order_date order by revenue desc)) as rank from (select round(sum(order_item_subtotal),2) revenue, substr(order_date,1,7) as order_date, order_cust_id from orders inner join order_items on order_id = order_item_order_id group by substr(order_date,1,7) , order_cust_id)a)b inner join customer c on order_cust_id = cust_id where rank <= 5 order by order_date,revenue desc ")
+
+final_output.saveAsTable("top5_customers_per_month")
+
+sqlContext.setConf("spark.sql.shuffle.partitions","2")
+
+sqlContext.sql("select order_date, cust_id, revenue from top5_customers_per_month where cust_id = 7").show(10)
+
++----------+-------+-------+
+|order_date|cust_id|revenue|
++----------+-------+-------+
+|   2014-01|      7|4139.68|
++----------+-------+-------+
+
+val result = sqlContext.sql("select order_date, cust_id, revenue from top5_customers_per_month order by revenue desc limit 5")
++----------+-------+-------+
+|order_date|cust_id|revenue|
++----------+-------+-------+
+|   2014-03|  10351|4489.65|
+|   2013-08|   9515|4229.84|
+|   2014-01|      7|4139.68|
+|   2014-06|  12284|4139.33|
+|   2014-04|   2564|4069.84|
++----------+-------+-------+
+
+result.write.save("top5_customers_per_month.txt")
+[paslechoix@gw03 ~]$ hdfs dfs -ls top5_customers_per_month.txt
+Found 4 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-03-13 23:51 top5_customers_per_month.txt/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs        387 2018-03-13 23:51 top5_customers_per_month.txt/_common_metadata
+-rw-r--r--   3 paslechoix hdfs        751 2018-03-13 23:51 top5_customers_per_month.txt/_metadata
+-rw-r--r--   3 paslechoix hdfs        832 2018-03-13 23:51 top5_customers_per_month.txt/part-r-00000-1c1d56c8-9950-4d72-911f-8066c4bcae82 
+
+result.write.csv("top5_customers_per_month.csv")
+result.write.format("csv").save("top5_customers_per_month.csv")
+
+
+result.rdd.saveAsTextFile("top5_customers_per_month")
+[paslechoix@gw03 ~]$ hdfs dfs -ls top5_customers_per_month
+Found 2 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-03-13 23:55 top5_customers_per_month/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs        114 2018-03-13 23:55 top5_customers_per_month/part-00000
+[paslechoix@gw03 ~]$ hdfs dfs -cat top5_customers_per_month/*
+[2014-03,10351,4489.65]
+[2013-08,9515,4229.84]
+[2014-01,7,4139.68]
+[2014-06,12284,4139.33]
+[2014-04,2564,4069.84]
+
+How to write the result to local file system?
+
+
+result.coalesce(1).rdd.saveAsTextFile("top5_customers_per_month1")

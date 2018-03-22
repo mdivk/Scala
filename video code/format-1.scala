@@ -75,8 +75,31 @@ Found 5 items
 -rw-r--r--   3 paslechoix hdfs     879621 2018-03-12 22:24 orders0312seq/part-m-00002
 -rw-r--r--   3 paslechoix hdfs     880255 2018-03-12 22:24 orders0312seq/part-m-00003
 
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat orders0312seq/part-m-00000 | head
+/home/paslechoix/orders0312seq/part-m-00000
+
+val file=sc.sequenceFile[LongWritable,String]("hdfs://nn01.itversity.com:8020/user/paslechoix/orders0312seq/part-m-00000")
+[paslechoix@gw03 ~]$ hdfs dfs -cat orders0312seq/part-m-00000 | head
+SEQ!org.apache.hadoop.io.LongWritableordersE▒Ӗ▒LҐ▒▒@▒▒-OCLOSED@▒▒PENDING_PAYMENT@▒▒/COMPLETE@▒▒"{CLOSED@▒▒,COMPLETE@▒COMPLETE@▒▒COMPLET@▒▒
+
+
 sc.sequenceFile()
-org.apache.hadoop.io.LongWritable
+scala> import org.apache.hadoop.io.LongWritable
+
+scala> import org.apache.hadoop.io.Text
+import org.apache.hadoop.io.Text
+scala> import org.apache.hadoop.io.IntWritable
+import org.apache.hadoop.io.IntWritable
+val result = sc.sequenceFile("orders0312seq/part-m-00000", classOf[LongWritable])
+val result = sc.sequenceFile("orders0312seq/part-m-00000", classOf[LongWritable], classOf[orders]). map{case (x, y) => (x.toString, y.get())}
+scala> val result = sc.sequenceFile("orders0312seq/part-m-00000", classOf[Text], classOf[IntWritable]). map{case (x, y) => (x.toString, y.get())}
+result: org.apache.spark.rdd.RDD[(String, Int)] = MapPartitionsRDD[15] at map at :29
+
+scala> result.collect
+18/03/14 06:25:21 INFO DAGScheduler: Job 0 failed: collect at <console>:32, took 0.620121 s
+org.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 0.0 failed 1 times, most recent failure: Lost task 0.0 in stage 0.0 (TID 0, localhost): java.lang.RuntimeException: java.io.IOException: WritableName can't load class: orders
+
 
 sc.sequenceFile("orders0312seq", classOf[org.apache.hadoop.io.LongWritable]).take(10)
 sc.sequenceFile("orders0312seq", classOf[org.apache.hadoop.io.intWritable]).take(10)

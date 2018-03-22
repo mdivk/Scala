@@ -1,0 +1,160 @@
+mysql> select * from dp;
++------+----------+
+| id   | nm       |
++------+----------+
+|    2 | Fitness  |
+|    3 | Footwear |
+|    7 | Fan Shop |
+|    4 | Apparel  |
+|    5 | Golf     |
+|    6 | Outdoors |
++------+----------+
+6 rows in set (0.00 sec)
+
+
+first time import:
+
+sqoop import -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=dp \
+--target-dir=dp
+
+hdfs dfs -cat dp/* 
+[paslechoix@gw03 ~]$ hdfs dfs -cat dp/*
+2,Fitness
+3,Footwear
+7,Fan Shop
+4,Apparel
+5,Golf
+6,Outdoors
+
+add one more record in the mysql table:
+
+mysql> insert into dp (id, nm) values (7, 'Indoors');
+mysql> select * from dp;
++------+----------+
+| id   | nm       |
++------+----------+
+|    2 | Fitness  |
+|    3 | Footwear |
+|    7 | Fan Shop |
+|    4 | Apparel  |
+|    5 | Golf     |
+|    6 | Outdoors |
+|    7 | Indoors  |
++------+----------+
+7 rows in set (0.00 sec)
+
+Now do the append import
+
+sqoop import -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=dp \
+--target-dir=dp \
+--append
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls dp
+Found 3 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-02-25 20:19 dp/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs         60 2018-02-25 20:19 dp/part-m-00000
+-rw-r--r--   3 paslechoix hdfs         70 2018-02-25 20:22 dp/part-m-00001
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat dp/*
+2,Fitness
+3,Footwear
+7,Fan Shop
+4,Apparel
+5,Golf
+6,Outdoors
+2,Fitness
+3,Footwear
+7,Fan Shop
+4,Apparel
+5,Golf
+6,Outdoors
+7,Indoors
+
+so for the option of --append, all the rows are appended
+
+Now remove the appended records:
+[paslechoix@gw03 ~]$ hdfs dfs -rm dp/part-m-00001
+[paslechoix@gw03 ~]$ hdfs dfs -cat dp/*
+2,Fitness
+3,Footwear
+7,Fan Shop
+4,Apparel
+5,Golf
+6,Outdoors
+
+
+Do the incremental import
+
+sqoop import -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=dp \
+--target-dir=dp \
+--check-column id \
+--incremental append
+
+[paslechoix@gw03 ~]$ hdfs dfs -ls dp
+Found 3 items
+-rw-r--r--   3 paslechoix hdfs          0 2018-02-25 20:19 dp/_SUCCESS
+-rw-r--r--   3 paslechoix hdfs         60 2018-02-25 20:19 dp/part-m-00000
+-rw-r--r--   3 paslechoix hdfs         70 2018-02-25 20:26 dp/part-m-00001
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat dp/*
+2,Fitness
+3,Footwear
+7,Fan Shop
+4,Apparel
+5,Golf
+6,Outdoors
+2,Fitness
+3,Footwear
+7,Fan Shop
+4,Apparel
+5,Golf
+6,Outdoors
+7,Indoors
+
+Root cause, last value must be set in order to do incremental import:
+
+Now remove the appended records:
+[paslechoix@gw03 ~]$ hdfs dfs -rm dp/part-m-00001
+[paslechoix@gw03 ~]$ hdfs dfs -cat dp/*
+2,Fitness
+3,Footwear
+7,Fan Shop
+4,Apparel
+5,Golf
+6,Outdoors
+
+
+sqoop import -m 1 \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=dp \
+--target-dir=dp \
+--check-column id \
+--incremental append \
+--last-value 6
+
+Now only the new record is imported:
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat dp/*
+2,Fitness
+3,Footwear
+7,Fan Shop
+4,Apparel
+5,Golf
+6,Outdoors
+7,Fan Shop
+7,Indoors
+[paslechoix@gw03 ~]$
