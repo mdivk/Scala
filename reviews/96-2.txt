@@ -1,0 +1,166 @@
+===========Example of join three files as output the selected fields - Spark SQL
+
+vim EmployeeManager.csv
+E01,Vishnu
+E02,Satyam
+E03,Shiv
+E04,Sundar
+E05,John
+E06,Pallavi
+E07,Tanvir
+E08,Shekhar
+E09,Vinod
+E10,Jitendra
+
+vim EmployeeName.csv
+E01,Lokesh
+E02,Bhupesh
+E03,Amit
+E04,Ratan
+E05,Dinesh
+E06,Pavan
+E07,Tejas
+E08,Sheela
+E09,Kumar
+E10,Venkat
+
+vim EmployeeSalary.csv
+E01,50000
+E02,50000
+E03,45000
+E04,45000
+E05,50000
+E06,45000
+E07,50000
+E08,10000
+E09,10000
+E10,10000
+
+val mgr = sc.textFile("data96/EmployeeManager.csv").map(x=>(x.split(",")(0), x.split(",")(1)))
+val mgrDF = mgr.toDF("emp_id", "mgr_name")
+mgrDF.registerTempTable("mgr")
+
+val emp = sc.textFile("data96/EmployeeName.csv").map(x=>(x.split(",")(0), x.split(",")(1)))
+val empDF = emp.toDF("emp_id", "emp_name")
+empDF.registerTempTable("emp")
+
+val emp_sal = sc.textFile("data96/EmployeeSalary.csv").map(x=>(x.split(",")(0), x.split(",")(1)))
+val emp_salDF = emp_sal.toDF("emp_id", "emp_salary")
+emp_salDF.registerTempTable("emp_sal")
+
+val q = """
+select emp.emp_id, emp.emp_name, emp_sal.emp_salary, mgr.mgr_name from emp 
+join emp_sal on emp_sal.emp_id = emp.emp_id
+join mgr on mgr.emp_id = emp.emp_id
+order by emp.emp_id
+"""
+
+val r = sqlContext.sql(q)
+
+r.show
+r.rdd.saveAsTextFile("s37_result.txt")
+
+
+===========Word Count with removing stopword
+Content.txt
+Hello this is HadoopExam.com 
+This is QuickTechie.com
+Apache Spark Training
+This is Spark Learning Session
+Spark is faster than MapReduce
+
+
+Remove.txt
+Hello, is, this, the
+
+val input = sc.textFile("Content.txt")
+val stopWordsInput = sc.textFile("Remove.txt")
+
+// Flatten, collect, and broadcast.
+val stopWords = stopWordsInput.flatMap(x => x.split(",")).map(_.trim)
+val broadcastStopWords = sc.broadcast(stopWords.collect.toSet)
+
+// Split using a regular expression that extracts words
+val wordsWithStopWords = input.flatMap(x => x.split("\\W+"))
+val filtered = wordsWithStopWords.filter(!broadcastStopWords.value.contains(_))
+
+//output in sorted, desc by count
+filtered.map(x=>(x,1)).reduceByKey(_+_).map(x=>(x._2, x._1)).sortByKey(false).collect
+
+
+
+=========================s39, skipped=========================
+
+
+
+val filtered1 = input.subtract(stopWordsInput)
+
+====s40: Group By same value (Key) and Output to individual file named after each Key========
+=====Output: emp with same sal will be grouped to an individual file and saved on hdfs=======
+
+EmployeeName.csv
+E01,Lokesh
+E02,Bhupesh
+E03,Amit
+E04,Ratan
+E05,Dinesh
+E06,Pavan
+E07,Tejas
+E08,Sheela
+E09,Kumar
+E10,Venkat
+
+EmployeeSalary.csv
+E01,50000
+E02,50000
+E03,45000
+E04,45000
+E05,50000
+E06,45000
+E07,50000
+E08,10000
+E09,10000
+E10,10000
+
+val emp = sc.textFile("data96/EmployeeName.csv").map(x=>(x.split(",")(0), x.split(",")(1)))
+val sal = sc.textFile("data96/EmployeeSalary.csv").map(x=>(x.split(",")(0), x.split(",")(1)))
+
+val joined = emp.join(sal)
+val joinedm = joined.map(x=>(x._1, x._2._1, x._2._2))
+
+
+
+val keyRemoved = joined.values
+Array[(String, String)] = Array((Kumar,10000), (Amit,45000), (Tejas,50000), (Dinesh,50000), (Venkat,10000), (Lokesh,50000), (Pavan,45000), (Bhupesh,50000), (Sheela,10000), (Ratan,45000))
+
+val swapped = keyRemoved.map(item=>item.swap)
+Array[(String, String)] = Array((10000,Kumar), (45000,Amit), (50000,Tejas), (50000,Dinesh), (10000,Venkat), (50000,Lokesh), (45000,Pavan), (50000,Bhupesh), (10000,Sheela), (45000,Ratan))
+
+val swapped1 = keyRemoved.map(x=>(x._2, x._1))
+
+
+val grpByKey = swapped.groupByKey().collect()
+Array[(String, Iterable[String])] = Array((45000,CompactBuffer(Amit, Pavan, Ratan)), (10000,CompactBuffer(Kumar, Venkat, Sheela)), (50000,CompactBuffer(Tejas, Dinesh, Lokesh, Bhupesh)))
+
+
+val rddByKey = grpByKey.map{case(k,v)=>k->sc.makeRDD(v.toSeq)}
+Array[(String, org.apache.spark.rdd.RDD[String])] = Array((45000,ParallelCollectionRDD[59] at makeRDD at <console>:39), (10000,ParallelCollectionRDD[60] at makeRDD at <console>:39), (50000,ParallelCollectionRDD[61] at makeRDD at <console>:39))
+
+rddByKey.foreach{case(k,rdd)=>rdd.collect.foreach(println)}
+
+Amit
+Pavan
+Ratan
+
+Kumar
+Venkat
+Sheela
+
+Tejas
+Dinesh
+Lokesh
+Bhupesh
+
+
+rddByKey.foreach{case(k,rdd)=>rdd.saveAsTextFile("s40"+k)}
+

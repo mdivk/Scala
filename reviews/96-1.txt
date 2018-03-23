@@ -1,0 +1,363 @@
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=categories 
+
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=categories \
+--target-dir=cat0322
+
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=categories \
+--warehouse-dir=retail0322 
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--query "select * from categories where category_id=22 and \$CONDITIONS" \
+--target-dir=cat0322 \
+--append
+
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--query "select * from categories where category_id>22 and \$CONDITIONS" \
+--target-dir=cat03221 \
+--fields-terminated-by '|' 
+
+alter table categories modify category_department_id int(11);
+insert into categories values (50, null, 'testing');
+select * from categories;
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--query "select * from categories where category_id>22 and \$CONDITIONS" \
+--target-dir=cat03223 \
+--fields-terminated-by '|' \
+--null-string='N' \
+--null-non-string='N/A'
+
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=categories \
+--target-dir=cat03223 \
+--fields-terminated-by '|' \
+--null-string='N' \
+--null-non-string='N/A' \
+--append
+
+
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=categories \
+--hive-import 
+
+
+If data is imported but failed to put into table, find out the path, manually create the table on hive:
+
+create table categories2 (category_id int, category_department_id int,
+category_name string)
+row format delimited
+fields terminated by '\u0001'
+lines terminated by '\n'
+stored as TEXTFILE
+location '/user/paslechoix/categories';
+
+
+hive (paslechoix)> create table cat3 as select * From categories2;
+
+sqoop list-tables \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity 
+
+
+sqoop eval \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--query "select count(1) from orders"
+
+
+sqoop import-all-tables -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--warehouse-dir=retail03221 \
+--as-avrodatafile
+
+==============pending fixed=======================
+scenario 12.
+
+sqoop import-all-tables -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--hive-import \
+--hive-overwrite \
+--create-hive-table \
+--compress \
+--compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+--outdir java_output0322
+
+==============pending fixed=======================
+
+
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=orders \
+--target-dir="orders03223" \
+--boundary-query="select 1, 100 from orders" \
+--columns "order_id, order_status"
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--query "select * from orders join order_items on orders.order_id = order_items.order_item_order_id where \$CONDITIONS" \
+--target-dir=order03221
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--target-dir=dep0322 \
+--fields-terminated-by ',' \
+--lines-terminated-by '\n'
+
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=departments \
+--target-dir=dep0322 \
+--fields-terminated-by ',' \
+--lines-terminated-by '\n' \
+--append
+
+==============pending fixed=======================
+scenario 16.
+
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=categories \
+--hive-import \
+--hive-overwrite \
+--hive-home /apps/hive/warehouse/paslechoix.db \
+--hive-table  paslechoix.cat0322
+==============pending fixed=======================
+
+create table dep_new0322
+(dep_id int, dep_name varchar(40), createdon timestamp default now() )
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=dep_new0322 \
+--target-dir=dep_new0322
+
+
+incremental import, follow the sqoop doc, no need for split-by
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=dep_new0322 \
+--target-dir=dep_new0322 \
+--append \
+--check-column createdon \
+--incremental lastmodified \
+--split-by dep_id \
+--last-value '2018-03-22 15:42:58'
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=dep_new0322 \
+--target-dir=dep_new0322 \
+--append \
+--check-column createdon \
+--incremental lastmodified \
+--last-value '2018-03-22 15:45:55'
+
+
+incremental import, follow the sqoop doc, no need for split-by
+
+
+sqoop import from mysql to mysql
+
+create table dep_exp(dep_id int, dep_name varchar(40), createdon timestamp default now() )
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=dep_new0322 \
+--export-dir=dep_new0322 \
+--append \
+
+
+==============pending fixed=======================
+scenario 20.
+
+18/03/22 17:16:33 INFO mapreduce.Job:  map 100% reduce 0%
+18/03/22 17:16:33 INFO mapreduce.Job: Job job_1520592249193_24969 failed with state FAILED due to: Task failed task_1520592249193_24969_m_000000
+
+2,fitness
+3,footwear
+12,fathematics
+13,fcience
+14,engineering  
+1000,management
+
+sqoop export -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=dep_exp \
+--export-dir="updated_dep.csv" \
+==============pending fixed=======================
+From MySQL to Hive:
+
+On MySQL:
+CREATE TABLE orders03222 (
+  order_id int(11) NOT NULL AUTO_INCREMENT,
+  order_date datetime NOT NULL,
+  order_customer_id int(11) NOT NULL,
+  order_status varchar(45) NOT NULL,
+  PRIMARY KEY (order_id)
+) ;
+insert into orders03222 select * from retail_db.orders; 
+
+No need to pre-create hive table:
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=orders03222 \
+--hive-import \
+--hive-table=order_hive03223 \
+--fields-terminated-by=','
+
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=orders03222 \
+--hive-import \
+--hive-table=order_hive03225 \
+--fields-terminated-by=','
+
+
+From local to HDFS to mysql:
+
+vim Employee.csv
+1001,Amit1,male,35
+1002,Amit2,female,36
+1003,Amit3,female,37
+1004,Amit4,male,38
+
+vim Salary.csv
+1001,12000
+1002,13000
+1003,14000
+1004,15000
+
+sqoop export -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=emp0322 \
+--export-dir="s23/Employee.csv" \
+--fields-terminated-by=','
+
+sqoop export -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=sal0322 \
+--export-dir="s23/Salary.csv" \
+--fields-terminated-by=','
+
+From MySQL to HDFS:
+
+text:
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=orders03222 \
+--target-dir=orders03222-text
+
+sequence:
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=orders03222 \
+--target-dir=orders03222-seq \
+--as-sequencefile
+
+parquet:
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=orders03222 \
+--target-dir=orders03222_par \
+--as-parquetfile
+
+avro:
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=orders03222 \
+--target-dir=orders03222-avro \
+--as-avrodatafile
+
+Sqoop Job
+
+Note: when creating a job, there MUST BE A SPACE BETWEEN -- and import
+
+sqoop job --create my_sqoop_job \
+-- import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=categories \
+--target-dir=categories03222 
+
+
