@@ -2,6 +2,62 @@ find . -name "*.scala" | xargs grep jdbc
 copy file from local laptop to lab local with scp
 scp paslechoix@gw03.itversity.com /home/paslechoix/part-00000 /cygdrive/c/rxie/175scala/data
 /public/retail_db/orders
+
+Starting Spark Shell with Avro support, and using avro
+spark-shell --master yarn --packages com.databricks:spark-avro_2.10:2.0.1
+import com.databricks.spark.avro._
+
+
+Formats:
+Other than text is RDD, all the others are in DF
+
+Text:
+
+sc.textFile("products")
+productsRDD.saveAsTextFile("productsRDD")
+hdfs dfs -ls productsRDD
+hdfs dfs -copyToLocal productsRDD/* /home/….
+productsRDD.saveAsTextFile("productsRDD_gzip", classOf[org.apache.hadoop.io.compress.SnappyCodec])
+
+Sequence: 
+
+productsRDD.saveAsSequenceFile("productsRDD_seq")
+
+PARQUET FILE:
+READ:
+sqlContext.read.parquet("orders0314_par")
+sqlContext.setConf("spark.sql.parquet.compression.codec","gzip")
+df.write.parquet("orders0314_par_gzip_output")
+or
+sqlContext.setConf("spark.sql.parquet.compression.codec", "snappy")
+df.write.parquet("orders0314_par_snappy_output")
+
+WRITE:
+df.write.parquet("orders0314_par_output")
+sqlContext.setConf("spark.sql.parquet.compression.codec","gzip")
+df.write.parquet("orders0314_par_gzip_output")
+or
+sqlContext.setConf("spark.sql.parquet.compression.codec", "snappy")
+df.write.parquet("orders0314_par_snappy_output")
+
+AVRO:
+READ:
+spark-shell --packages com.databricks:spark-avro_2.10:2.0.1
+import com.databricks.spark.avro._
+sqlContext.read.avro("orders_result_snappy").show(10)
+
+WRITE:
+sqlContext.setConf("spark.sql.avro.compression.codec","snappy")
+ordersDF.write.avro("orders_result_snappy")
+
+JSON:
+READ:
+sqlContext.read.json("products0318_json")
+
+WRITE:
+productsRDDmapDF.toJSON.saveAsTextFile("products0318_json")
+
+
 1. copy local to hdfs:
 	[paslechoix@gw03 ~]$ hdfs dfs -put mgr1.csv spark1/
 	[paslechoix@gw03 ~]$ hdfs dfs -ls spark1
