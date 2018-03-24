@@ -92,7 +92,7 @@ filtered.map(x=>(x,1)).reduceByKey(_+_).map(x=>(x._2, x._1)).sortByKey(false).co
 =========================s39, skipped=========================
 
 
-
+=========================s40=========================
 val filtered1 = input.subtract(stopWordsInput)
 
 ====s40: Group By same value (Key) and Output to individual file named after each Key========
@@ -164,3 +164,556 @@ Bhupesh
 
 rddByKey.foreach{case(k,rdd)=>rdd.saveAsTextFile("s40"+k)}
 
+
+=========================s41=========================
+
+val r = sc.textFile("data96/user.csv")
+
+val header = r.first
+
+val body = r.filter(_!=header)
+
+val toFilter = body.filter(x=>(x.split(",")(0) == "myself"))
+
+body.subtract(toFilter)
+
+val result = body.subtract(toFilter).map(x=>(x.split(",")(0), x.split(",")(1), x.split(",")(2)))
+
+result.saveAsTextFile("data96/s41.txt")
+
+hdfs dfs -cat data96/s41.txt/*
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat data96/s41.txt/*
+(Rahul,scala,120)
+(Mithun,spark,1)
+(Nikita,spark,80)
+
+=========================s42=========================
+
+val r = sc.textFile("data96/EmployeeName.csv")
+val rm = r.map(x=>(x.split(",")(1), x.split(",")(0)))
+rm.sortByKey().map(item=>item.swap).saveAsTextFile("data96/s42")
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat data96/s42/*
+(E03,Amit)
+(E02,Bhupesh)
+(E05,Dinesh)
+(E09,Kumar)
+(E01,Lokesh)
+(E06,Pavan)
+(E04,Ratan)
+(E08,Sheela)
+(E07,Tejas)
+(E10,Venkat)
+
+======================== s43, pending on stackoverflow =========================
+
+data.csv
+1,Lokesh
+2,Bhupesh
+2,Amit
+2,Ratan
+2,Dinesh
+1,Pavan
+1,Tejas
+2,Sheela
+1,Kumar
+1,Venkat
+
+val r = sc.textFile("data96/data.csv")
+val rm = r.map(x=>(x.split(",")(0), x.split(",")(1)))
+
+val r_grp = rm.groupByKey
+
+Array[(String, Iterable[String])] = Array((2,CompactBuffer(Bhupesh, Amit, Ratan, Dinesh, Sheela)), (1,CompactBuffer(Lokesh, Pavan, Tejas, Kumar, Venkat)))
+
+r_grp.foreach(println(_))
+(1,CompactBuffer(Lokesh, Pavan, Tejas, Kumar, Venkat))
+(2,CompactBuffer(Bhupesh, Amit, Ratan, Dinesh, Sheela))
+
+val com = r_grp.map(x => (x._1, x._2.toList.sortBy(x => x)))
+com.foreach(println)
+
+
+//The following was obsolete and horrible
+val swapped = rm.map(item=>item.swap)
+
+val com= rm.combineByKey(List(_), (x:List[String], y:String) =>y::x,(x:List[String], y:List[String])=>x:::y)
+
+Array[(String, List[String])] = Array((2,List(Dinesh, Ratan, Amit, Bhupesh, Sheela)), (1,List(Lokesh, Venkat, Kumar, Tejas, Pavan)))
+
+com.repartition(1).saveAsTextFile("data96/s43")
+
+//The above was obsolete and horrible
+
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat data96/s43/*
+(2,List(Dinesh, Ratan, Amit, Bhupesh, Sheela))
+(1,List(Lokesh, Venkat, Kumar, Tejas, Pavan))
+
+
+================= s44: regex, useful but to skip ===================
+Christopher|Jan 11, 2015|5
+Kapil|11 Jan, 2015|5
+Thomas|6/17/2014|5
+John|22-08-2013|5
+Mithun|2013|5
+Jitendra||5
+
+vim feedback.txt
+
+//11 Jan,2015
+val reg1 = """"(\d+)\s(\w{3})(,)\s(\d{4})"""".r
+//6/18/2013
+val reg2 = """"(\d+)(V)(\d+)(V)(\d{4})"""".r
+//22-08-2019
+val reg3 = """"(\d+)(-)(\d+)(-)(\d{4})"""".r 
+//Jan 23,2018
+val reg4 = """"(\w{3})\s(\d+)(,)\s(\d{4})"""".r
+
+val feedbackRDD = sc.textFile("data96/feedback.txt")
+
+val feedbackSplit = feedbackRDD.map(line=>line.split('|'))
+
+val validRecord = feedbackSplit.filter(x=>(
+reg1.pattern.matcher(x(1).trim).matches|
+reg2.pattern.matcher(x(1).trim).matches|
+reg3.pattern.matcher(x(1).trim).matches|
+reg4.pattern.matcher(x(1).trim).matches
+))
+
+val invalidRecord = feedbackSplit.filter(y=>!(
+reg1.pattern.matcher(y(1).trim).matches|
+reg2.pattern.matcher(y(1).trim).matches|
+reg3.pattern.matcher(y(1).trim).matches|
+reg4.pattern.matcher(y(1).trim).matches
+))
+
+val invalidRecord1 = feedbackSplit.subtract(validRecord)
+
+
+val valid = validRecord.map(e=> (e(0), e(1), e(2)))
+
+val invalid = invalidRecord1.map(e=> (e(0), e(1), e(2)))
+
+valid.repartition(1).saveAsTextFile("data96/valid.txt")
+invalid.repartition(1).saveAsTextFile("data96/invalid.txt")
+
+
+
+=========================s45: skipped=========================
+
+
+
+======================== s46, pending on discussion =========================
+spark16/file1.txt
+1,9,5
+2,7,4
+3,8,3
+
+spark16/file2.txt
+1,g,h
+2,i,j
+3,k,l
+
+after joined, we have:
+(1, ((9,5),(g,h)) )
+(2, ((7,4),(i,j)) )
+(3, ((8,3),(k,l)) )
+
+val file1 = sc.textFile("data96/file1.txt").map(x=>(x.split(",")(0).toInt, (x.split(",")(1), x.split(",")(2).toInt)))
+val file2 = sc.textFile("data96/file2.txt").map(x=>(x.split(",")(0).toInt, (x.split(",")(1), x.split(",")(2))))
+
+val joined = file1.join(file2)
+val sorted = joined.sortByKey()
+
+val first = sorted.first
+res4: (Int, ((String, Int), (String, String))) = (1,((9,5),(g,h)))
+
+
+scala> joined.reduce(_._2._1._2 + _._2._1._2)
+<console>:34: error: type mismatch;
+ found   : Int
+ required: (Int, ((String, Int), (String, String)))
+              joined.reduce(_._2._1._2 + _._2._1._2)
+
+
+=========================s47=========================
+vim s47.txt
+3070811,1963,1096,,"US","CA",,1,
+3022811,1963,1096,,"US","CA",,1,56
+3033811,1963,1096,,"US","CA",,1,23
+
+val f = sc.textFile("data96/s47.txt")
+val fm = f.map(x=>
+( x.split(",")(0),
+  x.split(",")(1),
+  x.split(",")(2),
+  x.split(",")(3),
+  x.split(",")(4),
+  x.split(",")(5),
+  x.split(",")(6)
+)
+
+val fm1 = f.map(x=>x.split(",", -1))
+fm1.map(x=>x.map(x=>{if(x.isEMpty) 0 else x})).collect
+
+=========================s48=========================
+val au1 = sc.parallelize(List ())
+val au2 = sc.parallelize(List ())
+au1.union(au2)
+
+
+=========================s49=========================
+
+val d = sc.textFile("data96/sales.txt")
+
+val dm = d.map(x=>(x.split(",")(0), 
+x.split(",")(1), 
+x.split(",")(2).toInt, 
+x.split(",")(3).trim
+))
+
+val df = dm.toDF("dep", "des", "cost", "state")
+
+df.registerTempTable("cost")
+
+val q = "select dep, des, state, count(1), sum(cost) from cost where dep = 'Sales' group by state, dep, des "
+val r = sqlContext.sql(q).where("des = 'Lead'")
+
+r.show
+
+
+
+======================== s50: skipped =========================
+
+=========================s51: skipped =========================
+
+=========================s52=========================
+1:50-1:58
+val tech = sc.textFile("data96/tech.txt").map(x=>
+((x.split(",")(0), x.split(",")(1)), x.split(",")(2))
+)
+
+val sal = sc.textFile("data96/sal.txt").map(x=>
+((x.split(",")(0), x.split(",")(1)), x.split(",")(2).toInt)
+)
+
+
+val r = tech.join(sal)
+val s = r.map(x=>(x._1._1, x._1._2, x._2._1, x._2._2))
+
+======*******************s53: From List to RDD =========================
+
+1:59
+
+val r = sc.parallelize(List( ("Deeapak" , "male", 4000), ("Deepak" , "male", 2000), ("Deepika" , "female", 2000),("Deepak" , "female", 2000), ("Deepak" , "male", 1000) , ("Neeta" , "female", 2000))
+)
+
+val byKey = r.map({case (name, sex, cost) => (name, sex) -> cost})
+res29: ((String, String), Int) = ((Deeapak,male),4000)
+
+val gbk = byKey.groupByKey
+
+val res = gbk.map({case((id1, id2), v) => (id1,id2,v.sum)})
+
+
+res32: Array[(String, String, Int)] = Array(
+(Deepak,female,2000), 
+(Deepak,male,3000), 
+(Deepika,female,2000), 
+(Deeapak,male,4000), 
+(Neeta,female,2000)
+)
+
+
+========================= s54: skipped =========================
+
+val a= sc.parallelize(List(1,2,3,4,5,6),2)
+
+de myfunc(index: Int, iter: Iterator[(Int)]): Iterator[String] = {
+	iter.toList.map(x=>"[partID:" + index + ", val: " + x + "]").iterator
+}
+
+a.mapPartitionsWithIndex(myfunc).collect
+
+=========================s55: skipped  =======================
+
+=========================s56: skipped  =========================
+val keysWithValuesList = Array("foo=A", "foo=A", "foo=A", "foo=A", "foo=B", "bar=C", "bar=D", "bar=D")
+
+val d = sc.parallelize(keysWithValuesList)
+val dm = d.map(x=>(x.split("=")(0), x.split("=")(1)))
+
+
+val addToCounts = (n:Int, v:String) => n+1
+val sumPartitionCounts = (p1:Int, p2:Int) => p1+p2
+
+
+val i = 0;
+val cbk = dm.aggregateByKey(i)(addToCounts, sumPartitionCounts)
+
+
+
+=========================s57: on hold  =========================
+
+=========================s58: skipped=========================
+
+val a = sc.parallelize(List(1,2,1,3),1)
+Array[Int] = Array(1, 2, 1, 3)
+
+val b = a.map((_,"b"))
+Array[(Int, String)] = Array((1,b), (2,b), (1,b), (3,b))
+
+val c = a.map((_, "c"))
+Array[(Int, String)] = Array((1,c), (2,c), (1,c), (3,c))
+
+b.cogroup(c).collect
+
+val d = sc.parallelize(c)
+=========================s59=========================
+val b = sc.parallelize(List(1,2,3,4,5,6,7,8,2,4,2,1,1,1,1,1))
+b.countByValue
+ scala.collection.Map[Int,Long] = Map(5 -> 1, 1 -> 6, 6 -> 1, 2 -> 3, 7 -> 1, 3 -> 1, 8 -> 1, 4 -> 2)
+
+
+=========================s60=========================
+
+val a = sc.parallelize(1 to 10, 3)
+val b = a.filter(_%2==0)
+b.collect
+
+val c = a.filter(_<4)
+c.collect
+
+
+
+=========================s61=========================
+val a = sc.parallelize(List("dog", "tiger", "lion", "cat", "kangaroo", "eagle"))
+val b = a.map(x=>(x.length, x))
+
+b.foldByKey("")(_+_).collect
+
+
+
+=========================s62=========================
+
+=========================s63=========================
+val a = sc.parallelize(1 to 100, 10)
+
+a.glom.collect
+
+=========================s64=========================
+
+=========================s65=========================
+val a = sc.parallelize(List("dog", "tiger", "lion", "cat", "kangaroo", "eagle"),2)
+val b = a.keyBy(_.length)
+res21: Array[(Int, String)] = Array((3,dog), (5,tiger), (4,lion), (3,cat), (8,kangaroo), (5,eagle))
+
+b.groupByKey.collect
+res22: Array[(Int, Iterable[String])] = Array((4,CompactBuffer(lion)), (8,CompactBuffer(kangaroo)), (3,CompactBuffer(dog, cat)), (5,CompactBuffer(tiger, eagle)))
+
+=========================s66=========================
+val x = sc.parallelize(1 to 20)
+val y = sc.parallelize(10 to 30)
+
+scala> x.intersection(y).collect
+res25: Array[Int] = Array(16, 17, 18, 19, 20, 10, 11, 12, 13, 14, 15)
+
+=========================s67=========================
+
+=========================s68=========================
+
+=========================s69=========================
+val a = sc.parallelize(List("dog", "tiger", "lion", "cat", "kangaroo", "eagle"),2)
+val b = a.map(x=>(x.length, x))
+b.map(x=>(x._1, ("x" + x._2) + "v")).collect
+
+=========================s70=========================
+val a = sc.parallelize(List("dog", "tiger", "lion", "cat", "kangaroo", "eagle"),2)
+val b = a.map(x=>(x.length, x))
+
+b.reduceByKey(_+_)
+
+=========================s71=========================
+
+=========================s72=========================
+
+val a = sc.parallelize(List("dog", "cat", "owl", "ant"),2 )
+val b = sc.parallelize(1 to a.count.toInt,2)
+res31: Array[Int] = Array(1, 2, 3, 4)
+
+val c = a.zip(b)
+res28: Array[(String, Int)] = Array((dog,1), (cat,2), (owl,3), (ant,4))
+
+c.sortByKey(false).collect
+Array[(String, Int)] = Array((owl,3), (dog,1), (cat,2), (ant,4))
+
+
+
+=========================s73=========================
+
+=========================s74=========================
+
+=========================s75=========================
+
+=========================s76=========================
+
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=customers \
+--warehouse-dir=/apps/hive/warehouse/paslechoix.db
+
+
+Note:
+
+The sequence is: ROW FORMAT, and then STORED AS
+
+create external table Customers(
+  customer_id int,
+  customer_fname varchar(45),
+  customer_lname varchar(45),
+  customer_email varchar(45),
+  customer_password varchar(45),
+  customer_street varchar(255),
+  customer_city varchar(45),
+  customer_state varchar(45),
+  customer_zipcode varchar(45)
+)
+row format delimited fields terminated by ','
+stored as textfile
+location '/apps/hive/warehouse/paslechoix.db/customers';
+
+
+Create External Table Customers1 
+(
+  customer_id int,
+  customer_fname varchar(45),
+  customer_lname varchar(45),
+  customer_email varchar(45),
+  customer_password varchar(45),
+  customer_street varchar(255),
+  customer_city varchar(45),
+  customer_state varchar(45),
+  customer_zipcode varchar(45)
+)
+ROW FORMAT DELIMITED fields terminated by ','
+STORED AS textfile
+LOCATION '/apps/hive/warehouse/paslechoix.db/customers'; 
+
+
+There must be indicated FIELDS TERMINATED BY, otherwise table will end up NULL
+
+The following Customers2 is wrongly created with all fields are Null
+
+Create External Table Customers2
+(
+  customer_id int,
+  customer_fname varchar(45),
+  customer_lname varchar(45),
+  customer_email varchar(45),
+  customer_password varchar(45),
+  customer_street varchar(255),
+  customer_city varchar(45),
+  customer_state varchar(45),
+  customer_zipcode varchar(45)
+)
+ROW FORMAT DELIMITED
+STORED AS textfile
+LOCATION '/apps/hive/warehouse/paslechoix.db/customers'; 
+
+ORDERS:
+
+data preparation:
+
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=orders \
+--target-dir="/apps/hive/warehouse/paslechoix.db/orders"
+
+hive table creation:
+
+NOTE: for datetime, use string in Hive
+for int(11), remove (11)
+
+
+
+create external table orders
+(
+  order_id int,
+  order_date date,
+  order_customer_id int,
+  order_status varchar(45) 
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION  "/apps/hive/warehouse/paslechoix.db/orders"
+
+create external table orders1
+(
+  order_id int,
+  order_date string,
+  order_customer_id int,
+  order_status varchar(45) 
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION  "/apps/hive/warehouse/paslechoix.db/orders"
+
+
+other locations not working when creating hive table:
+
+
+
+It won't work because path is not recognized:
+"./orders0323"
+hdfs://nn01.itversity.com:8020./orders0323
+
+"/orders0323"
+Permission denied
+
+"orders0323"
+hdfs://nn01.itversity.com:8020./orders0323
+
+
+sqoop import \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=orders \
+--target-dir="/orders0323"
+
+
+hdfs://nn01.itversity.com:8020/user/paslechoix/orders0323
+
+Failed below:
+
+create external table orders2
+(
+order_id int,
+  order_date string,
+  order_customer_id int,
+  order_status varchar(45) 
+)
+row format delimited fields terminated by ','
+stored as textfile
+location "orders0323"
+
+
+
+=========================s77=========================
+
+=========================s78=========================
+
+=========================s79=========================
+spark-shell --master yarn --packages com.databricks:spark-avro_2.10:2.0.1
+
+spark-shell --master yarn --packages com.databricks:spark-avro_2.10:2.0.1
+
+
+spark-shell --master yarn --packages com.databricks:spark-avro_2.10:2.0.1
