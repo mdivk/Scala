@@ -1,0 +1,70 @@
+format comparison
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=orders \
+--as-parquetfile \
+--target-dir="retail03221/parq"
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=orders \
+--as-sequencefile \
+--target-dir="retail03221/seq"
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=orders \
+--as-avrodatafile \
+--target-dir="retail03221/avro"
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=orders \
+--target-dir="retail03221/text"
+
+
+68883 records:
+-rw-r--r--   3 paslechoix hdfs    1779793 2018-03-23 22:32 retail03221/avro/part-m-00000.avro
+-rw-r--r--   3 paslechoix hdfs     488045 2018-03-23 22:20 retail03221/parq/5c008fb2-ebb3-46d4-bab3-580cce72611c.parquet
+-rw-r--r--   3 paslechoix hdfs    3520274 2018-03-23 22:24 retail03221/seq/part-m-00000
+-rw-r--r--   3 paslechoix hdfs    2999944 2018-03-23 22:30 retail03221/text/part-m-00000
+
+smallest size: parquet
+
+reading:
+
+text: 
+sc.textFile("retail03221/text/part-m-00000").count
+18/03/23 22:52:47 
+18/03/23 22:52:47 
+
+avro:
+spark-shell --master yarn --packages com.databricks:spark-avro_2.10:2.0.1
+import com.databricks.spark.avro._
+sqlContext.read.avro("retail03221/avro/part-m-00000.avro").count
+
+18/03/23 22:50:12
+18/03/23 22:50:18
+
+seq: failed
+
+parquet:
+sqlContext.read.parquet("retail03221/parq/5c008fb2-ebb3-46d4-bab3-580cce72611c.parquet").count
+
+18/03/23 22:51:50 
+18/03/23 22:51:53 
+
+Fastest reading: text
+
+
+
+
