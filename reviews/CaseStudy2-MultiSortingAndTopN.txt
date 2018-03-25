@@ -54,6 +54,7 @@ res10: (Int, String, String, Float) = (49,Diamondback Adult Sorrento Mountain Bi
 2. Top 5 priced product from each category
 
 2.1 sort by category
+--take top 3 from sorted groups
 
 val sortbycat = joinedm.map(x=>(x._1, x)).groupByKey().sortBy(_._2._4).flatMap(_._2.take(3)) 
 
