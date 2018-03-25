@@ -29,11 +29,9 @@ Requirement (Using RDD only):
 
 1. read data into RDDs
 
+--create the two rdds for products and categories:
 --Before moving forward, check from mysql to see if there is null price records, convert the records' price to 0
 {if(x(4)=="" || x(4) != null) 0 else x(4).toFloat}
-
-
-val prr = sc.textFile("retail/products").filter(x=>x.split(",")(4) ==null)
 
 val pr = sc.textFile("retail/products").map(_.split(",")).map(x=>(x(1).toInt, (x(0).toInt, x(1).toInt, x(2), x(3), 
 {if(x(4)=="" || x(4)== null) 0 else x(4).toFloat}
@@ -45,21 +43,17 @@ val joined = pr.join(cr)
 
 res0: (Int, ((Int, Int, String, String, Float, String), (Int, String))) = (4,((49,4,Diamondback Adult Sorrento Mountain Bike 2014,"",0.0,http://images.acmesports.sports/Diamondback+Adult+Sorrento+Mountain+Bike+2014),(2,Basketball)))
 
-requirement: product id, product name, category, price
+Output requirement: product id, product name, category, price
+Grouped by category in asc, sorted in price desc in each category 
 
 scala>
 
 val joinedm = joined.map(x=>(x._1, x._2._1._3, x._2._2._2, x._2._1._5))
 res10: (Int, String, String, Float) = (49,Diamondback Adult Sorrento Mountain Bike 2014,Basketball,0.0)
 
-
-
-
 2. Top 5 priced product from each category
 
 2.1 sort by category
-
-//val sortbycat=joinedm.sortBy(_._4).groupBy(_._1).flatMap(_._2.take(3)).map(mr=>(mr._1,mr)).sortByKey()
 
 val sortbycat = joinedm.map(x=>(x._1, x)).groupByKey().sortBy(_._2._4).flatMap(_._2.take(3)) 
 
@@ -83,13 +77,3 @@ sortbycat.take(200).foreach(println)
 (7,(7,Nike Women's Pro Victory Compression Bra,Hockey,21.99))
 (7,(7,Nike Women's Pro Hyperwarm Fitted Tights,Hockey,24.97))
 (7,(7,Nike Women's Pro Core 3" Compression Shorts,Hockey,28.0))
-
-
-
-
-2.2 sort by price within each category
-
-
-
-2.3 get first 5 in the sorted by price within each category
-
