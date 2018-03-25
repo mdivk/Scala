@@ -31,7 +31,9 @@ result.where("p_order<=3").show(200)
 
 or in one line as below:
 
-scala> sqlContext.sql("select  product_id ,  row_number() over(partition by product_category_id  order by product_price  desc) as  p_order ,product_price, product_category_id from products").where("p_order<=3").show(200)
+scala> sqlContext.sql("select  product_id , product_price, product_category_id  
+row_number() over(partition by product_category_id  order by product_price  desc) as  p_order from products")
+.where("p_order<=3").show(200)
 
 +----------+-------------------+-------------+-------+
 |product_id|product_category_id|product_price|p_order|
