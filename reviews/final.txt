@@ -1,2 +1,55 @@
 final
 
+No compression:
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=orders \
+--target-dir="orders0322-text" 
+
+
+With Compression:
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com/retail_db \
+--username=retail_user \
+--password=itversity \
+--table=orders \
+--target-dir="orders0322-gzipped" \
+--compress \
+--compression-codec org.apache.hadoop.io.compress.GzipCodec
+
+Export
+
+1. create table first, can be adopted from show create table xxxx, remove all the quotes added to fields
+
+CREATE TABLE orders0322 (
+  order_id int(11) NOT NULL AUTO_INCREMENT,
+  order_date datetime NOT NULL,
+  order_customer_id int(11) NOT NULL,
+  order_status varchar(45) NOT NULL,
+  PRIMARY KEY (order_id)
+) 
+
+sqoop export \
+--connect jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=orders0322 \
+--export-dir="orders0322-text" 
+
+
+wordcount:
+val s = sc.textFile("data/article.txt")
+scala> s.flatMap(_.split(" ")).map(a=>(a,1)).reduceByKey((a,b)=>(a+b)).map(r=>(r._2, r._1)).sortByKey(false).take(10).foreach(println)
+
+
+Read text
+
+text read/save is in RDD
+
+with compression:
+
+sc.textFile("")
