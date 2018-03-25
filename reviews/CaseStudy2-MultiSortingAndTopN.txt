@@ -1,0 +1,95 @@
+CaseStudy2
+
+database: retail_export;
+table: 
+products
+| products | CREATE TABLE `products` (
+  `product_id` int(11) DEFAULT NULL,
+  `product_category_id` int(11) DEFAULT NULL,
+  `product_name` varchar(45) DEFAULT NULL,
+  `product_description` varchar(255) DEFAULT NULL,
+  `product_price` float DEFAULT NULL,
+  `product_image` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 |
+
+
+categories
+| categories | CREATE TABLE `categories` (
+  `category_id` int(11) DEFAULT NULL,
+  `category_department_id` int(11) DEFAULT NULL,
+  `category_name` varchar(45) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 |
+
+
+Output format: .csv
+product id, product name, category, price
+
+Requirement (Using RDD only):
+1. Sorted by category (asc) and then price (desc)
+
+1. read data into RDDs
+
+--Before moving forward, check from mysql to see if there is null price records, convert the records' price to 0
+{if(x(4)=="" || x(4) != null) 0 else x(4).toFloat}
+
+
+val prr = sc.textFile("retail/products").filter(x=>x.split(",")(4) ==null)
+
+val pr = sc.textFile("retail/products").map(_.split(",")).map(x=>(x(1).toInt, (x(0).toInt, x(1).toInt, x(2), x(3), 
+{if(x(4)=="" || x(4)== null) 0 else x(4).toFloat}
+, x(5))))
+
+val cr = sc.textFile("retail/categories").map(_.split(",")).map(x=>(x(0).toInt, (x(1).toInt, x(2))))
+
+val joined = pr.join(cr)
+
+res0: (Int, ((Int, Int, String, String, Float, String), (Int, String))) = (4,((49,4,Diamondback Adult Sorrento Mountain Bike 2014,"",0.0,http://images.acmesports.sports/Diamondback+Adult+Sorrento+Mountain+Bike+2014),(2,Basketball)))
+
+requirement: product id, product name, category, price
+
+scala>
+
+val joinedm = joined.map(x=>(x._1, x._2._1._3, x._2._2._2, x._2._1._5))
+res10: (Int, String, String, Float) = (49,Diamondback Adult Sorrento Mountain Bike 2014,Basketball,0.0)
+
+
+
+
+2. Top 5 priced product from each category
+
+2.1 sort by category
+
+//val sortbycat=joinedm.sortBy(_._4).groupBy(_._1).flatMap(_._2.take(3)).map(mr=>(mr._1,mr)).sortByKey()
+
+val sortbycat = joinedm.map(x=>(x._1, x)).groupByKey().sortBy(_._2._4).flatMap(_._2.take(3)) 
+
+sortbycat.take(200).foreach(println)
+
+(2,(2,Reebok Men's Full Zip Training Jacket,Soccer,29.97))
+(2,(2,Kijaro Dual Lock Chair,Soccer,29.99))
+(2,(2,Nike Adult Vapor Jet 3.0 Receiver Gloves,Soccer,50.0))
+(3,(3,Nike Men's Hypervenom Phantom Premium FG Socc,Baseball & Softball,0.0))
+(3,(3,Nike Women's Pro Victory Compression Bra,Baseball & Softball,21.99))
+(3,(3,Nike Women's Pro Hyperwarm Fitted Tights,Baseball & Softball,24.97))
+(4,(4,Nike Women's Pro Victory Compression Bra,Basketball,21.99))
+(4,(4,Nike Women's Pro Core 3" Compression Shorts,Basketball,28.0))
+(4,(4,adidas Brazuca 2014 Top Glider Soccer Ball,Basketball,29.99))
+(5,(5,Nike Elite Crew Basketball Sock,Lacrosse,14.0))
+(5,(5,Nike Women's Pro Victory Compression Bra,Lacrosse,21.99))
+(5,(5,Nike Women's Pro Hyperwarm Fitted Tights,Lacrosse,24.97))
+(6,(6,Nike Elite Crew Basketball Sock,Tennis & Racquet,14.0))
+(6,(6,Nike Hyper Elite Crew Basketball Sock,Tennis & Racquet,18.0))
+(6,(6,Nike Hyper Elite Crew Basketball Sock,Tennis & Racquet,18.0))
+(7,(7,Nike Women's Pro Victory Compression Bra,Hockey,21.99))
+(7,(7,Nike Women's Pro Hyperwarm Fitted Tights,Hockey,24.97))
+(7,(7,Nike Women's Pro Core 3" Compression Shorts,Hockey,28.0))
+
+
+
+
+2.2 sort by price within each category
+
+
+
+2.3 get first 5 in the sorted by price within each category
+

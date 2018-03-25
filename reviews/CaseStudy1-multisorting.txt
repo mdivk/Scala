@@ -1,0 +1,260 @@
+CaseStudy1
+
+For the given data, get the stats and output the ordered grouped rsult, import/export data between Local, HDFS, MySQL and Hive
+
+
+vim prop1
+name,gender,pet,num
+alex,boy,goat,32
+alex,boy,dog,23
+vicky,girl,cat,13
+chris,girl,lamb,23
+chris,girl,cat,29
+felix,boy,goat,12
+felix,boy,snake,3
+richie,boy,dog,2
+jen,girl,tiger,12
+jen,girl,cat 18
+
+
+[paslechoix@gw03 ~]$ cat prop1.csv
+alex,boy,goat,32
+alex,boy,dog,23
+vicky,girl,cat,13
+chris,girl,lamb,23
+chris,girl,cat,29
+felix,boy,goat,12
+felix,boy,snake,3
+richie,boy,dog,2
+jen,girl,tiger,12
+jen,girl,cat,18
+[paslechoix@gw03 ~]$
+
+
+hdfs dfs -put prop1.csv data96
+
+val prop1 = sc.textFile("data96/prop1.csv")
+
+1. get the total pet number for boy/girl
+
+val q1 = prop1.map(x=>x.split(",")(3).toInt)
+q1.reduce(_+_)
+167
+
+2. get the total dog number for boy/girl
+2.1 get the total dog number for boy
+val q21 = prop1.map(x=>(x.split(",")(1), x.split(",")(3).toInt)).filter(r=>r._1 =="boy").map(x=>x._2).reduce(_+_)
+
+
+2.2 get the total dog number for girl
+val q22 = prop1.map(x=>(x.split(",")(1), x.split(",")(3).toInt)).filter(r=>r._1 =="girl").map(x=>x._2).reduce(_+_)
+95
+
+3. get the max pet number
+val q3 = prop1.map(x=>(x.split(",")(3).toInt, x)).sortByKey(false)
+q3.first._1
+32
+
+4. sort by gender by pet num in desc
+4.1 group by name
+val q41 = prop1.map(x=>(x.split(",")(0), (x.split(",")(3).toInt))).groupByKey
+(alex,CompactBuffer(32, 23))
+(felix,CompactBuffer(12, 3))
+(richie,CompactBuffer(2))
+(vicky,CompactBuffer(13))
+(jen,CompactBuffer(12, 18))
+(chris,CompactBuffer(23, 29))
+
+val q42 = prop1.map(x=>(x.split(",")(0), (x.split(",")(3).toInt))).reduceByKey(_+_).sortBy(-_._2)
+q42.take(10).foreach(println)
+(alex,55)
+(chris,52)
+(jen,30)
+(felix,15)
+(vicky,13)
+(richie,2)
+
+????????????????4.2 sort by gender first, and then name in order of desc num???????????????
+val q43 = prop1.map(x=>(x.split(",")(0), (x.split(",")(1), x.split(",")(3).toInt)))
+q43.take(10).foreach(println)
+(alex,55)
+(chris,52)
+(jen,30)
+(felix,15)
+(vicky,13)
+(richie,2)
+
+val m = prop1.map(x=>(x.split(",")(1), (x.split(",")(0), x.split(",")(2), x.split(",")(3).toInt)))
+
+val n = m.sortBy(_._1)
+
+n.take(10).foreach(println)
+
+(boy,(felix,goat,12))
+(boy,(felix,snake,3))
+(boy,(richie,dog,2))
+(boy,(alex,goat,32))
+(boy,(alex,dog,23))
+(girl,(jen,tiger,12))
+(girl,(jen,cat,18))
+(girl,(vicky,cat,13))
+(girl,(chris,lamb,23))
+(girl,(chris,cat,29))
+
+val boy = n.filter(x=>x._1=="boy")
+
+val girl = n.filter(x=>x._1=="girl")
+
+
+val result = boy.sortBy(-_._2._3).union(girl.sortBy(-_._2._3))
+
+val final_result = result.map(x=>x._1 + ',' + x._2._1 +',' + x._2._2 + ','+ x._2._3)
+boy,alex,goat,32
+boy,alex,dog,23
+boy,felix,goat,12
+boy,felix,snake,3
+boy,richie,dog,2
+girl,chris,cat,29
+girl,chris,lamb,23
+girl,jen,cat,18
+girl,vicky,cat,13
+girl,jen,tiger,12
+
+
+final_result.saveAsTextFile("data96/final_result.csv")
+
+hdfs dfs -cat data96/final_result.csv/*
+
+[paslechoix@gw03 ~]$ hdfs dfs -cat data96/final_result.csv/*
+boy,alex,goat,32
+boy,alex,dog,23
+boy,felix,goat,12
+boy,felix,snake,3
+boy,richie,dog,2
+girl,chris,cat,29
+girl,chris,lamb,23
+girl,jen,cat,18
+girl,vicky,cat,13
+girl,jen,tiger,12
+[paslechoix@gw03 ~]$
+
+
+5. save back to mysql
+5.1 create a new sql
+
+CREATE TABLE prop (
+  gender varchar(5) NOT NULL,
+  kid_name varchar(10) NOT NULL,
+  pet varchar(20) NOT NULL,
+  pet_num int NOT NULL
+) 
+
+sqoop export
+
+sqoop export -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=prop \
+--export-dir="data96/final_result.csv" \
+--fields-terminated-by ',' 
+
+mysql> select * from prop;
++--------+----------+-------+---------+
+| gender | kid_name | pet   | pet_num |
++--------+----------+-------+---------+
+| boy    | alex     | goat  |      32 |
+| boy    | alex     | dog   |      23 |
+| boy    | felix    | goat  |      12 |
+| boy    | felix    | snake |       3 |
+| boy    | richie   | dog   |       2 |
+| girl   | chris    | cat   |      29 |
+| girl   | chris    | lamb  |      23 |
+| girl   | jen      | cat   |      18 |
+| girl   | vicky    | cat   |      13 |
+| girl   | jen      | tiger |      12 |
++--------+----------+-------+---------+
+10 rows in set (0.00 sec)
+
+
+6. save back to hive
+sqoop import hive import
+
+sqoop import -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=prop \
+--hive-import \
+--create-hive-table \
+--fields-terminated-by ','
+
+18/03/24 16:09:32 INFO mapreduce.ImportJobBase: Transferred 175 bytes in 27.756 seconds (6.3049 bytes/sec)
+18/03/24 16:09:32 INFO mapreduce.ImportJobBase: Retrieved 10 records.
+18/03/24 16:09:32 INFO mapreduce.ImportJobBase: Publishing Hive/Hcat import job data to Listeners
+18/03/24 16:09:32 INFO manager.SqlManager: Executing SQL statement: SELECT t.* FROM `prop` AS t LIMIT 1
+18/03/24 16:09:32 INFO hive.HiveImport: Loading uploaded data into Hive
+
+Logging initialized using configuration in jar:file:/usr/hdp/2.5.0.0-1245/hive/lib/hive-common-1.2.1000.2.5.0.0-1245.jar!/hive-log4j.properties
+OK
+Time taken: 1.948 seconds
+Loading data to table default.prop
+Table default.prop stats: [numFiles=1, numRows=0, totalSize=175, rawDataSize=0]
+OK
+Time taken: 0.495 seconds
+
+
+hive (default)> select * From prop;
+OK
+boy     alex    goat    32
+boy     alex    dog     23
+boy     felix   goat    12
+boy     felix   snake   3
+boy     richie  dog     2
+girl    chris   cat     29
+girl    chris   lamb    23
+girl    jen     cat     18
+girl    vicky   cat     13
+girl    jen     tiger   12
+Time taken: 3.13 seconds, Fetched: 10 row(s)
+hive (default)>
+
+7. import back to hdfs from mysql
+
+As sqoop cannot create table on mysql, hence a new table is pre-created
+
+CREATE TABLE prop_new LIKE prop;
+
+sqoop export -m 1 \
+--connect=jdbc:mysql://ms.itversity.com/retail_export \
+--username=retail_user \
+--password=itversity \
+--table=prop_new \
+--export-dir="data96/final_result.csv" \
+--fields-terminated-by ','
+
+
+18/03/24 16:17:12 INFO mapreduce.ExportJobBase: Transferred 643 bytes in 38.4868 seconds (16.707 bytes/sec)
+18/03/24 16:17:12 INFO mapreduce.ExportJobBase: Exported 10 records.
+[paslechoix@gw03 ~]$
+
+
+
+mysql> select * From prop_new;
++--------+----------+-------+---------+
+| gender | kid_name | pet   | pet_num |
++--------+----------+-------+---------+
+| boy    | alex     | goat  |      32 |
+| boy    | alex     | dog   |      23 |
+| boy    | felix    | goat  |      12 |
+| boy    | felix    | snake |       3 |
+| boy    | richie   | dog   |       2 |
+| girl   | chris    | cat   |      29 |
+| girl   | chris    | lamb  |      23 |
+| girl   | jen      | cat   |      18 |
+| girl   | vicky    | cat   |      13 |
+| girl   | jen      | tiger |      12 |
++--------+----------+-------+---------+
+10 rows in set (0.00 sec)
+
+mysql>
