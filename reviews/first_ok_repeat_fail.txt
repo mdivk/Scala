@@ -1,0 +1,113 @@
+
+techie.txt
+first_name,last_name,address,country,city,state,pincode,home,office,email,website
+Binita,Jain,Kisan Rd,IN,Bikaner,RJ,3438068,03123445,155152322331,Binita.Jain@Gmail.Com,http://welynx.ca
+Radesh,Srini,Firozabad Gali,IN,Ahmedabad,RJ,63453,876182364,1324556233,Rakesh.Srini@welynx.ca,http://wdst.com
+
+hdfs dfs -put techie.txt data96
+copied from hive realtime:
+
+hive (default)>
+              > create table techie(
+              > firstname varchar(64),
+              > lastname varchar(64),
+              > address string,
+              > city varchar(64),
+              > pincode string,
+              > home varchar(64),
+              > office string,
+              > email string,
+              > website string
+              > )
+              > partitioned by (country varchar(64), state varchar(64))
+              > row format delimited
+              > fields terminated by ','
+              > stored as textfile;
+OK
+Time taken: 0.208 seconds
+hive (default)> desc formatted techie;
+OK
+# col_name              data_type               comment
+
+firstname               varchar(64)
+lastname                varchar(64)
+address                 string
+city                    varchar(64)
+pincode                 string
+home                    varchar(64)
+office                  string
+email                   string
+website                 string
+
+# Partition Information
+# col_name              data_type               comment
+
+country                 varchar(64)
+state                   varchar(64)
+
+# Detailed Table Information
+Database:               default
+Owner:                  paslechoix
+CreateTime:             Fri Mar 23 23:24:16 EDT 2018
+LastAccessTime:         UNKNOWN
+Protect Mode:           None
+Retention:              0
+Location:               hdfs://nn01.itversity.com:8020/apps/hive/warehouse/techie
+Table Type:             MANAGED_TABLE
+Table Parameters:
+        transient_lastDdlTime   1521861856
+
+# Storage Information
+SerDe Library:          org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+InputFormat:            org.apache.hadoop.mapred.TextInputFormat
+OutputFormat:           org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+Compressed:             No
+Num Buckets:            -1
+Bucket Columns:         []
+Sort Columns:           []
+Storage Desc Params:
+        field.delim             ,
+        serialization.format    ,
+Time taken: 0.068 seconds, Fetched: 41 row(s)
+hive (default)> load data inpath "data96/techie.txt"
+              > into table techie
+              > partition(country='US',state='CA');
+Loading data to table default.techie partition (country=US, state=CA)
+Partition default.techie{country=US, state=CA} stats: [numFiles=1, numRows=0, totalSize=214, rawDataSize=0]
+OK
+Time taken: 0.993 seconds
+hive (default)> select * from techie;
+OK
+Binita  Jain    Kisan Rd        IN      Bikaner RJ      3438068 03123445        155152322331    US      CA
+Radesh  Srini   Firozabad Gali  IN      Ahmedabad       RJ      63453   876182364       1324556233      US  CA
+Time taken: 0.299 seconds, Fetched: 2 row(s)
+
+
+?????????WHY THE PROCEDURE CANNOT BE REPRODUCED?????????
+
+hive (default)> drop table techie;
+OK
+Time taken: 0.287 seconds
+
+
+hive (default)> create table techie(
+              > firstname varchar(64),
+              > lastname varchar(64),
+              > address string,
+              > city varchar(64),
+              > pincode string,
+              > home varchar(64),
+              > office string,
+              > email string,
+              > website string
+              > )
+              > partitioned by (country varchar(64), state varchar(64))
+              > row format delimited
+              > fields terminated by ','
+              > stored as textfile;
+OK
+Time taken: 0.224 seconds
+hive (default)> load data inpath "data96/techie.txt"
+              > into table techie
+              > partition(country='US',state='CA');
+FAILED: SemanticException Line 1:17 Invalid path '"data96/techie.txt"': No files matching path hdfs://nn01.itversity.com:8020/user/paslechoix/data96/techie.txt
