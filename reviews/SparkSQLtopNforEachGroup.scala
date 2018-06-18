@@ -1,4 +1,6 @@
 Top n records from each group - Spark SQL solution
+row_number() over(partition by product_category_id  order by product_price  desc) .where("p_order<=3")
+sqlContext.sql("select product_id, row_number() over(partition by product_category_id order by product_price desc) as p_order, product_price, product_category_id from products").where("p_order<=3").show(200)
 
 product_id int(11) NOT NULL AUTO_INCREMENT, 
 product_category_id int(11) NOT NULL,
