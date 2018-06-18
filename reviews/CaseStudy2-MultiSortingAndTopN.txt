@@ -33,11 +33,13 @@ Requirement (Using RDD only):
 --Before moving forward, check from mysql to see if there is null price records, convert the records' price to 0
 {if(x(4)=="" || x(4) != null) 0 else x(4).toFloat}
 
-val pr = sc.textFile("retail/products").map(_.split(",")).map(x=>(x(1).toInt, (x(0).toInt, x(1).toInt, x(2), x(3), 
+val pr = sc.textFile("/public/retail_db/products").map(_.split(",")).map(x=>(x(1).toInt, (x(0).toInt, x(1).toInt, x(2), x(3), 
 {if(x(4)=="" || x(4)== null) 0 else x(4).toFloat}
 , x(5))))
 
-val cr = sc.textFile("retail/categories").map(_.split(",")).map(x=>(x(0).toInt, (x(1).toInt, x(2))))
+val cr = sc.textFile("/public/retail_db/categories").map(_.split(",")).map(x=>(x(0).toInt, (x(1).toInt, x(2))))
+
+//join the two RDD with the common column category_id, this is why both the two RDD must be generated in the form of <K, V> where K is the category_id, for pr, it is the second column x(1).toInt, for cr, it is the first column x(0).toInt, note they both are .toInt
 
 val joined = pr.join(cr)
 
@@ -45,6 +47,20 @@ res0: (Int, ((Int, Int, String, String, Float, String), (Int, String))) = (4,((4
 
 Output requirement: product id, product name, category, price
 Grouped by category in asc, sorted in price desc in each category 
+
+Based on joined schema:
+(Int, ((Int, Int, String, String, Float, String), (Int, String)))
+which is:
+(category_id, ((product_id, product_category_id, product_name, product_description, product_price, product_image), (category_department_id, category_name)))
+Required output is: category_id, product name, category, price
+
+x._1 is category_id
+x._2._1 is (product_id, product_category_id, product_name, product_description, product_price, product_image)
+x._2._1._3 is product_name
+x._2._2 is (category_department_id, category_name)
+x._2._2._2 is category_name
+x._2._1._5 is product_price
+
 
 scala>
 
